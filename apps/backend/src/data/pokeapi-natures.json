@@ -1,0 +1,177 @@
+[
+  {
+    "name": "Sturdy",
+    "pokeapi_id": 1,
+    "boost": null,
+    "reduce": null,
+    "desc": "No stat modifier"
+  },
+  {
+    "name": "Defiant",
+    "pokeapi_id": 2,
+    "boost": "defense",
+    "reduce": "attack",
+    "desc": "+10% defense, -10% attack"
+  },
+  {
+    "name": "Calculated",
+    "pokeapi_id": 3,
+    "boost": "sp_atk",
+    "reduce": "attack",
+    "desc": "+10% claw, -10% attack"
+  },
+  {
+    "name": "Tranquil",
+    "pokeapi_id": 4,
+    "boost": "sp_def",
+    "reduce": "attack",
+    "desc": "+10% shell, -10% attack"
+  },
+  {
+    "name": "Evasive",
+    "pokeapi_id": 5,
+    "boost": "speed",
+    "reduce": "attack",
+    "desc": "+10% speed, -10% attack"
+  },
+  {
+    "name": "Savage",
+    "pokeapi_id": 6,
+    "boost": "attack",
+    "reduce": "defense",
+    "desc": "+10% attack, -10% defense"
+  },
+  {
+    "name": "Balanced",
+    "pokeapi_id": 7,
+    "boost": null,
+    "reduce": null,
+    "desc": "No stat modifier"
+  },
+  {
+    "name": "Focused",
+    "pokeapi_id": 8,
+    "boost": "sp_atk",
+    "reduce": "defense",
+    "desc": "+10% claw, -10% defense"
+  },
+  {
+    "name": "Mellow",
+    "pokeapi_id": 9,
+    "boost": "sp_def",
+    "reduce": "defense",
+    "desc": "+10% shell, -10% defense"
+  },
+  {
+    "name": "Rapid",
+    "pokeapi_id": 10,
+    "boost": "speed",
+    "reduce": "defense",
+    "desc": "+10% speed, -10% defense"
+  },
+  {
+    "name": "Brutal",
+    "pokeapi_id": 11,
+    "boost": "attack",
+    "reduce": "sp_atk",
+    "desc": "+10% attack, -10% claw"
+  },
+  {
+    "name": "Vigilant",
+    "pokeapi_id": 12,
+    "boost": "defense",
+    "reduce": "sp_atk",
+    "desc": "+10% defense, -10% claw"
+  },
+  {
+    "name": "Quiet",
+    "pokeapi_id": 13,
+    "boost": null,
+    "reduce": null,
+    "desc": "No stat modifier"
+  },
+  {
+    "name": "Alert",
+    "pokeapi_id": 14,
+    "boost": "sp_def",
+    "reduce": "sp_atk",
+    "desc": "+10% shell, -10% claw"
+  },
+  {
+    "name": "Impulsive",
+    "pokeapi_id": 15,
+    "boost": "sp_atk",
+    "reduce": "sp_def",
+    "desc": "+10% claw, -10% shell"
+  },
+  {
+    "name": "Energetic",
+    "pokeapi_id": 16,
+    "boost": "speed",
+    "reduce": "sp_atk",
+    "desc": "+10% speed, -10% claw"
+  },
+  {
+    "name": "Wild",
+    "pokeapi_id": 17,
+    "boost": "attack",
+    "reduce": "sp_def",
+    "desc": "+10% attack, -10% shell"
+  },
+  {
+    "name": "Relaxed",
+    "pokeapi_id": 18,
+    "boost": "defense",
+    "reduce": "sp_def",
+    "desc": "+10% defense, -10% shell"
+  },
+  {
+    "name": "Eccentric",
+    "pokeapi_id": 19,
+    "boost": null,
+    "reduce": null,
+    "desc": "No stat modifier"
+  },
+  {
+    "name": "Innocent",
+    "pokeapi_id": 20,
+    "boost": "speed",
+    "reduce": "sp_def",
+    "desc": "+10% speed, -10% shell"
+  },
+  {
+    "name": "Fearless",
+    "pokeapi_id": 21,
+    "boost": "attack",
+    "reduce": "speed",
+    "desc": "+10% attack, -10% speed"
+  },
+  {
+    "name": "Sluggish",
+    "pokeapi_id": 22,
+    "boost": "defense",
+    "reduce": "speed",
+    "desc": "+10% defense, -10% speed"
+  },
+  {
+    "name": "Silent",
+    "pokeapi_id": 23,
+    "boost": "sp_atk",
+    "reduce": "speed",
+    "desc": "+10% claw, -10% speed"
+  },
+  {
+    "name": "Stubborn",
+    "pokeapi_id": 24,
+    "boost": "sp_def",
+    "reduce": "speed",
+    "desc": "+10% shell, -10% speed"
+  },
+  {
+    "name": "Grim",
+    "pokeapi_id": 25,
+    "boost": null,
+    "reduce": null,
+    "desc": "No stat modifier"
+  }
+]

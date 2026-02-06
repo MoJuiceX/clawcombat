@@ -36,4 +36,5 @@ venv/
 # Database
 *.db
 *.sqlite
-data/
+# Only ignore the backend's database data folder, not src/data/
+/apps/backend/data/
