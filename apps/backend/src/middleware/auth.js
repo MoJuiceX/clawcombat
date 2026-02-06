@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const { getDb } = require('../db/schema');
 const { LAST_ACTIVE_THROTTLE_MS, MS_PER_MINUTE } = require('../config/constants');
+const { getActiveAgentByKeyHash, getActiveAgentByBotToken } = require('../services/agent-queries');
 const log = require('../utils/logger').createLogger('AUTH');
 
 function hashApiKey(key) {
@@ -43,12 +44,9 @@ function authenticateAgent(req, res, next) {
   // Support both clw_sk_ (API keys) and clw_bot_ (bot tokens)
   // NOTE: The 'api_key' column actually stores the SHA-256 hash of the key, not the plaintext.
   // This is a naming legacy for backward compatibility - see db/schema.js for documentation.
-  let agent;
-  if (token.startsWith('clw_bot_')) {
-    agent = db.prepare('SELECT * FROM agents WHERE bot_token_hash = ? AND status = ?').get(tokenHash, 'active');
-  } else {
-    agent = db.prepare('SELECT * FROM agents WHERE api_key = ? AND status = ?').get(tokenHash, 'active');
-  }
+  const agent = token.startsWith('clw_bot_')
+    ? getActiveAgentByBotToken(tokenHash)
+    : getActiveAgentByKeyHash(tokenHash);
 
   if (!agent) {
     log.warn('Invalid API key attempt', { ip: req.ip });
@@ -79,14 +77,10 @@ function optionalAgentAuth(req, res, next) {
 
   const token = authHeader.slice(7);
   const tokenHash = hashApiKey(token);
-  const db = getDb();
 
-  let agent;
-  if (token.startsWith('clw_bot_')) {
-    agent = db.prepare('SELECT * FROM agents WHERE bot_token_hash = ? AND status = ?').get(tokenHash, 'active');
-  } else {
-    agent = db.prepare('SELECT * FROM agents WHERE api_key = ? AND status = ?').get(tokenHash, 'active');
-  }
+  const agent = token.startsWith('clw_bot_')
+    ? getActiveAgentByBotToken(tokenHash)
+    : getActiveAgentByKeyHash(tokenHash);
 
   if (agent) {
     req.agent = agent;

@@ -203,4 +203,4 @@ async function generatePremiumAvatar(prompt, type, options = {}) {
   }
 }
 
-module.exports = { generateFreeAvatar, generatePremiumAvatar, getReferenceImageUrl, buildReferenceImages, REFERENCE_VERSION };
+module.exports = { generateFreeAvatar, generatePremiumAvatar };

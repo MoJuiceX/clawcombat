@@ -8,6 +8,7 @@ const { authenticateHuman } = require('../middleware/clerk-auth');
 const { buildSkinPrompt, hashAgentStats, getTier } = require('../services/skin-generator');
 const { generateFreeAvatar, generatePremiumAvatar } = require('../services/image-gen');
 const { invalidateAgent } = require('../services/agent-cache');
+const { getAgentById } = require('../services/agent-queries');
 
 const router = express.Router();
 
@@ -111,7 +112,7 @@ router.post('/:agent_id/generate', authenticateAgent, async (req, res) => {
       return res.status(400).json({ error: 'tier must be "free" or "premium"' });
     }
 
-    const agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(agentId);
+    const agent = getAgentById(agentId);
     if (!agent) {
       return res.status(404).json({ error: 'Agent not found' });
     }
@@ -258,8 +259,7 @@ router.post('/:agent_id/unlock', authenticateAgent, (req, res) => {
 
 // GET /avatars/:agent_id/prompt - Get/preview the visual prompt without generating
 router.get('/:agent_id/prompt', (req, res) => {
-  const db = getDb();
-  const agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(req.params.agent_id);
+  const agent = getAgentById(req.params.agent_id);
 
   if (!agent) {
     return res.status(404).json({ error: 'Agent not found' });

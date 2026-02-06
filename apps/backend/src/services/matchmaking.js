@@ -3,6 +3,7 @@
 const { getDb } = require('../db/schema');
 const { getFightLimitInfo, recordFight } = require('../middleware/rate-limit');
 const { calculateScaledXP, checkLevelUp } = require('../utils/xp-scaling');
+const { getAgentById } = require('./agent-queries');
 
 // ============================================================================
 // Schema Migration
@@ -235,8 +236,8 @@ function processQueue(db) {
 // ============================================================================
 
 function completeBattle(db, battleId, winnerId, loserId) {
-  const winner = db.prepare('SELECT * FROM agents WHERE id = ?').get(winnerId);
-  const loser = db.prepare('SELECT * FROM agents WHERE id = ?').get(loserId);
+  const winner = getAgentById(winnerId);
+  const loser = getAgentById(loserId);
 
   if (!winner || !loser) {
     throw new Error('Winner or loser agent not found');

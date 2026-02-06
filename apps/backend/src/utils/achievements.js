@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const { getDb } = require('../db/schema');
+const { getAgentById } = require('../services/agent-queries');
 const log = require('./logger').createLogger('ACHIEVEMENTS');
 
 const BADGES = {
@@ -21,7 +22,7 @@ function checkAndAwardBadges(agentId) {
   const existing = db.prepare('SELECT badge_name FROM achievements WHERE agent_id = ?').all(agentId);
   const earned = new Set(existing.map(e => e.badge_name));
 
-  const agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(agentId);
+  const agent = getAgentById(agentId);
   if (!agent) return [];
 
   const newBadges = [];

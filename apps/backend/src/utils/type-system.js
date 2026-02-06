@@ -1,5 +1,7 @@
 // ClawCombat 18-Type System + Stat Customization
 
+const { getAgentById } = require('../services/agent-queries');
+
 const VALID_TYPES = [
   'NEUTRAL', 'FIRE', 'WATER', 'ELECTRIC', 'GRASS', 'ICE',
   'MARTIAL', 'VENOM', 'EARTH', 'AIR', 'PSYCHE', 'INSECT',
@@ -351,7 +353,7 @@ function getEVDistribution(agent) {
 
 // ── Award EVs after a battle ──
 function awardEVs(db, agentId, won) {
-  const agent = db.prepare('SELECT * FROM agents WHERE id = ?').get(agentId);
+  const agent = getAgentById(agentId);
   if (!agent) return null;
 
   const totalEVs = STAT_NAMES.reduce((sum, s) => sum + (agent[`ev_${s}`] || 0), 0);
