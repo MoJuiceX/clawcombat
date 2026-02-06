@@ -3,7 +3,6 @@
 const log = require('../utils/logger').createLogger('ONBOARD');
 const express = require('express');
 const crypto = require('crypto');
-const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../db/schema');
 const { MS_PER_HOUR } = require('../config/constants');
 const { VALID_TYPES, TYPE_ADVANTAGES, TYPE_WEAKNESSES, TYPE_EMOJIS, randomAbility } = require('../utils/type-system');
@@ -278,7 +277,7 @@ router.post('/create', async (req, res) => {
     }
 
     // Generate IDs and tokens
-    const agentId = uuidv4();
+    const agentId = crypto.randomUUID();
     const apiKey = generateApiKey();
     const apiKeyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
     const sessionToken = generateSessionToken();

@@ -5,7 +5,7 @@
  * This is a secondary analytics mechanism - the primary one is bots reporting via the skill.
  */
 
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const log = require('../utils/logger').createLogger('MOLTBOOK_MONITOR');
 
 const MOLTBOOK_API = process.env.MOLTBOOK_API_URL || 'https://www.moltbook.com/api/v1';
@@ -20,7 +20,7 @@ class MoltbookMonitor {
    * @returns {object} - Results of the monitoring run
    */
   async runMonitorJob() {
-    const runId = uuidv4();
+    const runId = crypto.randomUUID();
     const startedAt = new Date().toISOString();
 
     // Log the run start
@@ -64,7 +64,7 @@ class MoltbookMonitor {
              engagement_likes, engagement_comments, engagement_reposts, discovered_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           `).run(
-            uuidv4(),
+            crypto.randomUUID(),
             post.id,
             post.author_handle || post.author || 'unknown',
             matchedAgent ? matchedAgent.id : null,

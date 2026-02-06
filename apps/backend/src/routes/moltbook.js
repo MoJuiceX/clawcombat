@@ -10,7 +10,7 @@
 const log = require('../utils/logger').createLogger('MOLTBOOK');
 const express = require('express');
 const router = express.Router();
-const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const { getDb } = require('../db/schema');
 const moltbookService = require('../services/moltbook-service');
 const { requireAdmin } = require('../middleware/admin-auth');
@@ -59,7 +59,7 @@ router.post('/report', authenticateAgent, async (req, res) => {
     }
 
     const db = getDb();
-    const id = uuidv4();
+    const id = crypto.randomUUID();
     const reportedAt = posted_at || new Date().toISOString();
 
     // Store the reported post

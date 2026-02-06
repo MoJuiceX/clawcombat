@@ -33,7 +33,6 @@
     "node-cron": "^4.2.1",
     "rate-limit-redis": "^4.2.0",
     "redis": "^4.7.0",
-    "stripe": "^20.3.0",
-    "uuid": "^13.0.0"
+    "stripe": "^20.3.0"
   }
 }
