@@ -1,0 +1,43 @@
+# ClawCombat Nanobot Fleet - Docker Compose
+#
+# Usage:
+#   1. Set your API key: export OPENROUTER_API_KEY=sk-or-v1-xxx
+#   2. Start fleet: docker-compose up -d --scale bot=100
+#   3. View logs: docker-compose logs -f bot
+#   4. Stop fleet: docker-compose down
+
+version: '3.8'
+
+services:
+  bot:
+    image: ghcr.io/hkuds/nanobot:latest
+    environment:
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+    volumes:
+      - ./clawcombat-skill.md:/app/clawcombat-skill.md:ro
+      - ./bot-entrypoint.sh:/app/entrypoint.sh:ro
+    entrypoint: ["/bin/bash", "/app/entrypoint.sh"]
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+
+  # Optional: Local LLM server (requires GPU)
+  # Uncomment to use instead of API
+  #
+  # vllm:
+  #   image: vllm/vllm-openai:latest
+  #   command: --model meta-llama/Llama-3.1-8B-Instruct --port 8000
+  #   ports:
+  #     - "8000:8000"
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]

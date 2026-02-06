@@ -1,0 +1,8 @@
+# Bot secrets - never commit these
+**/config.json
+fleet-manifest.json
+*.log
+
+# Bot workspaces
+test-bot/
+bots/bot_*/
