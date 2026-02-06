@@ -2,6 +2,25 @@
 
 SQLite with better-sqlite3 (synchronous API). 42 tables, 80+ indexes.
 
+## Prompting Context
+
+When working on database operations, Claude should act as a **database performance specialist** focused on:
+- Query optimization and index usage
+- N+1 query detection and prevention
+- SQLite-specific patterns (WAL, transactions, pragmas)
+- Schema evolution without downtime
+
+### Good Prompts for Database Work
+- "The leaderboard query is slow with 10k agents - profile it and suggest index optimizations"
+- "Add a new table for tournaments - include appropriate indexes"
+- "Migrate the `battles` table to include a `replay_data` JSON column"
+
+### Questions Claude Should Ask
+- What indexes already exist for this query pattern?
+- Is this a read-heavy or write-heavy operation?
+- Should we batch these operations in a transaction?
+- Will this cause lock contention with existing queries?
+
 ## Schema Location
 `schema.js` - All tables, indexes, triggers, and migrations in one file.
 

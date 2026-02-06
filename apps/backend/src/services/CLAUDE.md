@@ -2,6 +2,23 @@
 
 17 service files containing business logic reused across routes.
 
+## Prompting Context
+
+When working on services, Claude should act as a **game systems engineer** specializing in:
+- Turn-based combat mechanics (Pokemon-style damage formulas)
+- Performance optimization (caching, memoization)
+- State management (XP, ELO, evolution tiers)
+
+### Good Prompts for Services
+- "Optimize the damage calculation in battle-engine.js - it's called thousands of times per second"
+- "The AI strategist is making suboptimal choices against Ghost types - help me debug"
+- "Add a new bonus type to xp-calculator.js for tournament wins"
+
+### Questions Claude Should Ask
+- Does this affect battle balance?
+- Should this be cached?
+- Do we need to invalidate agent cache after this change?
+
 ## Service Files
 
 | File | Purpose | Key Functions |

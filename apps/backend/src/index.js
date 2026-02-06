@@ -1,5 +1,9 @@
+// Sentry MUST be initialized before all other imports for proper auto-instrumentation
 require('dotenv').config();
+const Sentry = require('./instrument');
+
 const express = require('express');
+const compression = require('compression');
 const { initializeSchema } = require('./db/schema');
 const log = require('./utils/logger').createLogger('SERVER');
 const { startCronJobs, autoQueueAgents, processAutoQueue, updateLeaderboard, openVotingWindow, checkHumanVotingDeadlines, resolveAgentWeeklyWinners } = require('./services/automation');
@@ -91,6 +95,29 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
+
+// PERFORMANCE: Response compression (gzip/brotli)
+// - threshold: 1024 bytes - don't compress tiny responses (overhead not worth it)
+// - level: 6 - good balance between compression ratio and CPU usage
+// - filter: skip already-compressed content (images, fonts, etc.)
+// Supports Brotli (preferred) and gzip fallback for older clients
+app.use(compression({
+  threshold: 1024,  // Only compress responses > 1KB
+  level: 6,         // Compression level 1-9 (6 = balanced)
+  filter: (req, res) => {
+    // Skip compression for already-compressed formats
+    const contentType = res.getHeader('Content-Type') || '';
+    if (typeof contentType === 'string') {
+      // Skip images, audio, video, fonts (already compressed)
+      if (/^(image|audio|video)\//.test(contentType)) return false;
+      if (/font\//.test(contentType)) return false;
+      // Skip specific compressed formats
+      if (/\/(zip|gzip|rar|7z)$/.test(contentType)) return false;
+    }
+    // Use default compression filter for everything else
+    return compression.filter(req, res);
+  }
+}));
 
 // Stripe webhook must receive raw body BEFORE express.json() parses it
 app.post('/webhooks/stripe', express.raw({ type: 'application/json' }), stripeWebhookHandler);
@@ -205,38 +232,173 @@ app.get('/api/reference-images', (req, res) => {
   res.json({ images });
 });
 
-// Health check with DB connectivity stats
-app.get('/api/health', (req, res) => {
+// =============================================================================
+// HEALTH CHECK ENDPOINTS
+// =============================================================================
+
+/**
+ * Liveness probe - Kubernetes/Railway uses this to detect if container is alive
+ * Keep this SIMPLE - only checks if process is responsive
+ * If this fails, the container should be restarted
+ */
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ status: 'alive', timestamp: new Date().toISOString() });
+});
+
+/**
+ * Readiness probe - Checks if app is ready to receive traffic
+ * Verifies database connectivity but doesn't do write checks
+ * Faster than deep health check, suitable for frequent polling
+ */
+app.get('/ready', (req, res) => {
   try {
     const { getDb } = require('./db/schema');
     const db = getDb();
-    const agents = db.prepare("SELECT COUNT(*) as cnt FROM agents WHERE status = 'active'").get().cnt;
+    // Simple SELECT 1 to verify DB connection
+    const start = Date.now();
+    db.prepare('SELECT 1').get();
+    const latencyMs = Date.now() - start;
+
+    res.status(200).json({
+      status: 'ready',
+      timestamp: new Date().toISOString(),
+      database: { status: 'ok', latency_ms: latencyMs }
+    });
+  } catch (e) {
+    log.error('Readiness check failed', { error: e.message });
+    res.status(503).json({
+      status: 'not_ready',
+      timestamp: new Date().toISOString(),
+      database: { status: 'error', error: e.message }
+    });
+  }
+});
+
+/**
+ * Deep health check - Comprehensive system health verification
+ * Checks: DB read, DB write, memory usage, uptime
+ * Use for monitoring dashboards and alerting systems
+ */
+app.get('/api/health', async (req, res) => {
+  const checks = {};
+  let overallStatus = 'healthy';
+  const startTime = Date.now();
+
+  // 1. Database READ check
+  try {
+    const { getDb } = require('./db/schema');
+    const db = getDb();
+    const readStart = Date.now();
+    const result = db.prepare("SELECT COUNT(*) as cnt FROM agents WHERE status = 'active'").get();
+    checks.database_read = {
+      status: 'ok',
+      latency_ms: Date.now() - readStart,
+      active_agents: result.cnt
+    };
+  } catch (e) {
+    checks.database_read = { status: 'error', error: e.message };
+    overallStatus = 'unhealthy';
+  }
+
+  // 2. Database WRITE check (catches read-only mode issues)
+  try {
+    const { getDb } = require('./db/schema');
+    const db = getDb();
+    const writeStart = Date.now();
+
+    // Insert health check record
+    const now = new Date().toISOString();
+    db.prepare('INSERT OR REPLACE INTO health_checks (id, checked_at) VALUES (?, ?)').run('health_ping', now);
+
+    // Clean up old records (> 1 minute old)
+    const oneMinuteAgo = new Date(Date.now() - 60000).toISOString();
+    db.prepare('DELETE FROM health_checks WHERE checked_at < ?').run(oneMinuteAgo);
+
+    checks.database_write = {
+      status: 'ok',
+      latency_ms: Date.now() - writeStart
+    };
+  } catch (e) {
+    checks.database_write = { status: 'error', error: e.message };
+    overallStatus = 'unhealthy';
+  }
+
+  // 3. Memory check
+  try {
+    const mem = process.memoryUsage();
+    const heapUsedMb = Math.round(mem.heapUsed / 1024 / 1024);
+    const heapTotalMb = Math.round(mem.heapTotal / 1024 / 1024);
+    const heapPercent = Math.round((mem.heapUsed / mem.heapTotal) * 100);
+
+    // Warn if heap usage exceeds 80%
+    const memStatus = heapPercent > 80 ? 'warning' : 'ok';
+    if (heapPercent > 80 && overallStatus === 'healthy') {
+      overallStatus = 'degraded';
+    }
+
+    checks.memory = {
+      status: memStatus,
+      heap_used_mb: heapUsedMb,
+      heap_total_mb: heapTotalMb,
+      heap_percent: heapPercent,
+      rss_mb: Math.round(mem.rss / 1024 / 1024)
+    };
+  } catch (e) {
+    checks.memory = { status: 'error', error: e.message };
+    if (overallStatus === 'healthy') overallStatus = 'degraded';
+  }
+
+  // 4. Redis check (if configured)
+  try {
+    const { getRedisClient } = require('./utils/redis');
+    const redis = await getRedisClient();
+    if (redis) {
+      const redisStart = Date.now();
+      await redis.ping();
+      checks.redis = {
+        status: 'ok',
+        latency_ms: Date.now() - redisStart
+      };
+    } else {
+      checks.redis = { status: 'not_configured' };
+    }
+  } catch (e) {
+    checks.redis = { status: 'error', error: e.message };
+    // Redis is optional, don't fail health check
+    if (overallStatus === 'healthy') overallStatus = 'degraded';
+  }
+
+  // 5. Game stats (non-critical, informational)
+  try {
+    const { getDb } = require('./db/schema');
+    const db = getDb();
     const activeBattles = db.prepare("SELECT COUNT(*) as cnt FROM battles WHERE status = 'active'").get().cnt;
     const queueSize = db.prepare("SELECT COUNT(*) as cnt FROM battle_queue").get().cnt;
     const totalBattles = db.prepare("SELECT COUNT(*) as cnt FROM battles").get().cnt;
 
-    res.json({
-      name: 'ClawCombat',
-      version: '1.0.0',
-      status: 'running',
-      db: 'connected',
-      stats: {
-        active_agents: agents,
-        active_battles: activeBattles,
-        queue_size: queueSize,
-        total_battles: totalBattles,
-      },
-      uptime_seconds: Math.floor(process.uptime()),
-    });
+    checks.game_stats = {
+      active_battles: activeBattles,
+      queue_size: queueSize,
+      total_battles: totalBattles
+    };
   } catch (e) {
-    log.error('Health check failed', { error: e.message });
-    res.status(503).json({
-      name: 'ClawCombat',
-      version: '1.0.0',
-      status: 'degraded',
-      db: 'disconnected',
-    });
+    // Non-critical, just omit if failed
   }
+
+  // Build response
+  const response = {
+    status: overallStatus,
+    timestamp: new Date().toISOString(),
+    checks,
+    uptime_seconds: Math.floor(process.uptime()),
+    response_time_ms: Date.now() - startTime,
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development'
+  };
+
+  // HTTP status: 200 for healthy/degraded, 503 for unhealthy
+  const httpStatus = overallStatus === 'unhealthy' ? 503 : 200;
+  res.status(httpStatus).json(response);
 });
 
 // Routes
@@ -388,7 +550,14 @@ app.use((req, res) => {
   res.status(404).json({ error: 'Not found', path: req.path });
 });
 
-// Error handler
+// Sentry error handler - MUST be before other error handlers
+// Captures exceptions and sends them to Sentry with request context
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
+
+// Error handler - logs locally AND returns response
+// Sentry has already captured the error above, this handles the response
 app.use((err, req, res, next) => {
   log.error('Unhandled request error', { error: err.message, stack: err.stack, path: req.path });
   res.status(500).json({ error: 'Internal server error' });
@@ -397,11 +566,21 @@ app.use((err, req, res, next) => {
 // Catch unhandled promise rejections and uncaught exceptions
 process.on('unhandledRejection', (reason, promise) => {
   log.error('Unhandled Promise Rejection', { reason: String(reason) });
+  // Report to Sentry if configured
+  if (process.env.SENTRY_DSN) {
+    Sentry.captureException(reason instanceof Error ? reason : new Error(String(reason)));
+  }
 });
 
 process.on('uncaughtException', (err) => {
   log.error('Uncaught Exception', { error: err.message, stack: err.stack });
-  process.exit(1);
+  // Report to Sentry if configured (flush before exit)
+  if (process.env.SENTRY_DSN) {
+    Sentry.captureException(err);
+    Sentry.close(2000).then(() => process.exit(1));
+  } else {
+    process.exit(1);
+  }
 });
 
 // Initialize and start

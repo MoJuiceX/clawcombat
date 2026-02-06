@@ -22,11 +22,44 @@ function getDb() {
     } : undefined;
 
     db = new Database(DB_PATH, { verbose });
+
+    // ============================================================================
+    // SQLite Performance Pragmas
+    // These settings optimize SQLite for a production Node.js web application
+    // ============================================================================
+
+    // WAL (Write-Ahead Logging) enables concurrent reads during writes
+    // This is essential for web applications with multiple simultaneous requests
     db.pragma('journal_mode = WAL');
+
+    // Foreign key enforcement for referential integrity
     db.pragma('foreign_keys = ON');
-    db.pragma('synchronous = NORMAL');     // Balance durability/performance
-    db.pragma('cache_size = -64000');       // 64MB cache
-    db.pragma('busy_timeout = 5000');       // Wait 5s for locks
+
+    // NORMAL is safe with WAL mode and faster than FULL
+    // WAL ensures crash safety even with NORMAL synchronous mode
+    db.pragma('synchronous = NORMAL');
+
+    // 64MB page cache (negative value = KB, so -64000 = 64MB)
+    // Larger cache reduces disk I/O for frequently accessed data
+    db.pragma('cache_size = -64000');
+
+    // Wait up to 5 seconds for database locks before failing
+    // Prevents "database is locked" errors during concurrent access
+    db.pragma('busy_timeout = 5000');
+
+    // Store temporary tables and indices in memory instead of disk
+    // Improves performance for complex queries with temp tables
+    db.pragma('temp_store = MEMORY');
+
+    // Memory-mapped I/O: 256MB (268435456 bytes)
+    // Allows SQLite to access database pages directly from memory
+    // Significantly improves read performance for large datasets
+    db.pragma('mmap_size = 268435456');
+
+    // Limit WAL journal file size to 64MB (67108864 bytes)
+    // Prevents unbounded WAL growth during heavy write activity
+    // SQLite will checkpoint more aggressively when limit is reached
+    db.pragma('journal_size_limit = 67108864');
 
     if (process.env.DEBUG_SQL === '1') {
       log.info('Database query logging enabled (DEBUG_SQL=1)');
@@ -870,6 +903,18 @@ function initializeSchema() {
       END;
     `);
   } catch (e) { /* triggers may exist */ }
+
+  // ============================================================================
+  // HEALTH CHECK TABLE - For write verification in deep health checks
+  // Simple table to test DB write capability (catches read-only mode issues)
+  // ============================================================================
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS health_checks (
+      id TEXT PRIMARY KEY,
+      checked_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
 
   // ============================================================================
   // SEMANTIC CACHE TABLE - For future AI features (LLM response caching)

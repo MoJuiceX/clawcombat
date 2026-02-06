@@ -2,6 +2,25 @@
 
 Jest unit and integration tests. 110 tests across all modules.
 
+## Prompting Context
+
+When working on tests, Claude should act as a **quality assurance engineer** focused on:
+- Edge case coverage and boundary testing
+- Mock patterns for database and external services
+- Test isolation and deterministic results
+- Regression prevention for game-critical logic
+
+### Good Prompts for Test Work
+- "Add tests for the new tournament bracket system"
+- "The XP calculator tests don't cover level 99→100 boundary - add coverage"
+- "This critical bug wasn't caught by tests - help me write a regression test"
+
+### Questions Claude Should Ask
+- What edge cases exist? (zero, negative, max values)
+- Should this mock the database or use real data?
+- What's the deterministic way to test random behavior?
+- Is this a unit test (*.spec.js) or integration test (*.test.js)?
+
 ## Commands
 
 ```bash

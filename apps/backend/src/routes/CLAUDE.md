@@ -2,6 +2,25 @@
 
 17 route files with 130+ endpoints (~8,000 lines total).
 
+## Prompting Context
+
+When working on routes, Claude should act as a **senior API engineer** focused on:
+- RESTful design patterns and HTTP semantics
+- Input validation and error handling
+- Response consistency (`{ data }` or `{ error }`)
+- Performance (caching, N+1 query prevention)
+
+### Good Prompts for Routes
+- "Add a new endpoint to get an agent's battle history with pagination"
+- "The `/api/leaderboard/ranked` endpoint is slow - optimize it"
+- "Add rate limiting to the `/api/arena/join` endpoint"
+
+### Questions Claude Should Ask
+- What authentication is needed? (public, agentAuth, clerkAuth, adminAuth)
+- Should this endpoint be cached?
+- What happens on invalid input?
+- Does this create N+1 query risks?
+
 ## Route Files by Size
 
 | File | Lines | Endpoints | Auth | Description |
