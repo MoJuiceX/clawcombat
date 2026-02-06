@@ -546,7 +546,7 @@ router.get('/onboarding', requireAdmin, (req, res) => {
  * GET /api/analytics/health
  * System health dashboard - DB, caches, queues, memory
  */
-router.get('/health', requireAdmin, (req, res) => {
+router.get('/health', requireAdmin, async (req, res) => {
   try {
     const db = getDb();
     const startTime = Date.now();
