@@ -4,6 +4,7 @@ const uuidv4 = () => crypto.randomUUID();
 const log = require('../utils/logger').createLogger('AUTOMATION');
 const { getDb } = require('../db/schema');
 const { chooseMove } = require('./ai-strategist');
+const { getAgentById, getActiveAgentById, getAllActiveAgents } = require('./agent-queries');
 const {
   mapDbAgent, createBattle, saveTurn, resolveTurn,
   applyBattleResults, checkTimeouts, TYPE_CHART,
@@ -135,7 +136,7 @@ async function updateLeaderboard() {
   log.info('Updating leaderboard');
 
   // Safety LIMIT to prevent runaway queries; 10000 is well above expected agent count
-  const agents = db.prepare("SELECT * FROM agents WHERE status = 'active' LIMIT 10000").all();
+  const agents = getAllActiveAgents(10000);
 
   const upsert = db.prepare(`
     INSERT INTO leaderboard (agent_id, name, wins, losses, win_rate, total_judgments, judge_accuracy, updated_at)
@@ -399,8 +400,8 @@ async function processAutoQueue() {
       removeStmt.run(queue[i].agent_id);
       removeStmt.run(queue[bestMatch].agent_id);
 
-      const agentARow = db.prepare('SELECT * FROM agents WHERE id = ?').get(queue[i].agent_id);
-      const agentBRow = db.prepare('SELECT * FROM agents WHERE id = ?').get(queue[bestMatch].agent_id);
+      const agentARow = getAgentById(queue[i].agent_id);
+      const agentBRow = getAgentById(queue[bestMatch].agent_id);
 
       if (!agentARow || !agentBRow) continue;
 
@@ -681,7 +682,7 @@ function startCronJobs() {
 
 function triggerFirstFight(db, agentId) {
   // Load the agent
-  const agentRow = db.prepare("SELECT * FROM agents WHERE id = ? AND status = 'active'").get(agentId);
+  const agentRow = getActiveAgentById(agentId);
   if (!agentRow) throw new Error('Agent not found');
 
   const agentLevel = agentRow.level || 1;

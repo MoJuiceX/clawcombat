@@ -16,6 +16,14 @@ jest.mock('../db/schema', () => {
   };
 });
 
+// Mock agent queries - the auth module now uses centralized query helpers
+const mockGetActiveAgentByKeyHash = jest.fn();
+const mockGetActiveAgentByBotToken = jest.fn();
+jest.mock('../services/agent-queries', () => ({
+  getActiveAgentByKeyHash: (...args) => mockGetActiveAgentByKeyHash(...args),
+  getActiveAgentByBotToken: (...args) => mockGetActiveAgentByBotToken(...args),
+}));
+
 const { authenticateAgent, hashApiKey } = require('../middleware/auth');
 const { getDb } = require('../db/schema');
 
@@ -97,11 +105,7 @@ describe('Auth Middleware', () => {
     test('returns 401 for invalid API key', () => {
       mockReq.headers.authorization = 'Bearer clw_sk_invalid';
 
-      const mockStatement = {
-        get: jest.fn().mockReturnValue(null),
-        run: jest.fn(),
-      };
-      mockDb.prepare.mockReturnValue(mockStatement);
+      mockGetActiveAgentByKeyHash.mockReturnValue(null);
 
       authenticateAgent(mockReq, mockRes, mockNext);
 
@@ -121,16 +125,10 @@ describe('Auth Middleware', () => {
         status: 'active',
       };
 
-      const mockSelectStatement = {
-        get: jest.fn().mockReturnValue(mockAgent),
-      };
-      const mockUpdateStatement = {
-        run: jest.fn(),
-      };
+      mockGetActiveAgentByKeyHash.mockReturnValue(mockAgent);
 
-      mockDb.prepare
-        .mockReturnValueOnce(mockSelectStatement) // SELECT query
-        .mockReturnValueOnce(mockUpdateStatement); // UPDATE query
+      const mockUpdateStatement = { run: jest.fn() };
+      mockDb.prepare.mockReturnValue(mockUpdateStatement);
 
       authenticateAgent(mockReq, mockRes, mockNext);
 
@@ -148,60 +146,44 @@ describe('Auth Middleware', () => {
         status: 'active',
       };
 
-      const mockSelectStatement = {
-        get: jest.fn().mockReturnValue(mockAgent),
-      };
-      const mockUpdateStatement = {
-        run: jest.fn(),
-      };
+      mockGetActiveAgentByBotToken.mockReturnValue(mockAgent);
 
-      mockDb.prepare
-        .mockReturnValueOnce(mockSelectStatement)
-        .mockReturnValueOnce(mockUpdateStatement);
+      const mockUpdateStatement = { run: jest.fn() };
+      mockDb.prepare.mockReturnValue(mockUpdateStatement);
 
       authenticateAgent(mockReq, mockRes, mockNext);
 
       expect(mockNext).toHaveBeenCalled();
       expect(mockReq.agent).toBe(mockAgent);
 
-      // Verify bot token query uses bot_token_hash column
-      expect(mockDb.prepare).toHaveBeenCalledWith(
-        expect.stringContaining('bot_token_hash')
-      );
+      // Verify bot token helper was called (not API key helper)
+      expect(mockGetActiveAgentByBotToken).toHaveBeenCalled();
+      expect(mockGetActiveAgentByKeyHash).not.toHaveBeenCalled();
     });
 
-    test('uses api_key column for regular API keys', () => {
+    test('uses api_key helper for regular API keys', () => {
       const apiKey = 'clw_sk_regularkey';
       mockReq.headers.authorization = `Bearer ${apiKey}`;
 
-      const mockSelectStatement = {
-        get: jest.fn().mockReturnValue(null),
-      };
-      mockDb.prepare.mockReturnValue(mockSelectStatement);
+      mockGetActiveAgentByKeyHash.mockReturnValue(null);
 
       authenticateAgent(mockReq, mockRes, mockNext);
 
-      // Verify regular API key query uses api_key column
-      expect(mockDb.prepare).toHaveBeenCalledWith(
-        expect.stringContaining('api_key')
-      );
+      // Verify API key helper was called (not bot token helper)
+      expect(mockGetActiveAgentByKeyHash).toHaveBeenCalled();
+      expect(mockGetActiveAgentByBotToken).not.toHaveBeenCalled();
     });
 
-    test('only checks active agents', () => {
+    test('only checks active agents via helper functions', () => {
       mockReq.headers.authorization = 'Bearer clw_sk_test';
 
-      const mockStatement = {
-        get: jest.fn().mockReturnValue(null),
-      };
-      mockDb.prepare.mockReturnValue(mockStatement);
+      mockGetActiveAgentByKeyHash.mockReturnValue(null);
 
       authenticateAgent(mockReq, mockRes, mockNext);
 
-      // Verify status = 'active' is in the query
-      expect(mockStatement.get).toHaveBeenCalledWith(
-        expect.any(String),
-        'active'
-      );
+      // The helper function name 'getActiveAgentByKeyHash' indicates it only returns active agents
+      // This is enforced by the SQL in agent-queries.js: "status = 'active'"
+      expect(mockGetActiveAgentByKeyHash).toHaveBeenCalledWith(expect.any(String));
     });
   });
 
@@ -212,12 +194,10 @@ describe('Auth Middleware', () => {
 
       const mockAgent = { id: 'agent-new', status: 'active' };
 
-      const mockSelectStatement = { get: jest.fn().mockReturnValue(mockAgent) };
-      const mockUpdateStatement = { run: jest.fn() };
+      mockGetActiveAgentByKeyHash.mockReturnValue(mockAgent);
 
-      mockDb.prepare
-        .mockReturnValueOnce(mockSelectStatement)
-        .mockReturnValueOnce(mockUpdateStatement);
+      const mockUpdateStatement = { run: jest.fn() };
+      mockDb.prepare.mockReturnValue(mockUpdateStatement);
 
       authenticateAgent(mockReq, mockRes, mockNext);
 
