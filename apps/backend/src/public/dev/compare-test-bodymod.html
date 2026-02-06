@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Test: Dragon Body-Mod (Standard Base + Prompt)</title>
+<style>
+  body { background: #1a1a2e; color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+  h1 { text-align: center; color: #7038F8; margin-bottom: 5px; }
+  p.subtitle { text-align: center; color: #888; margin-bottom: 30px; }
+  .grid { display: grid; grid-template-columns: 120px repeat(3, 1fr); gap: 8px; max-width: 1100px; margin: 0 auto; align-items: center; }
+  .header { font-weight: bold; text-align: center; color: #aaa; font-size: 14px; padding: 8px 0; }
+  .label { font-weight: bold; text-align: right; padding-right: 12px; font-size: 14px; color: #ccc; }
+  .cell { text-align: center; }
+  .cell img { width: 100%; max-width: 280px; border-radius: 8px; border: 2px solid #333; transition: transform 0.2s; cursor: pointer; }
+  .cell img:hover { transform: scale(1.5); z-index: 10; position: relative; border-color: #7038F8; }
+  .cell img.missing { opacity: 0.2; }
+</style>
+</head>
+<body>
+<h1>Dragon Body-Mod Test</h1>
+<p class="subtitle">Standard base as reference + dragon features described in prompt only</p>
+
+<div class="grid">
+  <div class="header"></div>
+  <div class="header">Current Dragon Balanced</div>
+  <div class="header">Test Balanced (std base)</div>
+  <div class="header">Test Attack (std base)</div>
+</div>
+
+<script>
+const v = Date.now();
+const bases = [
+  { name: 'Crawler', key: 'crawler' },
+  { name: 'Cadet', key: 'cadet' },
+  { name: 'Scout', key: 'scout' },
+  { name: 'Sentinel', key: 'sentinel' },
+  { name: 'Peeper', key: 'peeper' },
+  { name: 'Titan', key: 'titan' },
+];
+
+const grid = document.querySelector('.grid');
+
+bases.forEach(b => {
+  // Label
+  const label = document.createElement('div');
+  label.className = 'label';
+  label.textContent = b.name;
+  grid.appendChild(label);
+
+  // Current dragon balanced (from body-mod base)
+  const cell1 = document.createElement('div');
+  cell1.className = 'cell';
+  const img1 = document.createElement('img');
+  img1.src = `/references/dragon/${b.key}-balanced.webp?v=${v}`;
+  img1.onerror = () => img1.classList.add('missing');
+  cell1.appendChild(img1);
+  grid.appendChild(cell1);
+
+  // Test balanced (standard base + prompt)
+  const cell2 = document.createElement('div');
+  cell2.className = 'cell';
+  const img2 = document.createElement('img');
+  img2.src = `/references/test-bodymod/${b.key}-dragon-balanced.webp?v=${v}`;
+  img2.onerror = () => img2.classList.add('missing');
+  cell2.appendChild(img2);
+  grid.appendChild(cell2);
+
+  // Test attack (standard base + prompt)
+  const cell3 = document.createElement('div');
+  cell3.className = 'cell';
+  const img3 = document.createElement('img');
+  img3.src = `/references/test-bodymod/${b.key}-dragon-attack.webp?v=${v}`;
+  img3.onerror = () => img3.classList.add('missing');
+  cell3.appendChild(img3);
+  grid.appendChild(cell3);
+});
+</script>
+</body>
+</html>

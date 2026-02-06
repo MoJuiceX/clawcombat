@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>First Battle - ClawCombat</title>
+<meta name="description" content="Watch your lobster's first battle!">
+<link rel="preconnect" href="https://cdn.clerk.com" crossorigin>
+<link rel="stylesheet" href="/css/arena.css">
+<style>
+  /* Play page specific styles */
+  #battle-section { padding: 15px; }
+
+  /* Data streams positioning for this page */
+  .data-stream:nth-child(4) { left: 15%; height: 60px; top: 10%; animation-delay: 0s; }
+  .data-stream:nth-child(5) { left: 30%; height: 80px; top: 5%; animation-delay: 0.5s; }
+  .data-stream:nth-child(6) { right: 20%; height: 70px; top: 8%; animation-delay: 1s; }
+  .data-stream:nth-child(7) { right: 35%; height: 50px; top: 15%; animation-delay: 1.5s; }
+
+  /* Move button styles */
+  .move-btn .m-name { display: block; font-size: 1rem; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.5); margin-bottom: 4px; }
+  .move-btn .m-info { display: flex; gap: 8px; font-size: 0.75rem; color: rgba(255,255,255,0.8); }
+  .move-btn .m-type { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 3px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px; }
+  .move-btn .m-pp { margin-left: auto; font-family: 'Courier New', monospace; }
+  .move-btn { background: transparent; color: #fff; }
+
+  /* Auto-play toggle */
+  .auto-toggle {
+    grid-column: 1 / -1;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 10px; background: rgba(30, 41, 59, 0.5); border-radius: 8px;
+    font-size: 0.85rem; color: #94a3b8;
+  }
+  .auto-toggle-switch {
+    position: relative; width: 44px; height: 24px;
+    background: #374151; border-radius: 12px; cursor: pointer; transition: background 0.2s;
+  }
+  .auto-toggle-switch.active { background: #6366f1; }
+  .auto-toggle-switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: transform 0.2s;
+  }
+  .auto-toggle-switch.active::after { transform: translateX(20px); }
+  .auto-toggle-label { font-weight: 600; min-width: 80px; }
+  .auto-toggle-label.auto { color: #a5b4fc; }
+  .auto-toggle-label.manual { color: #fbbf24; }
+
+  /* Move waiting overlay */
+  .move-waiting { position: absolute; inset: 0; background: rgba(15,23,42,0.85); display: flex; align-items: center; justify-content: center; border-radius: 12px; z-index: 10; }
+  .move-waiting span { font-size: 1.1rem; font-weight: 700; color: #a5b4fc; letter-spacing: 2px; animation: waitPulse 1.5s ease-in-out infinite; }
+  @keyframes waitPulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  /* Move panel layout */
+  .move-panel { max-width: 900px; margin: 0 auto 15px; }
+
+  /* Turn indicator */
+  .turn-indicator { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 1px; z-index: 15; }
+  .turn-timer { display: none; }
+  .turn-timer.show { display: flex; }
+
+  /* Victory overlay */
+  .victory-overlay {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .victory-overlay.active { display: flex; }
+  .victory-box {
+    background: #12121a; border: 1px solid #1e1e2e;
+    border-radius: 20px; padding: 32px; width: 100%; max-width: 420px;
+    text-align: center; animation: victoryIn 0.5s ease-out;
+    box-shadow: 0 0 60px rgba(34,197,94,0.4);
+  }
+  @keyframes victoryIn {
+    from { opacity: 0; transform: scale(0.8) translateY(30px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .victory-icon { font-size: 64px; margin-bottom: 16px; animation: bounce 1s ease-in-out infinite; }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .victory-title { font-size: 32px; font-weight: 900; color: #fff; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 3px; }
+  .victory-subtitle { font-size: 16px; color: #888; margin-bottom: 24px; }
+  .level-up-display {
+    background: linear-gradient(135deg, rgba(34,197,94,0.2) 0%, rgba(99,102,241,0.2) 100%);
+    border: 2px solid #22c55e; border-radius: 12px; padding: 20px; margin-bottom: 24px;
+  }
+  .level-up-label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .level-up-text { font-size: 28px; font-weight: 900; color: #22c55e; }
+  .xp-gained { font-size: 14px; color: #f59e0b; margin-top: 8px; }
+  .claim-section { background: #0a0a0f; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .claim-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .claim-desc { font-size: 13px; color: #888; margin-bottom: 16px; line-height: 1.5; }
+  .btn-claim {
+    width: 100%; padding: 16px 24px;
+    background: linear-gradient(135deg, #7c8cf6, #6366f1);
+    border: none; border-radius: 12px;
+    color: #fff; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all 0.25s;
+    box-shadow: 0 4px 15px rgba(99,102,241,0.4);
+  }
+  .btn-claim:hover { background: linear-gradient(135deg, #a5b4fc, #7c8cf6); transform: translateY(-2px); }
+  .btn-skip { background: transparent; border: none; color: #888; font-size: 13px; cursor: pointer; margin-top: 12px; padding: 8px; }
+  .btn-skip:hover { color: #fff; }
+
+  /* Loading screen */
+  .loading-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; text-align: center; }
+  .loading-icon { font-size: 48px; margin-bottom: 16px; animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
+  .loading-text { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .loading-subtext { font-size: 14px; color: #888; }
+  .error-message { background: rgba(239,68,68,0.1); border: 1px solid #ef4444; border-radius: 12px; padding: 20px; margin-top: 20px; max-width: 500px; }
+  .error-message h3 { color: #ef4444; margin-bottom: 8px; }
+  .error-message p { color: #888; font-size: 14px; }
+  .error-message a { color: #6366f1; text-decoration: none; }
+  .error-message a:hover { text-decoration: underline; }
+
+  /* Defeat overlay styling */
+  .victory-box.defeat { box-shadow: 0 0 60px rgba(239,68,68,0.4); }
+  .victory-box.defeat .level-up-display { border-color: #ef4444; }
+  .victory-box.defeat .level-up-text { color: #ef4444; }
+
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .move-btn .m-name { font-size: 0.9rem; }
+  }
+  @media (max-width: 480px) {
+    .move-btn .m-name { font-size: 0.85rem; margin-bottom: 2px; }
+    .move-btn .m-info { font-size: 0.65rem; }
+  }
+
+  /* Unverified banner */
+  .unverified-banner {
+    display: none;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin: 10px 15px;
+    text-align: center;
+  }
+  .unverified-banner.show { display: block; }
+  .unverified-banner-icon { font-size: 18px; margin-right: 8px; }
+  .unverified-banner-text {
+    font-size: 13px;
+    color: #fbbf24;
+    line-height: 1.5;
+  }
+  .unverified-banner-text strong { color: #fff; font-weight: 600; }
+  .unverified-banner-timer {
+    display: inline-block;
+    background: rgba(251, 191, 36, 0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    margin-left: 4px;
+  }
+  .unverified-banner-btn {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 6px 16px;
+    background: #fbbf24;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .unverified-banner-btn:hover { background: #fcd34d; transform: translateY(-1px); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand" style="text-decoration:none">Claw<span>Combat</span></a>
+  <div class="nav-links">
+    <a href="/arena.html">Arena</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+  </div>
+</nav>
+<div class="nav-audio">
+  <button id="muteBtn" onclick="Audio.toggleMute()" style="background:none;border:none;cursor:pointer;font-size:18px;padding:2px 6px;color:#888;" title="Toggle sound">&#128266;</button>
+</div>
+
+<!-- Unclaimed Banner -->
+<div class="unverified-banner" id="unverified-banner">
+  <div class="unverified-banner-text">
+    <span class="unverified-banner-icon">&#9888;</span>
+    Your lobster <strong id="banner-lobster-name">Unknown</strong> is unclaimed. Log in within <span class="unverified-banner-timer" id="banner-time-left">24h</span> to claim it, or it will be released back into the ocean.
+  </div>
+  <button class="unverified-banner-btn" onclick="claimLobster()">Sign In to Claim</button>
+</div>
+
+<!-- Loading Screen -->
+<div class="loading-screen" id="loading-screen">
+  <div class="loading-icon">&#129438;</div>
+  <div class="loading-text">Preparing Battle...</div>
+  <div class="loading-subtext">Loading your lobster</div>
+</div>
+
+<!-- Battle Section -->
+<section id="battle-section" style="display:none">
+  <div class="battle-layout">
+    <div class="battle-arena" id="arena">
+      <div class="arena-circuits"></div>
+      <div class="arena-scanlines"></div>
+      <div class="data-stream"></div>
+      <div class="data-stream"></div>
+      <div class="data-stream"></div>
+      <div class="data-stream"></div>
+      <div class="hud-bracket tl"></div>
+      <div class="hud-bracket tr"></div>
+      <div class="hud-bracket bl"></div>
+      <div class="hud-bracket br"></div>
+      <div class="vs-emblem">VS</div>
+      <div class="player-platform"></div>
+      <div class="opponent-platform"></div>
+      <canvas id="effectCanvas"></canvas>
+      <div class="turn-indicator" id="turn-indicator">TURN 1</div>
+      <div class="turn-timer" id="turnTimer"><span class="timer-icon">&#x23F1;</span><span class="timer-value" id="turnTimerValue">30s</span></div>
+
+      <!-- Player Lobster Card -->
+      <div class="lobster player-lobster" id="playerLobster">
+        <div class="frame-glow"></div>
+        <div class="frame-border-outer"></div>
+        <div class="frame-border-inner"></div>
+        <div class="frame-node tl"></div><div class="frame-node tr"></div>
+        <div class="frame-node bl"></div><div class="frame-node br"></div>
+        <div class="frame-accent top"></div><div class="frame-accent bottom"></div>
+        <div class="frame-accent left"></div><div class="frame-accent right"></div>
+        <div class="lobster-frame">
+          <div class="frame-scanlines"></div>
+          <img id="playerImg" alt="Your Lobster">
+        </div>
+        <div class="hp-container" id="playerHpContainer">
+          <div class="hp-label">
+            <span class="hp-name" id="playerName">You</span>
+            <span class="hp-type" id="playerType">FIRE</span>
+          </div>
+          <div class="hp-bar-bg"><div class="hp-ghost" id="playerHpGhost" style="width:100%"></div><div class="hp-bar" id="playerHp" style="width:100%"></div></div>
+          <div class="hp-text"><span id="playerHpText">100</span>/<span id="playerMaxHp">100</span></div>
+        </div>
+        <div class="action-info player-action" id="playerAction"></div>
+      </div>
+
+      <!-- Opponent Lobster Card -->
+      <div class="lobster opponent-lobster" id="opponentLobster">
+        <div class="frame-glow"></div>
+        <div class="frame-border-outer"></div>
+        <div class="frame-border-inner"></div>
+        <div class="frame-node tl"></div><div class="frame-node tr"></div>
+        <div class="frame-node bl"></div><div class="frame-node br"></div>
+        <div class="frame-accent top"></div><div class="frame-accent bottom"></div>
+        <div class="frame-accent left"></div><div class="frame-accent right"></div>
+        <div class="lobster-frame">
+          <div class="frame-scanlines"></div>
+          <img id="opponentImg" alt="Opponent">
+        </div>
+        <div class="hp-container" id="opponentHpContainer">
+          <div class="hp-label">
+            <span class="hp-name" id="opponentName">Opponent</span>
+            <span class="hp-type" id="opponentType">WATER</span>
+          </div>
+          <div class="hp-bar-bg"><div class="hp-ghost" id="opponentHpGhost" style="width:100%"></div><div class="hp-bar" id="opponentHp" style="width:100%"></div></div>
+          <div class="hp-text"><span id="opponentHpText">100</span>/<span id="opponentMaxHp">100</span></div>
+        </div>
+        <div class="action-info opponent-action" id="opponentAction"></div>
+      </div>
+    </div>
+
+    <!-- Battle History -->
+    <div class="battle-history-panel" id="historyPanel">
+      <div class="history-header">
+        <span>Battle Log</span>
+        <span class="history-turn" id="historyTurn">Turn 1</span>
+      </div>
+      <div class="history-content" id="historyContent"></div>
+    </div>
+  </div>
+
+  <!-- Move Panel -->
+  <div class="move-panel" id="movePanel">
+    <div class="move-grid" id="moveGrid"></div>
+    <div class="move-waiting" id="moveWaiting" style="display:none"><span>RESOLVING...</span></div>
+  </div>
+</section>
+
+<!-- Victory Overlay -->
+<div class="victory-overlay" id="victory-overlay">
+  <div class="victory-box" id="victory-box">
+    <div class="victory-icon" id="victory-icon">&#127942;</div>
+    <div class="victory-title" id="victory-title">Victory!</div>
+    <div class="victory-subtitle" id="victory-subtitle">Your lobster won its first battle!</div>
+
+    <div class="level-up-display">
+      <div class="level-up-label">Level Up!</div>
+      <div class="level-up-text" id="level-up-text">Level 1 → Level 2</div>
+      <div class="xp-gained" id="xp-gained">+1500 XP</div>
+    </div>
+
+    <div class="claim-section">
+      <div class="claim-title">Keep Your Lobster Forever!</div>
+      <div class="claim-desc">
+        Sign in now to save your lobster permanently. Unclaimed lobsters will be released back into the ocean after 24 hours.
+      </div>
+      <button class="btn-claim" id="btn-claim" onclick="claimLobster()">
+        Sign In to Claim
+      </button>
+    </div>
+
+    <button class="btn-skip" onclick="skipClaim()">
+      Continue without account
+    </button>
+  </div>
+</div>
+
+<script src="/js/battle-audio.js"></script>
+<script src="/js/battle-particles.js"></script>
+<script src="/js/battle-ui.js"></script>
+<script>
+(function() {
+  // ═══════════════════════════════════════════
+  // STATE
+  // ═══════════════════════════════════════════
+  var state = {
+    sessionToken: null,
+    player: null,
+    opponent: null,
+    playerHP: 0,
+    opponentHP: 0,
+    playerMaxHP: 0,
+    opponentMaxHP: 0,
+    mode: 'watch',
+    battleEnded: false,
+    playerTurn: true,
+    config: null,
+    turnNumber: 1
+  };
+
+  var autoPlaying = true;
+
+  // ═══════════════════════════════════════════
+  // INITIALIZATION
+  // ═══════════════════════════════════════════
+  function init() {
+    var params = new URLSearchParams(window.location.search);
+    state.sessionToken = params.get('session');
+
+    if (!state.sessionToken) {
+      showError('No session found', 'Please create a lobster first.', '/');
+      return;
+    }
+
+    checkSession();
+  }
+
+  function checkSession() {
+    fetch('/onboard/session/' + state.sessionToken)
+      .then(function(r) { return r.json().then(function(d) { return { status: r.status, data: d }; }); })
+      .then(function(result) {
+        var data = result.data;
+
+        if (result.status === 410) {
+          showError('Session Expired', 'This lobster is no longer available. The 30-day claim period has passed.', '/');
+          return;
+        }
+
+        if (result.status === 404) {
+          showError('Session Not Found', data.error || 'Session not found.', '/');
+          return;
+        }
+
+        if (data.can_play === false) {
+          if (data.can_claim) {
+            var daysLeft = Math.ceil(data.claim_time_remaining_ms / (24 * 60 * 60 * 1000));
+            showClaimOnlyScreen(data.lobster, daysLeft);
+          } else {
+            showError('Session Expired', 'This lobster is no longer available.', '/');
+          }
+          return;
+        }
+
+        if (data.is_claimed) {
+          showError('Lobster Claimed', 'This lobster has already been claimed. Go to your portfolio to see it.', '/portfolio.html');
+          return;
+        }
+
+        state.lobsterData = data.lobster;
+        state.isClaimed = data.is_claimed;
+        state.claimTimeRemainingMs = data.claim_time_remaining_ms;
+        state.claimMessage = data.claim_message;
+        loadBattle();
+      })
+      .catch(function(err) {
+        console.error('Session check error:', err);
+        showError('Connection Error', 'Failed to check session.', '/');
+      });
+  }
+
+  function showClaimOnlyScreen(lobster, daysLeft) {
+    var loading = document.getElementById('loading-screen');
+    loading.innerHTML =
+      '<div style="text-align:center;max-width:400px;">' +
+        '<div style="font-size:48px;margin-bottom:16px;">&#129438;</div>' +
+        '<h2 style="color:#fff;margin-bottom:8px;">' + esc(lobster.name) + '</h2>' +
+        '<p style="color:#888;margin-bottom:24px;">' +
+          'Your 7-day play session has expired, but you can still claim this lobster for ' +
+          '<strong style="color:#f59e0b">' + daysLeft + ' more days</strong>!' +
+        '</p>' +
+        '<div style="background:#0a0a0f;border-radius:12px;padding:20px;margin-bottom:16px;">' +
+          '<p style="color:#888;font-size:13px;margin-bottom:16px;">' +
+            'Sign in now to save your lobster and continue battling.' +
+          '</p>' +
+          '<button onclick="claimExpiredLobster()" style="' +
+            'width:100%;padding:14px 20px;background:linear-gradient(135deg,#7c8cf6,#6366f1);' +
+            'border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;' +
+          '">Sign In to Claim</button>' +
+        '</div>' +
+        '<a href="/" style="color:#888;font-size:13px;">← Back to Home</a>' +
+      '</div>';
+  }
+
+  window.claimExpiredLobster = async function() {
+    claimLobster();
+  };
+
+  function loadBattle() {
+    fetch('/onboard/first-battle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_token: state.sessionToken })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        if (data.error.includes('already completed')) {
+          showError('Battle Complete', 'You\'ve already completed your first battle.', '/portfolio.html');
+        } else {
+          showError('Error', data.error, '/onboard.html');
+        }
+        return;
+      }
+
+      state.player = data.player;
+      state.opponent = data.opponent;
+      state.playerHP = data.player.current_hp;
+      state.opponentHP = data.opponent.current_hp;
+      state.playerMaxHP = data.player.max_hp;
+      state.opponentMaxHP = data.opponent.max_hp;
+      state.config = data.config;
+
+      setupBattleUI();
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('battle-section').style.display = '';
+
+      // Show unclaimed banner if not claimed
+      if (!state.isClaimed) {
+        showUnverifiedBanner();
+      }
+
+      // Init canvas after layout
+      setTimeout(function() {
+        initCanvas();
+        resizeCanvas();
+      }, 50);
+
+      addToHistory('Battle begins!', null);
+      addToHistory(state.player.name + ' vs ' + state.opponent.name, null);
+      Audio.play('matchFound');
+
+      // Start auto-play
+      if (state.mode === 'watch') {
+        setTimeout(autoPlay, 1500);
+      }
+    })
+    .catch(function(err) {
+      console.error(err);
+      showError('Connection Error', 'Failed to start battle.', '/onboard.html');
+    });
+  }
+
+  function setupBattleUI() {
+    var pType = (state.player.type || 'neutral').toLowerCase();
+    var oType = (state.opponent.type || 'neutral').toLowerCase();
+    var pColor = TYPE_COLORS[pType] || TYPE_COLORS.neutral;
+    var oColor = TYPE_COLORS[oType] || TYPE_COLORS.neutral;
+
+    // Set names for battle-ui.js
+    battleAgentNames.player = state.player.name;
+    battleAgentNames.opponent = state.opponent.name;
+    battleAgentTypes.player = pType;
+    battleAgentTypes.opponent = oType;
+
+    // Player info
+    document.getElementById('playerName').innerHTML = '<span style="color:' + pColor + '">' + esc(state.player.name) + '</span> <span class="hp-level">Lv.1</span>';
+    document.getElementById('playerType').textContent = pType.toUpperCase();
+    document.getElementById('playerType').style.background = pColor;
+    document.getElementById('playerImg').src = state.player.image_url || '/references/' + pType + '/titan-balanced.webp';
+    setFrameColor('player', pType);
+
+    // Opponent info
+    document.getElementById('opponentName').innerHTML = '<span style="color:' + oColor + '">' + esc(state.opponent.name) + '</span> <span class="hp-level">Lv.1</span>';
+    document.getElementById('opponentType').textContent = oType.toUpperCase();
+    document.getElementById('opponentType').style.background = oColor;
+    document.getElementById('opponentImg').src = state.opponent.image_url || '/references/' + oType + '/sentinel-attack.webp';
+    setFrameColor('opponent', oType);
+
+    // HP bars
+    updateHPBar('player', state.playerHP, state.playerMaxHP);
+    updateHPBar('opponent', state.opponentHP, state.opponentMaxHP);
+
+    // Moves
+    renderMoves();
+  }
+
+  function renderMoves() {
+    var grid = document.getElementById('moveGrid');
+    grid.innerHTML = '';
+
+    state.player.moves.forEach(function(move, i) {
+      var color = TYPE_COLORS[(move.type || 'neutral').toLowerCase()] || TYPE_COLORS.neutral;
+      var btn = document.createElement('button');
+      btn.className = 'move-btn';
+      btn.style.borderColor = color + '66';
+      btn.style.background = 'linear-gradient(135deg,' + color + '15,' + color + '08)';
+      btn.innerHTML = '<span class="m-name">' + esc(move.name) + '</span>' +
+        '<span class="m-info">' +
+          '<span class="m-type" style="color:' + color + '">' + (move.type || '').toUpperCase() + '</span>' +
+          '<span>PWR ' + (move.power || '—') + '</span>' +
+          '<span>ACC ' + (move.accuracy || '—') + '</span>' +
+        '</span>';
+      btn.disabled = state.mode === 'watch' || !state.playerTurn || state.battleEnded;
+      btn.onclick = function() { setAutoPlay(false); playerUseMove(i); };
+      grid.appendChild(btn);
+    });
+
+    // Auto-play toggle
+    var toggle = document.createElement('div');
+    toggle.className = 'auto-toggle';
+    toggle.innerHTML = '<span class="auto-toggle-label ' + (autoPlaying ? 'auto' : 'manual') + '" id="autoLabel">' + (autoPlaying ? 'Auto' : 'Manual') + '</span>' +
+      '<div class="auto-toggle-switch ' + (autoPlaying ? 'active' : '') + '" id="autoSwitch" onclick="toggleAutoPlay()"></div>' +
+      '<span style="color:#64748b;font-size:0.75rem;">' + (autoPlaying ? 'AI picks moves' : 'You pick moves') + '</span>';
+    grid.appendChild(toggle);
+  }
+
+  // ═══════════════════════════════════════════
+  // MODE TOGGLE
+  // ═══════════════════════════════════════════
+  window.toggleAutoPlay = function() {
+    setAutoPlay(!autoPlaying);
+  };
+
+  function setAutoPlay(enabled) {
+    autoPlaying = enabled;
+    state.mode = enabled ? 'watch' : 'manual';
+    var sw = document.getElementById('autoSwitch');
+    var label = document.getElementById('autoLabel');
+    if (sw) sw.className = 'auto-toggle-switch ' + (autoPlaying ? 'active' : '');
+    if (label) {
+      label.textContent = autoPlaying ? 'Auto' : 'Manual';
+      label.className = 'auto-toggle-label ' + (autoPlaying ? 'auto' : 'manual');
+    }
+    var toggle = document.querySelector('.auto-toggle');
+    if (toggle) {
+      var desc = toggle.querySelector('span:last-child');
+      if (desc) desc.textContent = autoPlaying ? 'AI picks moves' : 'You pick moves';
+    }
+    renderMoves();
+    if (autoPlaying && !state.battleEnded && state.playerTurn) {
+      setTimeout(autoPlay, 500);
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // BATTLE LOGIC
+  // ═══════════════════════════════════════════
+  function autoPlay() {
+    if (state.mode !== 'watch' || state.battleEnded || !state.playerTurn) return;
+
+    var moves = state.player.moves;
+    var idx = Math.floor(Math.random() * moves.length);
+
+    // Prefer higher power moves
+    if (Math.random() > 0.3) {
+      var best = 0;
+      moves.forEach(function(m, i) {
+        if ((m.power || 0) > (moves[best].power || 0)) best = i;
+      });
+      idx = best;
+    }
+
+    playerUseMove(idx);
+  }
+
+  function playerUseMove(moveIdx) {
+    if (!state.playerTurn || state.battleEnded) return;
+
+    state.playerTurn = false;
+    var move = state.player.moves[moveIdx];
+
+    // Animate attack
+    var pLob = document.getElementById('playerLobster');
+    pLob.classList.add('attacking');
+
+    // Play attack animation
+    var animResult = playAttackAnimation(move.type || 'neutral', true, {
+      category: move.category || 'special',
+      power: move.power || 60
+    });
+
+    setTimeout(function() {
+      pLob.classList.remove('attacking');
+    }, 300);
+
+    // Calculate damage
+    var hit = Math.random() * 100 < move.accuracy;
+    var damage = 0;
+    var crit = false;
+
+    if (hit && move.power) {
+      var attack = move.category === 'special' ? state.player.stats.sp_atk : state.player.stats.attack;
+      var defense = move.category === 'special' ? state.opponent.stats.sp_def : state.opponent.stats.defense;
+      damage = Math.floor((move.power * (attack / defense)) * (0.85 + Math.random() * 0.3));
+      damage = Math.floor(damage * 1.2); // Type advantage
+
+      if (Math.random() < 0.1) {
+        damage = Math.floor(damage * 1.5);
+        crit = true;
+      }
+    }
+
+    // Show action
+    showActionInfoSimple('player', move.name);
+
+    setTimeout(function() {
+      if (hit) {
+        addToHistory(state.player.name + ' used ' + move.name + '!', 'player');
+        if (damage > 0) {
+          // Sound + damage number
+          Audio.play(crit ? 'hitCrit' : 'hit', move.type);
+          showDamageNumber('opponent', damage, crit);
+
+          if (crit) {
+            addToHistory('A critical hit!', 'player');
+            showCriticalText('opponent');
+          }
+
+          var oLob = document.getElementById('opponentLobster');
+          oLob.classList.add('hit');
+          if (move.power >= 80 || crit) screenShake();
+
+          state.opponentHP = Math.max(0, state.opponentHP - damage);
+          addToHistory(state.opponent.name + ' took ' + damage + ' damage!', 'player');
+          updateHPBar('opponent', state.opponentHP, state.opponentMaxHP);
+
+          setTimeout(function() { oLob.classList.remove('hit'); }, 400);
+        } else if (move.power === 0) {
+          addToHistory('It\'s a status move!', null);
+        }
+      } else {
+        addToHistory(state.player.name + ' used ' + move.name + '!', 'player');
+        addToHistory('But it missed!', null);
+        Audio.play('miss');
+      }
+
+      // Check faint
+      if (state.opponentHP <= 0) {
+        setTimeout(function() { endBattle(true); }, 800);
+        return;
+      }
+
+      // Opponent's turn
+      setTimeout(opponentTurn, 1200);
+    }, 400);
+  }
+
+  function opponentTurn() {
+    if (state.battleEnded) return;
+
+    var moves = state.opponent.moves;
+    var move;
+
+    // Rigged: opponent makes suboptimal choices
+    if (Math.random() < 0.6) {
+      var lowest = 0;
+      moves.forEach(function(m, i) {
+        if ((m.power || 999) < (moves[lowest].power || 999)) lowest = i;
+      });
+      move = moves[lowest];
+    } else {
+      move = moves[Math.floor(Math.random() * moves.length)];
+    }
+
+    // Animate attack
+    var oLob = document.getElementById('opponentLobster');
+    oLob.classList.add('attacking');
+
+    playAttackAnimation(move.type || 'neutral', false, {
+      category: move.category || 'special',
+      power: move.power || 60
+    });
+
+    setTimeout(function() {
+      oLob.classList.remove('attacking');
+    }, 300);
+
+    // Mercy miss
+    var mercyMiss = false;
+    if (state.config && state.playerHP / state.playerMaxHP < 0.25) {
+      if (Math.random() < state.config.mercy_miss_chance) {
+        mercyMiss = true;
+      }
+    }
+
+    var hit = !mercyMiss && Math.random() * 100 < move.accuracy;
+    var damage = 0;
+
+    if (hit && move.power) {
+      var attack = move.category === 'special' ? state.opponent.stats.sp_atk : state.opponent.stats.attack;
+      var defense = move.category === 'special' ? state.player.stats.sp_def : state.player.stats.defense;
+      damage = Math.floor((move.power * (attack / defense)) * (0.7 + Math.random() * 0.2));
+      damage = Math.floor(damage * 0.8); // Type disadvantage
+    }
+
+    showActionInfoSimple('opponent', move.name);
+
+    setTimeout(function() {
+      if (hit) {
+        addToHistory(state.opponent.name + ' used ' + move.name + '!', 'opponent');
+        if (damage > 0) {
+          Audio.play('hit', move.type);
+          showDamageNumber('player', damage, false);
+
+          var pLob = document.getElementById('playerLobster');
+          pLob.classList.add('hit');
+
+          state.playerHP = Math.max(0, state.playerHP - damage);
+          addToHistory(state.player.name + ' took ' + damage + ' damage!', 'opponent');
+          updateHPBar('player', state.playerHP, state.playerMaxHP);
+
+          setTimeout(function() { pLob.classList.remove('hit'); }, 400);
+        } else if (move.power === 0) {
+          addToHistory('It\'s a status move!', null);
+        }
+      } else {
+        addToHistory(state.opponent.name + ' used ' + move.name + '!', 'opponent');
+        addToHistory('But it missed!', null);
+        Audio.play('miss');
+      }
+
+      // Check faint
+      if (state.playerHP <= 0) {
+        setTimeout(function() { endBattle(false); }, 800);
+        return;
+      }
+
+      // Player's turn
+      state.playerTurn = true;
+      state.turnNumber++;
+      document.getElementById('turn-indicator').textContent = 'TURN ' + state.turnNumber;
+      document.getElementById('historyTurn').textContent = 'Turn ' + state.turnNumber;
+      renderMoves();
+
+      if (state.mode === 'watch') {
+        setTimeout(autoPlay, 1500);
+      }
+    }, 400);
+  }
+
+  function endBattle(won) {
+    state.battleEnded = true;
+    renderMoves();
+
+    var pLob = document.getElementById('playerLobster');
+    var oLob = document.getElementById('opponentLobster');
+
+    if (won) {
+      oLob.classList.add('fainted');
+      addToHistory(state.opponent.name + ' fainted!', null);
+      addToHistory(state.player.name + ' wins!', 'player');
+      Audio.play('victory');
+
+      // Report victory
+      fetch('/onboard/first-battle-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_token: state.sessionToken, won: true })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          document.getElementById('xp-gained').textContent = '+' + data.xp_awarded + ' XP';
+          document.getElementById('level-up-text').textContent = 'Level ' + data.old_level + ' → Level ' + data.new_level;
+        }
+        setTimeout(showVictory, 1000);
+      })
+      .catch(function() {
+        setTimeout(showVictory, 1000);
+      });
+    } else {
+      pLob.classList.add('fainted');
+      addToHistory(state.player.name + ' fainted!', null);
+      addToHistory('You lost... Try again!', 'opponent');
+      Audio.play('defeat');
+
+      fetch('/onboard/first-battle-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_token: state.sessionToken, won: false })
+      });
+
+      setTimeout(function() {
+        showDefeat();
+      }, 1500);
+    }
+  }
+
+  function showVictory() {
+    document.getElementById('victory-box').classList.remove('defeat');
+    document.getElementById('victory-icon').innerHTML = '&#127942;';
+    document.getElementById('victory-title').textContent = 'Victory!';
+    document.getElementById('victory-subtitle').textContent = state.player.name + ' won its first battle!';
+    document.getElementById('victory-overlay').classList.add('active');
+  }
+
+  function showDefeat() {
+    document.getElementById('victory-box').classList.add('defeat');
+    document.getElementById('victory-icon').innerHTML = '&#128557;';
+    document.getElementById('victory-title').textContent = 'Defeat';
+    document.getElementById('victory-subtitle').textContent = state.player.name + ' was defeated. Try again!';
+    document.querySelector('.level-up-display').style.display = 'none';
+    document.getElementById('btn-claim').textContent = 'Try Again';
+    document.getElementById('btn-claim').onclick = function() { window.location.reload(); };
+    document.querySelector('.btn-skip').style.display = 'none';
+    document.getElementById('victory-overlay').classList.add('active');
+  }
+
+  // ═══════════════════════════════════════════
+  // CLAIM LOBSTER
+  // ═══════════════════════════════════════════
+  window.claimLobster = async function() {
+    if (typeof Clerk === 'undefined' || !Clerk.loaded) {
+      alert('Sign-in is loading. Please wait a moment and try again.');
+      return;
+    }
+
+    try {
+      var user = Clerk.user;
+
+      if (!user) {
+        await Clerk.openSignIn({
+          afterSignInUrl: window.location.href,
+          afterSignUpUrl: window.location.href
+        });
+        return;
+      }
+
+      var response = await fetch('/onboard/claim', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + await Clerk.session.getToken()
+        },
+        body: JSON.stringify({
+          session_token: state.sessionToken,
+          user_id: user.id
+        })
+      });
+
+      var data = await response.json();
+
+      if (data.success) {
+        alert('Congratulations! ' + state.player.name + ' has been saved to your account!');
+        window.location.href = data.redirect_url || '/portfolio.html';
+      } else {
+        alert('Error: ' + (data.error || 'Failed to claim lobster'));
+      }
+    } catch (err) {
+      console.error('Claim error:', err);
+      alert('Failed to claim lobster. Please try again.');
+    }
+  };
+
+  window.skipClaim = function() {
+    var hoursLeft = state.claimTimeRemainingMs ? Math.ceil(state.claimTimeRemainingMs / (1000 * 60 * 60)) : 24;
+    var msg = 'Continue without claiming?\n\n' +
+      '• Your lobster will be "Unclaimed" on the leaderboard\n' +
+      '• You have ' + hoursLeft + ' hours to log in and claim it\n' +
+      '• After 24 hours, unclaimed lobsters are released\n\n' +
+      'You can still play and battle!';
+
+    if (confirm(msg)) {
+      try {
+        localStorage.setItem('clawcombat_session', JSON.stringify({
+          token: state.sessionToken,
+          lobster_name: state.player ? state.player.name : 'Unknown',
+          created_at: new Date().toISOString()
+        }));
+      } catch (e) {}
+
+      window.location.href = '/arena.html?session=' + state.sessionToken;
+    }
+  };
+
+  window.claimLobster = function() {
+    // Redirect to login with session context
+    // This will need to integrate with your auth system (Clerk)
+    var returnUrl = encodeURIComponent(window.location.pathname + '?session=' + state.sessionToken);
+    window.location.href = '/portfolio.html?claim=' + state.sessionToken;
+  };
+
+  function showUnverifiedBanner() {
+    var banner = document.getElementById('unverified-banner');
+    var nameEl = document.getElementById('banner-lobster-name');
+    var timerEl = document.getElementById('banner-time-left');
+
+    if (banner && state.lobsterData) {
+      nameEl.textContent = state.lobsterData.name || 'Unknown';
+
+      // Calculate time remaining
+      var hoursLeft = state.claimTimeRemainingMs ? Math.ceil(state.claimTimeRemainingMs / (1000 * 60 * 60)) : 24;
+      timerEl.textContent = hoursLeft + 'h';
+
+      banner.classList.add('show');
+
+      // Update timer every minute
+      setInterval(function() {
+        if (state.claimTimeRemainingMs) {
+          state.claimTimeRemainingMs -= 60000;
+          var h = Math.max(0, Math.ceil(state.claimTimeRemainingMs / (1000 * 60 * 60)));
+          timerEl.textContent = h + 'h';
+        }
+      }, 60000);
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════
+  function showError(title, message, link) {
+    var loading = document.getElementById('loading-screen');
+    loading.innerHTML =
+      '<div class="error-message">' +
+        '<h3>' + esc(title) + '</h3>' +
+        '<p>' + esc(message) + '</p>' +
+        (link ? '<p style="margin-top:12px"><a href="' + link + '">Go back</a></p>' : '') +
+      '</div>';
+  }
+
+  function esc(str) {
+    var d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  // Clerk auth listener
+  if (typeof Clerk !== 'undefined') {
+    Clerk.addListener(function(e) {
+      if (e.user && state.sessionToken) {
+        claimLobster();
+      }
+    });
+  }
+
+  // Canvas resize
+  window.addEventListener('resize', resizeCanvas);
+  Audio.unlock();
+
+  // Init
+  init();
+})();
+</script>
+<script async crossorigin="anonymous" data-clerk-publishable-key="" src="https://cdn.clerk.com/npm/@clerk/clerk-js@4/dist/clerk.browser.js"></script>
+<script>
+(function() {
+  var clerkReady = false;
+  var configLoaded = false;
+  var publishableKey = null;
+
+  function initClerk() {
+    if (!configLoaded || clerkReady) return;
+    if (typeof Clerk === 'undefined') {
+      setTimeout(initClerk, 100);
+      return;
+    }
+    if (!publishableKey) {
+      console.warn('[Clerk] No publishable key available');
+      return;
+    }
+    try {
+      var script = document.querySelector('script[data-clerk-publishable-key]');
+      if (script) script.dataset.clerkPublishableKey = publishableKey;
+      Clerk.load().then(function() {
+        clerkReady = true;
+        console.log('[Clerk] Initialized successfully');
+      }).catch(function(err) {
+        console.error('[Clerk] Load failed:', err);
+      });
+    } catch (err) {
+      console.error('[Clerk] Init error:', err);
+    }
+  }
+
+  fetch('/api/config')
+    .then(function(r) {
+      if (!r.ok) throw new Error('Config fetch failed: ' + r.status);
+      return r.json();
+    })
+    .then(function(config) {
+      configLoaded = true;
+      if (config.clerkPublishableKey) {
+        publishableKey = config.clerkPublishableKey;
+        initClerk();
+      }
+    })
+    .catch(function(err) {
+      configLoaded = true;
+      console.error('[Clerk] Config load error:', err.message);
+    });
+
+  window.addEventListener('load', function() {
+    if (!clerkReady) initClerk();
+  });
+})();
+</script>
+</body>
+</html>

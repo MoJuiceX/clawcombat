@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClawCombat Type Variants - Selection Tool</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a0a0a;
+      color: #fff;
+      padding: 20px;
+      padding-bottom: 100px;
+    }
+    h1 { text-align: center; margin-bottom: 10px; font-size: 28px; }
+    .subtitle { text-align: center; color: #888; margin-bottom: 30px; }
+
+    /* Export Panel - Fixed */
+    .export-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #1a1a2a;
+      border-top: 2px solid #7c3aed;
+      padding: 15px 30px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+    .export-panel .stats {
+      display: flex;
+      gap: 20px;
+    }
+    .export-panel .stat-box {
+      text-align: center;
+    }
+    .export-panel .stat-value {
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .export-panel .stat-value.selected { color: #22c55e; }
+    .export-panel .stat-value.deselected { color: #ef4444; }
+    .export-panel .stat-label {
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+    }
+    .export-panel button {
+      padding: 12px 24px;
+      background: #7c3aed;
+      border: none;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .export-panel button:hover { background: #6d28d9; }
+    .export-panel button.copied { background: #22c55e; }
+    .export-panel button.danger { background: #dc2626; }
+    .export-panel button.danger:hover { background: #b91c1c; }
+    .export-panel .hint {
+      color: #888;
+      font-size: 12px;
+      flex: 1;
+    }
+
+    /* Navigation */
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 30px;
+      position: sticky;
+      top: 0;
+      background: #0a0a0a;
+      padding: 15px 0;
+      z-index: 100;
+      border-bottom: 1px solid #333;
+    }
+    .nav a {
+      padding: 8px 16px;
+      background: #222;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    .nav a:hover { background: #444; }
+
+    /* Type Section */
+    .type-section {
+      margin-bottom: 60px;
+      scroll-margin-top: 80px;
+    }
+    .type-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #1a1a1a;
+      border-radius: 12px;
+    }
+    .type-header h2 {
+      font-size: 24px;
+      text-transform: uppercase;
+    }
+    .type-count {
+      margin-left: auto;
+      font-size: 14px;
+      color: #888;
+    }
+    .type-count .num { color: #22c55e; font-weight: bold; }
+
+    /* Base Form Group */
+    .base-group {
+      margin-bottom: 25px;
+    }
+    .base-group h3 {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      padding-left: 8px;
+      border-left: 3px solid #444;
+    }
+
+    /* Image Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 1200px) {
+      .grid { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 800px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* Card */
+    .card {
+      background: #1a1a1a;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 3px solid transparent;
+      position: relative;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+    /* Selected = green border (approved) */
+    .card.selected {
+      border-color: #22c55e;
+    }
+    /* Deselected = red overlay (rejected) */
+    .card:not(.selected) {
+      opacity: 0.4;
+      border-color: #ef4444;
+    }
+    .card:not(.selected)::after {
+      content: 'X';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      font-weight: bold;
+      color: #ef4444;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    }
+    .card img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      background: #111;
+      display: block;
+    }
+    .card .label {
+      padding: 8px;
+      font-size: 10px;
+      text-align: center;
+      color: #888;
+      background: #111;
+    }
+    .card .label strong {
+      display: block;
+      color: #fff;
+      font-size: 11px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 50px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <h1>ClawCombat Type Variant Selection</h1>
+  <p class="subtitle">All images are pre-selected. Click to DESELECT rejects. Copy the approved list when done.</p>
+
+  <nav class="nav" id="nav"></nav>
+
+  <div id="content">
+    <div class="loading">Loading all type variants...</div>
+  </div>
+
+  <!-- Export Panel -->
+  <div class="export-panel">
+    <div class="stats">
+      <div class="stat-box">
+        <div class="stat-value selected" id="selected-count">0</div>
+        <div class="stat-label">Approved</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value deselected" id="deselected-count">0</div>
+        <div class="stat-label">Rejected</div>
+      </div>
+    </div>
+    <div class="hint">Click images to reject. Green = approved, Red X = rejected.</div>
+    <button onclick="copySelections()" id="copy-btn">Copy Approved List</button>
+    <button onclick="selectAll()" style="background: #22c55e;">Select All</button>
+    <button onclick="deselectAll()" class="danger">Deselect All</button>
+  </div>
+
+  <script>
+    const TYPES = ['air', 'dragon', 'earth', 'electric', 'fire', 'ghost', 'grass', 'ice',
+                   'insect', 'martial', 'metal', 'mystic', 'neutral', 'psyche', 'shadow',
+                   'stone', 'venom', 'water'];
+    const BASES = ['crawler', 'peeper', 'cadet', 'scout', 'sentinel', 'titan'];
+    const VARIANTS = ['balanced', 'attack', 'defense', 'hp', 'speed', 'claw', 'shell'];
+
+    // Track all images and their selection state
+    const allImages = new Map(); // path -> { selected: true, element: card }
+    let totalImages = 0;
+
+    // Build navigation
+    const nav = document.getElementById('nav');
+    TYPES.forEach(type => {
+      const a = document.createElement('a');
+      a.href = `#${type}`;
+      a.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+      nav.appendChild(a);
+    });
+
+    // Build content
+    const content = document.getElementById('content');
+    content.innerHTML = '';
+
+    TYPES.forEach(type => {
+      const section = document.createElement('section');
+      section.id = type;
+      section.className = 'type-section';
+
+      const header = document.createElement('div');
+      header.className = 'type-header';
+      header.innerHTML = `
+        <h2>${type}</h2>
+        <div class="type-count"><span class="num" id="count-${type}">0</span> / <span id="total-${type}">0</span> approved</div>
+      `;
+      section.appendChild(header);
+
+      BASES.forEach(base => {
+        const group = document.createElement('div');
+        group.className = 'base-group';
+        group.innerHTML = `<h3>${base}</h3>`;
+
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+
+        VARIANTS.forEach(variant => {
+          const card = document.createElement('div');
+          card.className = 'card selected'; // Start selected
+
+          const imgPath = `/references/${type}/${base}-${variant}.webp`;
+
+          card.innerHTML = `
+            <img src="${imgPath}" alt="${base}-${variant}"
+                 onerror="this.closest('.card').remove(); removeFromTracking('${imgPath}');">
+            <div class="label">
+              <strong>${variant}</strong>
+              ${base}-${variant}
+            </div>
+          `;
+
+          card.onclick = () => toggleCard(card, imgPath);
+
+          // Track this image
+          allImages.set(imgPath, { selected: true, element: card, type, base, variant });
+          totalImages++;
+
+          grid.appendChild(card);
+        });
+
+        group.appendChild(grid);
+        section.appendChild(group);
+      });
+
+      content.appendChild(section);
+    });
+
+    // Also add PNG duplicates that need decisions
+    addPngDuplicates();
+
+    function addPngDuplicates() {
+      const pngFiles = {
+        'air': [
+          'peeper-attack-1.png', 'peeper-attack-2.png',
+          'peeper-defense-1.png', 'peeper-defense-2.png', 'peeper-defense-3.png',
+          'scout-defense.png', 'scout-defense-2.png', 'scout-defense-3.png',
+          'titan-speed-1.png', 'titan-speed-2.png', 'titan-speed-3.png',
+          'titan-defense.png', 'titan-defense-2.png'
+        ],
+        'dragon': [
+          'crawler-attack.png', 'crawler-attack-2.png',
+          'Dragon-scout-defense-1.png', 'Dragon-scout-defense-2.png', 'Dragon-scout-defense-3.png', 'Dragon-scout-defense-4.png',
+          'Dragon-titan-defense-1.png', 'Dragon-titan-defense-1.1.png', 'Dragon-titan-defense-1.2.png',
+          'Dragon-titan-defense-2.png', 'Dragon-titan-defense-3.png'
+        ],
+        'ghost': [
+          'Ghost-cadet-attack-1.1.png', 'Ghost-cadet-attack-2.1.png',
+          'Ghost-peeper-attack-1.png', 'Ghost-peeper-attack-1.2.png', 'Ghost-peeper-attack-2.1.png',
+          'Ghost-sentinel-attack-1.1.png', 'Ghost-sentinel-attack-1.2.png', 'Ghost-sentinel-attack-1.3.png', 'Ghost-sentinel-attack-2.2.png',
+          'Ghost-sentinel-claw-1.1.png', 'Ghost-sentinel-claw-2.1.png', 'Ghost-sentinel-claw-2.3.png', 'Ghost-sentinel-claw-3.png',
+          'Ghost-titan-defense-1.png', 'Ghost-titan-defense-1.2.png', 'Ghost-titan-defense-2.png', 'Ghost-titan-defense-3.png'
+        ],
+        'mystic': [
+          'Mystic-crawler-defense_.png', 'Mystic-crawler-defense_1.png', 'Mystic-crawler-defense-1.png', 'Mystic-crawler-defense-3.1.png',
+          'Mystic-crawler-shell_1.png', 'Mystic-crawler-shell_1.1.png', 'Mystic-crawler-shell-1.1.png', 'Mystic-crawler-shell-4.1.png',
+          'Mystic-peeper-defense-1.1.png', 'Mystic-peeper-defense-1.2.png', 'Mystic-peeper-defense-2.1.png', 'Mystic-peeper-defense-3.png',
+          'Mystic-scout-defense_1.png', 'Mystic-scout-defense_2.png', 'Mystic-scout-defense-1.1.png', 'Mystic-scout-defense-2.1.png'
+        ]
+      };
+
+      // Add a "PNG Alternatives" section to relevant types
+      Object.keys(pngFiles).forEach(type => {
+        const section = document.getElementById(type);
+        if (!section) return;
+
+        const group = document.createElement('div');
+        group.className = 'base-group';
+        group.innerHTML = `<h3 style="border-color: #7c3aed; color: #c084fc;">PNG Alternatives (need decisions)</h3>`;
+
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+
+        pngFiles[type].forEach(filename => {
+          const card = document.createElement('div');
+          card.className = 'card selected';
+
+          const imgPath = `/references/${type}/${filename}`;
+
+          card.innerHTML = `
+            <img src="${imgPath}" alt="${filename}"
+                 onerror="this.closest('.card').remove(); removeFromTracking('${imgPath}');">
+            <div class="label">
+              <strong>ALT</strong>
+              ${filename}
+            </div>
+          `;
+
+          card.onclick = () => toggleCard(card, imgPath);
+
+          allImages.set(imgPath, { selected: true, element: card, type, base: 'alt', variant: filename });
+          totalImages++;
+
+          grid.appendChild(card);
+        });
+
+        group.appendChild(grid);
+        section.appendChild(group);
+      });
+    }
+
+    function removeFromTracking(path) {
+      allImages.delete(path);
+      updateCounts();
+    }
+
+    function toggleCard(card, path) {
+      const data = allImages.get(path);
+      if (!data) return;
+
+      data.selected = !data.selected;
+      card.classList.toggle('selected', data.selected);
+      updateCounts();
+    }
+
+    function updateCounts() {
+      let selected = 0;
+      let deselected = 0;
+      const typeCounts = {};
+
+      allImages.forEach((data, path) => {
+        if (data.selected) {
+          selected++;
+          typeCounts[data.type] = (typeCounts[data.type] || 0) + 1;
+        } else {
+          deselected++;
+        }
+      });
+
+      document.getElementById('selected-count').textContent = selected;
+      document.getElementById('deselected-count').textContent = deselected;
+
+      // Update per-type counts
+      TYPES.forEach(type => {
+        const countEl = document.getElementById(`count-${type}`);
+        const totalEl = document.getElementById(`total-${type}`);
+        if (countEl) {
+          const typeTotal = Array.from(allImages.values()).filter(d => d.type === type).length;
+          countEl.textContent = typeCounts[type] || 0;
+          totalEl.textContent = typeTotal;
+        }
+      });
+    }
+
+    function selectAll() {
+      allImages.forEach((data, path) => {
+        data.selected = true;
+        data.element.classList.add('selected');
+      });
+      updateCounts();
+    }
+
+    function deselectAll() {
+      allImages.forEach((data, path) => {
+        data.selected = false;
+        data.element.classList.remove('selected');
+      });
+      updateCounts();
+    }
+
+    function copySelections() {
+      const selected = [];
+      allImages.forEach((data, path) => {
+        if (data.selected) {
+          selected.push({ path, ...data });
+        }
+      });
+
+      if (selected.length === 0) {
+        alert('No images selected!');
+        return;
+      }
+
+      // Group by type, then base, then variant
+      const grouped = {};
+      selected.forEach(item => {
+        if (!grouped[item.type]) grouped[item.type] = {};
+        if (!grouped[item.type][item.base]) grouped[item.type][item.base] = [];
+
+        // Extract just filename from path
+        const filename = item.path.split('/').pop();
+        grouped[item.type][item.base].push(filename);
+      });
+
+      // Format output
+      let output = '=== APPROVED IMAGES ===\n';
+      output += `Total: ${selected.length} approved\n\n`;
+
+      TYPES.forEach(type => {
+        if (!grouped[type]) return;
+
+        output += `### ${type.toUpperCase()} ###\n`;
+
+        BASES.forEach(base => {
+          if (grouped[type][base]) {
+            output += `${base}: ${grouped[type][base].join(', ')}\n`;
+          }
+        });
+
+        // PNG alternatives
+        if (grouped[type]['alt']) {
+          output += `ALT: ${grouped[type]['alt'].join(', ')}\n`;
+        }
+
+        output += '\n';
+      });
+
+      navigator.clipboard.writeText(output).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'Copy Approved List';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    // Initial count update
+    setTimeout(updateCounts, 100);
+  </script>
+</body>
+</html>

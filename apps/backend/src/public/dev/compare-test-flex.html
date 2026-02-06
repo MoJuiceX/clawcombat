@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Air Crawler — Best Variants Comparison</title>
+<style>
+  body { background: #1a1a2e; color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+  h1 { text-align: center; color: #A890F0; margin-bottom: 5px; }
+  p.subtitle { text-align: center; color: #888; margin-bottom: 30px; }
+  h2 { color: #A890F0; margin-top: 40px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+  .card { text-align: center; }
+  .card img { width: 250px; height: 250px; object-fit: cover; border-radius: 8px; border: 2px solid #333; cursor: pointer; transition: transform 0.2s; }
+  .card img:hover { transform: scale(1.8); z-index: 10; position: relative; border-color: #A890F0; }
+  .card .label { font-size: 12px; color: #aaa; margin-top: 4px; }
+  .card .source { font-size: 10px; color: #666; }
+  .card img.pick { border-color: #4CAF50; }
+</style>
+</head>
+<body>
+<h1>Air Crawler — Best Picks</h1>
+<p class="subtitle">Final selection from best source per stat</p>
+
+<h2>Final Air Crawler Lineup</h2>
+<div class="row">
+  <div class="card">
+    <img class="pick" src="/references/air/crawler-balanced.webp" />
+    <div class="label">Balanced</div>
+    <div class="source">FLUX 2 Pro</div>
+  </div>
+  <div class="card">
+    <img class="pick" src="/references/reve-fixes/crawler-attack.png" />
+    <div class="label">Attack</div>
+    <div class="source">REVE</div>
+  </div>
+  <div class="card">
+    <img class="pick" src="/references/reve-fixes/crawler-defense.png" />
+    <div class="label">Defense</div>
+    <div class="source">REVE</div>
+  </div>
+  <div class="card">
+    <img class="pick" src="/references/reve-fixes/crawler-hp.png" />
+    <div class="label">HP</div>
+    <div class="source">REVE</div>
+  </div>
+  <div class="card">
+    <img class="pick" src="/references/reve-fixes/crawler-speed.png" />
+    <div class="label">Speed</div>
+    <div class="source">REVE</div>
+  </div>
+  <div class="card">
+    <img class="pick" src="/references/reve-fixes/crawler-claw.png" />
+    <div class="label">Claw</div>
+    <div class="source">REVE</div>
+  </div>
+  <div class="card">
+    <img class="pick" src="/references/air/crawler-shell.webp" />
+    <div class="label">Shell</div>
+    <div class="source">FLUX 2 Pro</div>
+  </div>
+</div>
+
+<h2>Compare: All Sources Side by Side per Stat</h2>
+
+<h3 style="color:#888;">Attack</h3>
+<div class="row">
+  <div class="card">
+    <img src="/references/air/crawler-balanced.webp" />
+    <div class="label">Balanced (reference)</div>
+  </div>
+  <div class="card">
+    <img src="/references/air/crawler-attack.webp" />
+    <div class="label">FLUX 2 Pro Attack</div>
+  </div>
+  <div class="card">
+    <img src="/references/test-flex/crawler-attack-g7.webp" />
+    <div class="label">Flex g=7</div>
+  </div>
+  <div class="card">
+    <img src="/references/test-flex/crawler-attack-g8.5.webp" />
+    <div class="label">Flex g=8.5</div>
+  </div>
+  <div class="card">
+    <img src="/references/test-flex/crawler-attack-g10.webp" />
+    <div class="label">Flex g=10</div>
+  </div>
+  <div class="card">
+    <img src="/references/reve-fixes/crawler-attack.png" />
+    <div class="label">REVE Fix</div>
+  </div>
+</div>
+
+<h3 style="color:#888;">Defense</h3>
+<div class="row">
+  <div class="card">
+    <img src="/references/air/crawler-balanced.webp" />
+    <div class="label">Balanced (reference)</div>
+  </div>
+  <div class="card">
+    <img src="/references/air/crawler-defense.webp" />
+    <div class="label">FLUX 2 Pro Defense</div>
+  </div>
+  <div class="card">
+    <img src="/references/test-flex/crawler-defense-g10.webp" />
+    <div class="label">Flex g=10</div>
+  </div>
+  <div class="card">
+    <img src="/references/reve-fixes/crawler-defense.png" />
+    <div class="label">REVE Fix</div>
+  </div>
+</div>
+
+<h3 style="color:#888;">HP</h3>
+<div class="row">
+  <div class="card">
+    <img src="/references/air/crawler-balanced.webp" />
+    <div class="label">Balanced (reference)</div>
+  </div>
+  <div class="card">
+    <img src="/references/air/crawler-hp.webp" />
+    <div class="label">FLUX 2 Pro HP</div>
+  </div>
+  <div class="card">
+    <img src="/references/test-flex/crawler-hp-g10.webp" />
+    <div class="label">Flex g=10</div>
+  </div>
+  <div class="card">
+    <img src="/references/reve-fixes/crawler-hp.png" />
+    <div class="label">REVE Fix</div>
+  </div>
+</div>
+
+<h3 style="color:#888;">Speed</h3>
+<div class="row">
+  <div class="card">
+    <img src="/references/air/crawler-balanced.webp" />
+    <div class="label">Balanced (reference)</div>
+  </div>
+  <div class="card">
+    <img src="/references/air/crawler-speed.webp" />
+    <div class="label">FLUX 2 Pro Speed</div>
+  </div>
+  <div class="card">
+    <img src="/references/test-flex/crawler-speed-g10.webp" />
+    <div class="label">Flex g=10</div>
+  </div>
+  <div class="card">
+    <img src="/references/reve-fixes/crawler-speed.png" />
+    <div class="label">REVE Fix</div>
+  </div>
+</div>
+
+<h3 style="color:#888;">Claw</h3>
+<div class="row">
+  <div class="card">
+    <img src="/references/air/crawler-balanced.webp" />
+    <div class="label">Balanced (reference)</div>
+  </div>
+  <div class="card">
+    <img src="/references/air/crawler-claw.webp" />
+    <div class="label">FLUX 2 Pro Claw</div>
+  </div>
+  <div class="card">
+    <img src="/references/test-flex/crawler-claw-g10.webp" />
+    <div class="label">Flex g=10</div>
+  </div>
+  <div class="card">
+    <img src="/references/reve-fixes/crawler-claw.png" />
+    <div class="label">REVE Fix</div>
+  </div>
+  <div class="card">
+    <img src="/references/reve-fixes/crawler-claw-backup.png" />
+    <div class="label">REVE Fix (backup)</div>
+  </div>
+</div>
+
+<h3 style="color:#888;">Shell</h3>
+<div class="row">
+  <div class="card">
+    <img src="/references/air/crawler-balanced.webp" />
+    <div class="label">Balanced (reference)</div>
+  </div>
+  <div class="card">
+    <img src="/references/air/crawler-shell.webp" />
+    <div class="label">FLUX 2 Pro Shell</div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('img').forEach(img => {
+  img.src = img.src + '?v=' + Date.now();
+});
+</script>
+</body>
+</html>

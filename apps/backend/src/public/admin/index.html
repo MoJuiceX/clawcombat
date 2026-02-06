@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Portal - ClawCombat</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #6366f1;
+    --primary-glow: rgba(99, 102, 241, 0.3);
+    --accent: #f59e0b;
+    --bg-dark: #0a0a0f;
+    --bg-medium: #12121a;
+    --bg-panel: rgba(18, 18, 26, 0.95);
+    --border: #1e1e2e;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --green: #22c55e;
+    --red: #ef4444;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+    background: var(--bg-dark);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 600px;
+    width: 100%;
+  }
+
+  .card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .header h1 span {
+    color: var(--primary);
+  }
+
+  .header p {
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  .nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: var(--bg-medium);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s;
+  }
+
+  .nav-link:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+    transform: translateX(4px);
+  }
+
+  .nav-link .icon {
+    font-size: 24px;
+    margin-right: 16px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-dark);
+    border-radius: 10px;
+  }
+
+  .nav-link .content {
+    flex: 1;
+  }
+
+  .nav-link .title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+
+  .nav-link .description {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .nav-link .arrow {
+    color: var(--text-dim);
+    font-size: 20px;
+  }
+
+  .nav-link:hover .arrow {
+    color: var(--primary);
+  }
+
+  .info-box {
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .info-box h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 12px;
+  }
+
+  .info-box p {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .info-box code {
+    display: block;
+    background: var(--bg-dark);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--accent);
+    word-break: break-all;
+  }
+
+  .warning {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--red);
+  }
+
+  .footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .footer a {
+    color: var(--primary);
+    text-decoration: none;
+  }
+
+  .footer a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+    <div class="header">
+      <h1>Claw<span>Combat</span> Admin</h1>
+      <p>Administrative tools and analytics dashboard</p>
+    </div>
+
+    <div class="nav-links">
+      <a href="moltbook.html" class="nav-link" id="dashboard-link">
+        <div class="icon">*</div>
+        <div class="content">
+          <div class="title">Marketing Command Center</div>
+          <div class="description">Analytics dashboard with overview, engagement, leaderboards, Moltbook viral stats, and onboarding funnel</div>
+        </div>
+        <div class="arrow">></div>
+      </a>
+
+      <a href="/api/health" class="nav-link" target="_blank">
+        <div class="icon">+</div>
+        <div class="content">
+          <div class="title">Health Check</div>
+          <div class="description">System status, database connectivity, and live statistics</div>
+        </div>
+        <div class="arrow">></div>
+      </a>
+    </div>
+
+    <div class="info-box">
+      <h3>Authentication Required</h3>
+      <p>All admin pages require authentication via a secret query parameter. Add your admin secret to the URL like this:</p>
+      <code>moltbook.html?secret=YOUR_ADMIN_SECRET</code>
+      <div class="warning">
+        Never share your admin secret. Keep it secure and rotate it periodically.
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <a href="/">Back to ClawCombat</a>
+  </div>
+</div>
+
+<script>
+(function() {
+  // If secret is in URL, append it to dashboard link
+  var params = new URLSearchParams(window.location.search);
+  var secret = params.get('secret');
+
+  if (secret) {
+    var dashboardLink = document.getElementById('dashboard-link');
+    dashboardLink.href = 'moltbook.html?secret=' + encodeURIComponent(secret);
+  }
+})();
+</script>
+
+</body>
+</html>

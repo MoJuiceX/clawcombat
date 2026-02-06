@@ -1,0 +1,8 @@
+node_modules/
+/data/
+*.db
+.env
+
+# Dev/test artifacts
+src/public/references/test-*/
+src/public/references/archive/

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Air Type — REVE Fixes Comparison</title>
+<style>
+  body { background: #1a1a2e; color: #eee; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+  h1 { text-align: center; color: #A890F0; margin-bottom: 5px; }
+  p.subtitle { text-align: center; color: #888; margin-bottom: 30px; }
+  h2 { color: #A890F0; margin-top: 40px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+  .stat-label { color: #888; font-size: 13px; font-weight: bold; text-transform: uppercase; margin: 16px 0 6px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .card { text-align: center; }
+  .card img { width: 220px; height: 220px; object-fit: cover; border-radius: 8px; border: 2px solid #333; cursor: pointer; transition: transform 0.2s; }
+  .card img:hover { transform: scale(1.8); z-index: 10; position: relative; border-color: #A890F0; }
+  .card .label { font-size: 11px; color: #aaa; margin-top: 3px; }
+  .card img.ref { border-color: #555; opacity: 0.7; }
+  .card img.flux { border-color: #F59E0B; }
+  .card img.reve { border-color: #10B981; }
+  .card img.locked { border-color: #4CAF50; box-shadow: 0 0 8px #4CAF5066; }
+  .legend { display: flex; gap: 20px; justify-content: center; margin-bottom: 20px; font-size: 13px; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend .dot { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .note { color: #F59E0B; font-size: 11px; font-style: italic; }
+</style>
+</head>
+<body>
+<h1>Air Type — REVE Fixes Comparison</h1>
+<p class="subtitle">FLUX 2 Pro originals vs REVE manual fixes per character per stat</p>
+
+<div class="legend">
+  <span><span class="dot" style="background:#555;"></span> Balanced (ref)</span>
+  <span><span class="dot" style="background:#F59E0B;"></span> FLUX 2 Pro</span>
+  <span><span class="dot" style="background:#10B981;"></span> REVE Fix</span>
+  <span><span class="dot" style="background:#4CAF50; box-shadow: 0 0 4px #4CAF5066;"></span> Locked In</span>
+</div>
+
+<script>
+const v = Date.now();
+const BASE = '/references/air';
+
+const characters = [
+  {
+    name: 'Crawler', key: 'crawler', locked: true,
+    stats: {
+      attack:  { flux: 'crawler-attack copy.webp', reve: ['crawler-attack.webp'] },
+      defense: { flux: 'crawler-defense copy.webp', reve: ['crawler-defense.webp'] },
+      hp:      { flux: null, reve: ['crawler-hp.webp'] },
+      speed:   { flux: 'crawler-speed copy.webp', reve: ['crawler-speed.webp'] },
+      claw:    { flux: 'crawler-claw copy.webp', reve: ['crawler-claw.webp'] },
+      shell:   { flux: 'crawler-shell.webp', reve: [] },
+    }
+  },
+  {
+    name: 'Cadet', key: 'cadet', locked: false,
+    stats: {
+      attack:  { flux: 'cadet-attack.webp', reve: ['air Cadet attack.png'] },
+      defense: { flux: 'cadet-defense.webp', reve: ['air Cadet def.png', 'air Cadet def2.png'] },
+      hp:      { flux: 'cadet-hp.webp', reve: ['air Cadet hp.png'] },
+      speed:   { flux: 'cadet-speed.webp', reve: ['air Cadet speed-not so good.png'] },
+      claw:    { flux: 'cadet-claw.webp', reve: ['air Cadet claw.png'] },
+      shell:   { flux: 'cadet-shell.webp', reve: [] },
+    }
+  },
+  {
+    name: 'Scout', key: 'scout', locked: false,
+    stats: {
+      attack:  { flux: 'scout-attack.webp', reve: ['scout-attack.png'] },
+      defense: { flux: 'scout-defense.webp', reve: ['scout-defense.png', 'scout-defense-2.png', 'scout-defense-3.png'] },
+      hp:      { flux: 'scout-hp.webp', reve: [] },
+      speed:   { flux: 'scout-speed.webp', reve: [] },
+      claw:    { flux: 'scout-claw.webp', reve: [] },
+      shell:   { flux: 'scout-shell.webp', reve: [] },
+    }
+  },
+  {
+    name: 'Sentinel', key: 'sentinel', locked: false,
+    stats: {
+      attack:  { flux: 'sentinel-attack.webp', reve: [] },
+      defense: { flux: 'sentinel-defense.webp', reve: [] },
+      hp:      { flux: 'sentinel-hp.webp', reve: [] },
+      speed:   { flux: 'sentinel-speed.webp', reve: ['sentinel-speed.png'] },
+      claw:    { flux: 'sentinel-claw.webp', reve: [] },
+      shell:   { flux: 'sentinel-shell.webp', reve: [] },
+    }
+  },
+  {
+    name: 'Peeper', key: 'peeper', locked: false,
+    stats: {
+      attack:  { flux: 'peeper-attack.webp', reve: ['peeper-attack-1.png', 'peeper-attack-2.png'] },
+      defense: { flux: 'peeper-defense.webp', reve: ['peeper-defense-1.png', 'peeper-defense-2.png', 'peeper-defense-3.png'] },
+      hp:      { flux: 'peeper-hp.webp', reve: [] },
+      speed:   { flux: 'peeper-speed.webp', reve: [] },
+      claw:    { flux: 'peeper-claw.webp', reve: [] },
+      shell:   { flux: 'peeper-shell.webp', reve: [] },
+    }
+  },
+  {
+    name: 'Titan', key: 'titan', locked: false,
+    stats: {
+      attack:  { flux: 'titan-attack.webp', reve: [] },
+      defense: { flux: 'titan-defense.webp', reve: ['titan-defense.png', 'titan-defense-2.png'] },
+      hp:      { flux: 'titan-hp.webp', reve: [] },
+      speed:   { flux: 'titan-speed.webp', reve: ['titan-speed-1.png', 'titan-speed-2.png', 'titan-speed-3.png'] },
+      claw:    { flux: 'titan-claw.webp', reve: [] },
+      shell:   { flux: 'titan-shell.webp', reve: [] },
+    }
+  },
+];
+
+const container = document.body;
+const stats = ['attack', 'defense', 'hp', 'speed', 'claw', 'shell'];
+
+characters.forEach(char => {
+  const h2 = document.createElement('h2');
+  h2.textContent = char.name + (char.locked ? ' (Locked In)' : '');
+  if (char.locked) h2.style.color = '#4CAF50';
+  container.appendChild(h2);
+
+  stats.forEach(stat => {
+    const data = char.stats[stat];
+    if (!data) return;
+
+    const label = document.createElement('div');
+    label.className = 'stat-label';
+    label.textContent = stat;
+    if (data.reve.length > 0) {
+      label.textContent += ` (${data.reve.length} REVE option${data.reve.length > 1 ? 's' : ''})`;
+    }
+    container.appendChild(label);
+
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    // Balanced reference
+    const refCard = document.createElement('div');
+    refCard.className = 'card';
+    const refImg = document.createElement('img');
+    refImg.className = 'ref';
+    refImg.src = `${BASE}/${char.key}-balanced.webp?v=${v}`;
+    refCard.appendChild(refImg);
+    const refLabel = document.createElement('div');
+    refLabel.className = 'label';
+    refLabel.textContent = 'Balanced (ref)';
+    refCard.appendChild(refLabel);
+    row.appendChild(refCard);
+
+    // FLUX original
+    if (data.flux) {
+      const fluxCard = document.createElement('div');
+      fluxCard.className = 'card';
+      const fluxImg = document.createElement('img');
+      fluxImg.className = data.reve.length === 0 && char.locked ? 'locked' : 'flux';
+      fluxImg.src = `${BASE}/${encodeURIComponent(data.flux)}?v=${v}`;
+      fluxCard.appendChild(fluxImg);
+      const fluxLabel = document.createElement('div');
+      fluxLabel.className = 'label';
+      fluxLabel.textContent = 'FLUX 2 Pro';
+      fluxCard.appendChild(fluxLabel);
+      row.appendChild(fluxCard);
+    }
+
+    // REVE fixes
+    data.reve.forEach((file, i) => {
+      const reveCard = document.createElement('div');
+      reveCard.className = 'card';
+      const reveImg = document.createElement('img');
+      reveImg.className = char.locked ? 'locked' : 'reve';
+      reveImg.src = `${BASE}/${encodeURIComponent(file)}?v=${v}`;
+      reveCard.appendChild(reveImg);
+      const reveLabel = document.createElement('div');
+      reveLabel.className = 'label';
+      let labelText = 'REVE Fix';
+      if (data.reve.length > 1) labelText += ` #${i + 1}`;
+      if (file.includes('not so good')) labelText += ' (meh)';
+      reveLabel.textContent = labelText;
+      reveCard.appendChild(reveLabel);
+      row.appendChild(reveCard);
+    });
+
+    container.appendChild(row);
+  });
+});
+</script>
+</body>
+</html>

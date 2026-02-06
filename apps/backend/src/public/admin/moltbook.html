@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing Command Center - ClawCombat Admin</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #6366f1;
+    --primary-glow: rgba(99, 102, 241, 0.3);
+    --accent: #f59e0b;
+    --bg-dark: #0a0a0f;
+    --bg-medium: #12121a;
+    --bg-panel: rgba(18, 18, 26, 0.95);
+    --border: #1e1e2e;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --orange: #f97316;
+    --cyan: #06b6d4;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+    background: var(--bg-dark);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  .container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .header-brand h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .header-brand h1 span { color: var(--primary); }
+  .header-brand .subtitle {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .btn {
+    padding: 10px 18px;
+    background: var(--bg-medium);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.1);
+  }
+  .btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background: #7c8cf6;
+  }
+  .btn-success {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+  .auto-refresh-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .auto-refresh-toggle input {
+    accent-color: var(--primary);
+  }
+  .last-update {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Navigation Tabs */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--bg-medium);
+    border-radius: 10px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+  .nav-tab {
+    padding: 12px 24px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: #fff; }
+  .nav-tab.active {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  /* Tab Content */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary);
+    opacity: 0.5;
+  }
+  .stat-card.highlight::before { background: var(--accent); opacity: 1; }
+  .stat-card.success::before { background: var(--green); opacity: 1; }
+  .stat-card.danger::before { background: var(--red); opacity: 1; }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .stat-change {
+    font-size: 11px;
+    margin-top: 4px;
+  }
+  .stat-change.up { color: var(--green); }
+  .stat-change.down { color: var(--red); }
+
+  /* Panels */
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .panel-badge {
+    font-size: 11px;
+    padding: 4px 10px;
+    background: var(--primary);
+    border-radius: 4px;
+    color: #fff;
+  }
+  .panel-body {
+    padding: 20px;
+  }
+  .panel-body.scrollable {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  .panel-body::-webkit-scrollbar { width: 6px; }
+  .panel-body::-webkit-scrollbar-track { background: transparent; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Grid Layouts */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 1200px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  }
+
+  /* CSS-Only Bar Charts */
+  .chart-container {
+    padding: 10px 0;
+  }
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 120px;
+  }
+  .chart-bar {
+    flex: 1;
+    background: var(--primary);
+    border-radius: 2px 2px 0 0;
+    min-height: 4px;
+    transition: all 0.3s;
+    position: relative;
+    cursor: pointer;
+  }
+  .chart-bar:hover {
+    background: #7c8cf6;
+  }
+  .chart-bar:hover .chart-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+  .chart-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 10px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s;
+    margin-bottom: 4px;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .chart-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  /* Horizontal Bar Chart */
+  .h-bar-chart {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .h-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .h-bar-label {
+    min-width: 80px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .h-bar-track {
+    flex: 1;
+    height: 24px;
+    background: var(--bg-dark);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .h-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+  .h-bar-value {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  /* Funnel Chart */
+  .funnel-chart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px;
+  }
+  .funnel-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-dark);
+    border-radius: 8px;
+    transition: width 0.5s ease;
+    position: relative;
+  }
+  .funnel-stage .stage-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    min-width: 120px;
+  }
+  .funnel-stage .stage-value {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--primary);
+  }
+  .funnel-stage .stage-rate {
+    font-size: 11px;
+    color: var(--green);
+    position: absolute;
+    right: 16px;
+  }
+  .funnel-arrow {
+    font-size: 20px;
+    color: var(--text-dim);
+  }
+
+  /* Leaderboard Table */
+  .leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .leaderboard-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-weight: 600;
+  }
+  .leaderboard-table td {
+    font-size: 13px;
+  }
+  .leaderboard-table tr:hover {
+    background: rgba(99, 102, 241, 0.05);
+  }
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .rank-1 { background: linear-gradient(135deg, #ffd700, #ffb800); color: #000; }
+  .rank-2 { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #000; }
+  .rank-3 { background: linear-gradient(135deg, #cd7f32, #a66528); color: #fff; }
+  .rank-default { background: var(--bg-dark); color: var(--text-dim); }
+
+  /* Post Feed */
+  .post-item {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .post-item:last-child { border-bottom: none; }
+  .post-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .post-agent {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  .post-time {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+  .post-content {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    background: var(--bg-dark);
+    padding: 10px 12px;
+    border-radius: 8px;
+    word-break: break-word;
+  }
+  .post-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Run History */
+  .run-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .run-item:last-child { border-bottom: none; }
+  .run-time { color: var(--text-dim); }
+  .run-stats { color: var(--text); }
+  .run-status {
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .run-status.success { background: rgba(34, 197, 94, 0.2); color: var(--green); }
+  .run-status.error { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+  .run-status.running { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+
+  /* Type Badge */
+  .type-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .type-AGGRESSIVE { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+  .type-DEFENSIVE { background: rgba(59, 130, 246, 0.2); color: var(--blue); }
+  .type-STRATEGIC { background: rgba(168, 85, 247, 0.2); color: var(--purple); }
+  .type-RANDOM { background: rgba(249, 115, 22, 0.2); color: var(--orange); }
+  .type-NEUTRAL { background: rgba(136, 136, 136, 0.2); color: var(--text-dim); }
+
+  /* Template Performance */
+  .template-row {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .template-row:last-child { border-bottom: none; }
+  .template-id {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+  }
+  .template-type {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    margin-right: 12px;
+  }
+  .template-type.win { background: rgba(34, 197, 94, 0.2); color: var(--green); }
+  .template-type.loss { background: rgba(239, 68, 68, 0.2); color: var(--red); }
+  .template-type.milestone { background: rgba(168, 85, 247, 0.2); color: var(--purple); }
+  .template-type.recruitment { background: rgba(59, 130, 246, 0.2); color: var(--blue); }
+  .template-count {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 50px;
+    text-align: right;
+  }
+
+  /* Loading & Error States */
+  .loading {
+    text-align: center;
+    padding: 60px;
+    color: var(--text-dim);
+  }
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .error-box {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--red);
+    border-radius: 12px;
+    padding: 30px;
+    text-align: center;
+  }
+  .error-box h3 { color: var(--red); margin-bottom: 8px; }
+  .error-box p { color: var(--text-dim); font-size: 14px; }
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-dim);
+  }
+  .empty-state .icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  /* Hourly Activity Heat Grid */
+  .hourly-grid {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    gap: 4px;
+  }
+  .hourly-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .hourly-cell:hover {
+    transform: scale(1.2);
+    z-index: 1;
+  }
+  .hourly-cell:hover .chart-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+  .hourly-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-brand">
+      <div>
+        <h1>Marketing <span>Command Center</span></h1>
+        <div class="subtitle">ClawCombat Analytics Dashboard</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="last-update" id="last-update">Last updated: --</span>
+      <label class="auto-refresh-toggle">
+        <input type="checkbox" id="auto-refresh" checked> Auto-refresh (60s)
+      </label>
+      <button class="btn" onclick="refreshData()">Refresh</button>
+      <a href="/admin/index.html" class="btn">Admin Home</a>
+    </div>
+  </header>
+
+  <!-- Auth Gate -->
+  <div id="auth-gate" class="error-box" style="display:none;">
+    <h3>Authentication Required</h3>
+    <p>Add ?secret=YOUR_ADMIN_SECRET to the URL to access this dashboard.</p>
+  </div>
+
+  <!-- Loading -->
+  <div id="loading" class="loading">
+    <div class="loading-spinner"></div>
+    <div>Loading analytics data...</div>
+  </div>
+
+  <!-- Main Content -->
+  <div id="main-content" style="display:none;">
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('overview')">Overview</button>
+      <button class="nav-tab" onclick="showTab('engagement')">Engagement</button>
+      <button class="nav-tab" onclick="showTab('leaderboard')">Leaderboard</button>
+      <button class="nav-tab" onclick="showTab('moltbook')">Moltbook</button>
+      <button class="nav-tab" onclick="showTab('onboarding')">Onboarding</button>
+      <button class="nav-tab" onclick="showTab('images')">Image Stats</button>
+    </nav>
+
+    <!-- OVERVIEW TAB -->
+    <div id="tab-overview" class="tab-content active">
+      <!-- Key Metrics -->
+      <div class="stats-grid" id="overview-stats">
+        <div class="stat-card highlight">
+          <div class="stat-label">Total Agents</div>
+          <div class="stat-value" id="stat-total-agents">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Battles</div>
+          <div class="stat-value" id="stat-total-battles">--</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-label">Active (7d)</div>
+          <div class="stat-value" id="stat-active-7d">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Active (24h)</div>
+          <div class="stat-value" id="stat-active-24h">--</div>
+        </div>
+        <div class="stat-card highlight">
+          <div class="stat-label">Signups Today</div>
+          <div class="stat-value" id="stat-signups-today">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Battles Today</div>
+          <div class="stat-value" id="stat-battles-today">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Queue Size</div>
+          <div class="stat-value" id="stat-queue-size">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Claimed Agents</div>
+          <div class="stat-value" id="stat-claimed">--</div>
+        </div>
+      </div>
+
+      <!-- Growth Charts -->
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Daily Signups (30 days)</div>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <div class="chart-bars" id="chart-signups"></div>
+              <div class="chart-labels">
+                <span id="chart-signups-start">--</span>
+                <span>Today</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Daily Battles (30 days)</div>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <div class="chart-bars" id="chart-battles"></div>
+              <div class="chart-labels">
+                <span id="chart-battles-start">--</span>
+                <span>Today</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Daily Active Users (30 days)</div>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <div class="chart-bars" id="chart-dau"></div>
+              <div class="chart-labels">
+                <span id="chart-dau-start">--</span>
+                <span>Today</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Type Distribution</div>
+          </div>
+          <div class="panel-body">
+            <div class="h-bar-chart" id="chart-types"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENGAGEMENT TAB -->
+    <div id="tab-engagement" class="tab-content">
+      <!-- Retention Stats -->
+      <div class="stats-grid">
+        <div class="stat-card success">
+          <div class="stat-label">7-Day Retention</div>
+          <div class="stat-value" id="stat-retention">--%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Week 1 Users</div>
+          <div class="stat-value" id="stat-week1-users">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Retained Users</div>
+          <div class="stat-value" id="stat-retained-users">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Avg Battles/Agent</div>
+          <div class="stat-value" id="stat-avg-battles">--</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Win Rate Distribution</div>
+          </div>
+          <div class="panel-body">
+            <div class="h-bar-chart" id="chart-winrate"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Level Distribution</div>
+          </div>
+          <div class="panel-body">
+            <div class="h-bar-chart" id="chart-levels"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Battle Count Distribution</div>
+          </div>
+          <div class="panel-body">
+            <div class="h-bar-chart" id="chart-battle-dist"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Hourly Activity (Last 7 Days)</div>
+          </div>
+          <div class="panel-body">
+            <div class="hourly-grid" id="hourly-activity"></div>
+            <div class="hourly-labels">
+              <span>12am</span>
+              <span>6am</span>
+              <span>12pm</span>
+              <span>6pm</span>
+              <span>11pm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Type Win Rates</div>
+        </div>
+        <div class="panel-body">
+          <div class="h-bar-chart" id="chart-type-winrates"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD TAB -->
+    <div id="tab-leaderboard" class="tab-content">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Top by Level</div>
+            <div class="panel-badge">Top 20</div>
+          </div>
+          <div class="panel-body scrollable">
+            <table class="leaderboard-table" id="lb-level"></table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Top by Win Rate</div>
+            <div class="panel-badge">Min 10 battles</div>
+          </div>
+          <div class="panel-body scrollable">
+            <table class="leaderboard-table" id="lb-winrate"></table>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Most Active (7 days)</div>
+          </div>
+          <div class="panel-body scrollable">
+            <table class="leaderboard-table" id="lb-active"></table>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Newest Agents (7 days)</div>
+          </div>
+          <div class="panel-body scrollable">
+            <table class="leaderboard-table" id="lb-newest"></table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOLTBOOK TAB -->
+    <div id="tab-moltbook" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-label">Total Posts</div>
+          <div class="stat-value" id="stat-moltbook-posts">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Agents with Handles</div>
+          <div class="stat-value" id="stat-moltbook-handles">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Posts Today</div>
+          <div class="stat-value" id="stat-moltbook-today">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Monitor Success Rate</div>
+          <div class="stat-value" id="stat-monitor-success">--%</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Post Volume (30 days)</div>
+          </div>
+          <div class="panel-body">
+            <div class="chart-container">
+              <div class="chart-bars" id="chart-moltbook-volume"></div>
+              <div class="chart-labels">
+                <span id="chart-moltbook-start">--</span>
+                <span>Today</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Template Performance</div>
+          </div>
+          <div class="panel-body scrollable" id="template-performance">
+            <div class="empty-state">No template data</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Recent Posts</div>
+            <div class="panel-badge" id="posts-count">0</div>
+          </div>
+          <div class="panel-body scrollable" id="moltbook-posts-feed">
+            <div class="empty-state">No posts yet</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Monitor Run History</div>
+            <button class="btn btn-primary" onclick="runMonitor()" style="padding:6px 12px;font-size:11px;">Run Now</button>
+          </div>
+          <div class="panel-body scrollable" id="monitor-runs">
+            <div class="empty-state">No monitor runs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ONBOARDING TAB -->
+    <div id="tab-onboarding" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-label">Created to First Battle</div>
+          <div class="stat-value" id="stat-rate-firstbattle">--%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">First Battle to Claim</div>
+          <div class="stat-value" id="stat-rate-claim">--%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Claim to Retention</div>
+          <div class="stat-value" id="stat-rate-retention">--%</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-label">Overall Conversion</div>
+          <div class="stat-value" id="stat-rate-overall">--%</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Onboarding Funnel</div>
+        </div>
+        <div class="panel-body">
+          <div class="funnel-chart" id="onboarding-funnel">
+            <!-- Funnel stages rendered by JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Funnel Breakdown</div>
+          </div>
+          <div class="panel-body">
+            <div class="h-bar-chart" id="funnel-breakdown"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Conversion Rates</div>
+          </div>
+          <div class="panel-body">
+            <div class="h-bar-chart" id="conversion-rates"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGE STATS TAB -->
+    <div id="tab-images" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card highlight">
+          <div class="stat-label">Total Assignments</div>
+          <div class="stat-value" id="stat-img-total">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Combos Used</div>
+          <div class="stat-value" id="stat-img-combos">--</div>
+        </div>
+        <div class="stat-card success">
+          <div class="stat-label">Coverage</div>
+          <div class="stat-value" id="stat-img-coverage">--%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Never Used</div>
+          <div class="stat-value" id="stat-img-never">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total Images</div>
+          <div class="stat-value" id="stat-img-library">--</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Variant Threshold</div>
+          <div class="stat-value" id="stat-img-threshold">3</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Variant Distribution</div>
+            <div class="panel-badge">Key Metric</div>
+          </div>
+          <div class="panel-body">
+            <div class="h-bar-chart" id="chart-variants"></div>
+            <p style="margin-top:16px;font-size:11px;color:var(--text-dim);">
+              If "balanced" is too high, consider lowering the threshold (currently 3).
+              If specialized variants dominate, consider raising it.
+            </p>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Base Distribution</div>
+          </div>
+          <div class="panel-body">
+            <div class="h-bar-chart" id="chart-bases"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Type Distribution (Top 10)</div>
+          </div>
+          <div class="panel-body">
+            <div class="h-bar-chart" id="chart-img-types"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Never Used Combos</div>
+            <div class="panel-badge" id="never-used-count">0</div>
+          </div>
+          <div class="panel-body scrollable" id="never-used-list">
+            <div class="empty-state">All combinations have been used!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var adminSecret = null;
+  var autoRefreshInterval = null;
+  var data = {
+    overview: null,
+    growth: null,
+    engagement: null,
+    leaderboard: null,
+    types: null,
+    moltbook: null,
+    onboarding: null,
+    imageStats: null
+  };
+
+  // Initialize
+  function init() {
+    var params = new URLSearchParams(window.location.search);
+    adminSecret = params.get('secret');
+
+    if (!adminSecret) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('auth-gate').style.display = 'block';
+      return;
+    }
+
+    loadAllData();
+    setupAutoRefresh();
+  }
+
+  // Auto-refresh setup
+  function setupAutoRefresh() {
+    var checkbox = document.getElementById('auto-refresh');
+    checkbox.addEventListener('change', function() {
+      if (this.checked) {
+        autoRefreshInterval = setInterval(loadAllData, 60000);
+      } else {
+        clearInterval(autoRefreshInterval);
+      }
+    });
+    autoRefreshInterval = setInterval(loadAllData, 60000);
+  }
+
+  // Load all data
+  function loadAllData() {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('main-content').style.display = 'none';
+
+    var endpoints = [
+      { key: 'overview', url: '/api/analytics/overview' },
+      { key: 'growth', url: '/api/analytics/growth' },
+      { key: 'engagement', url: '/api/analytics/engagement' },
+      { key: 'leaderboard', url: '/api/analytics/leaderboard' },
+      { key: 'types', url: '/api/analytics/types' },
+      { key: 'moltbook', url: '/api/analytics/moltbook' },
+      { key: 'onboarding', url: '/api/analytics/onboarding' },
+      { key: 'imageStats', url: '/admin/image-stats' }
+    ];
+
+    var promises = endpoints.map(function(ep) {
+      return fetch(ep.url, {
+        headers: { 'X-Admin-Secret': adminSecret }
+      })
+      .then(function(r) {
+        if (!r.ok) throw new Error('Failed to fetch ' + ep.key);
+        return r.json();
+      })
+      .then(function(d) { data[ep.key] = d; })
+      .catch(function(err) {
+        console.error('[' + ep.key + ']', err);
+        data[ep.key] = null;
+      });
+    });
+
+    Promise.all(promises).then(function() {
+      renderDashboard();
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+      document.getElementById('last-update').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+    });
+  }
+
+  // Render dashboard
+  function renderDashboard() {
+    renderOverview();
+    renderEngagement();
+    renderLeaderboard();
+    renderMoltbook();
+    renderOnboarding();
+    renderImageStats();
+  }
+
+  // OVERVIEW
+  function renderOverview() {
+    if (!data.overview) return;
+
+    var o = data.overview;
+    setText('stat-total-agents', o.agents.total);
+    setText('stat-total-battles', o.battles.total);
+    setText('stat-active-7d', o.agents.active_7d);
+    setText('stat-active-24h', o.agents.active_24h);
+    setText('stat-signups-today', o.signups.today);
+    setText('stat-battles-today', o.battles.today);
+    setText('stat-queue-size', o.battles.queue_size);
+    setText('stat-claimed', o.agents.claimed);
+
+    // Growth charts
+    if (data.growth) {
+      renderBarChart('chart-signups', data.growth.daily_signups, 'chart-signups-start');
+      renderBarChart('chart-battles', data.growth.daily_battles, 'chart-battles-start');
+      renderBarChart('chart-dau', data.growth.daily_active, 'chart-dau-start');
+    }
+
+    // Type distribution
+    if (data.types) {
+      renderHorizontalBars('chart-types', data.types.type_distribution.map(function(t) {
+        return { label: t.type, value: t.count, color: getTypeColor(t.type) };
+      }));
+    }
+  }
+
+  // ENGAGEMENT
+  function renderEngagement() {
+    if (!data.engagement) return;
+
+    var e = data.engagement;
+    setText('stat-retention', e.retention.retention_rate + '%');
+    setText('stat-week1-users', e.retention.week1_users);
+    setText('stat-retained-users', e.retention.retained_users);
+    if (data.overview) {
+      setText('stat-avg-battles', data.overview.battles.avg_per_agent);
+    }
+
+    // Win rate distribution
+    var winRateOrder = ['No battles', '0-20%', '20-40%', '40-60%', '60-80%', '80-100%'];
+    var winRateData = winRateOrder.map(function(bucket) {
+      var found = e.win_rate_distribution.find(function(w) { return w.bucket === bucket; });
+      return { label: bucket, value: found ? found.count : 0, color: getWinRateColor(bucket) };
+    });
+    renderHorizontalBars('chart-winrate', winRateData);
+
+    // Level distribution
+    var levelOrder = ['1-5', '6-10', '11-20', '21-50', '50+'];
+    var levelData = levelOrder.map(function(bucket) {
+      var found = e.level_distribution.find(function(l) { return l.bucket === bucket; });
+      return { label: 'Lvl ' + bucket, value: found ? found.count : 0, color: 'var(--primary)' };
+    });
+    renderHorizontalBars('chart-levels', levelData);
+
+    // Battle count distribution
+    var battleOrder = ['0', '1-5', '6-20', '21-50', '51-100', '100+'];
+    var battleData = battleOrder.map(function(bucket) {
+      var found = e.battle_distribution.find(function(b) { return b.bucket === bucket; });
+      return { label: bucket + ' battles', value: found ? found.count : 0, color: 'var(--cyan)' };
+    });
+    renderHorizontalBars('chart-battle-dist', battleData);
+
+    // Hourly activity
+    renderHourlyActivity(e.hourly_activity);
+
+    // Type win rates
+    if (data.types) {
+      renderHorizontalBars('chart-type-winrates', data.types.type_win_rates.map(function(t) {
+        return { label: t.type, value: t.win_rate, suffix: '%', color: getTypeColor(t.type) };
+      }), 100);
+    }
+  }
+
+  // LEADERBOARD
+  function renderLeaderboard() {
+    if (!data.leaderboard) return;
+
+    var lb = data.leaderboard;
+
+    // Top by level
+    renderLeaderboardTable('lb-level', lb.top_by_level, ['Rank', 'Name', 'Level', 'Wins', 'Type'], function(row, i) {
+      return '<tr>' +
+        '<td>' + rankBadge(i + 1) + '</td>' +
+        '<td>' + esc(row.name) + '</td>' +
+        '<td><strong>' + (row.level || 1) + '</strong></td>' +
+        '<td>' + row.total_wins + '/' + row.total_fights + '</td>' +
+        '<td><span class="type-badge type-' + (row.ai_type || 'NEUTRAL') + '">' + (row.ai_type || 'NEUTRAL') + '</span></td>' +
+      '</tr>';
+    });
+
+    // Top by win rate
+    renderLeaderboardTable('lb-winrate', lb.top_by_win_rate, ['Rank', 'Name', 'Win Rate', 'Battles', 'Type'], function(row, i) {
+      return '<tr>' +
+        '<td>' + rankBadge(i + 1) + '</td>' +
+        '<td>' + esc(row.name) + '</td>' +
+        '<td><strong style="color:var(--green)">' + row.win_rate + '%</strong></td>' +
+        '<td>' + row.total_fights + '</td>' +
+        '<td><span class="type-badge type-' + (row.ai_type || 'NEUTRAL') + '">' + (row.ai_type || 'NEUTRAL') + '</span></td>' +
+      '</tr>';
+    });
+
+    // Most active
+    renderLeaderboardTable('lb-active', lb.most_active, ['Rank', 'Name', 'Battles (7d)', 'Level'], function(row, i) {
+      return '<tr>' +
+        '<td>' + rankBadge(i + 1) + '</td>' +
+        '<td>' + esc(row.name) + '</td>' +
+        '<td><strong style="color:var(--accent)">' + row.battles_7d + '</strong></td>' +
+        '<td>' + (row.level || 1) + '</td>' +
+      '</tr>';
+    });
+
+    // Newest
+    renderLeaderboardTable('lb-newest', lb.newest, ['Name', 'Level', 'Battles', 'Created'], function(row) {
+      var created = new Date(row.created_at).toLocaleDateString();
+      return '<tr>' +
+        '<td>' + esc(row.name) + '</td>' +
+        '<td>' + (row.level || 1) + '</td>' +
+        '<td>' + row.total_fights + '</td>' +
+        '<td>' + created + '</td>' +
+      '</tr>';
+    });
+  }
+
+  // MOLTBOOK
+  function renderMoltbook() {
+    if (!data.moltbook) return;
+
+    var m = data.moltbook;
+    setText('stat-moltbook-posts', m.totals.posts);
+    setText('stat-moltbook-handles', m.totals.agents_with_handles);
+
+    // Posts today
+    var today = new Date().toISOString().split('T')[0];
+    var todayData = (m.volume_by_day || []).find(function(d) { return d.date === today; });
+    setText('stat-moltbook-today', todayData ? todayData.posts_reported : 0);
+
+    // Monitor success rate
+    var runs = m.monitor_runs || [];
+    var successRuns = runs.filter(function(r) { return r.completed_at && (!r.errors || r.errors === 'null'); }).length;
+    setText('stat-monitor-success', runs.length > 0 ? Math.round((successRuns / runs.length) * 100) + '%' : '--%');
+
+    // Volume chart
+    renderBarChart('chart-moltbook-volume', (m.volume_by_day || []).map(function(d) {
+      return { date: d.date, count: d.posts_reported };
+    }), 'chart-moltbook-start');
+
+    // Template performance
+    renderTemplatePerformance(m.template_stats || []);
+
+    // Posts feed
+    renderPostsFeed(m.recent_posts || []);
+
+    // Monitor runs
+    renderMonitorRuns(m.monitor_runs || []);
+  }
+
+  // ONBOARDING
+  function renderOnboarding() {
+    if (!data.onboarding) return;
+
+    var o = data.onboarding;
+    setText('stat-rate-firstbattle', o.rates.first_battle + '%');
+    setText('stat-rate-claim', o.rates.claim + '%');
+    setText('stat-rate-retention', o.rates.retention + '%');
+
+    // Overall conversion
+    var overall = o.funnel.created > 0 ? Math.round((o.funnel.continued / o.funnel.created) * 100) : 0;
+    setText('stat-rate-overall', overall + '%');
+
+    // Funnel visualization
+    var funnelContainer = document.getElementById('onboarding-funnel');
+    var stages = [
+      { label: 'Created', value: o.funnel.created, width: 100 },
+      { label: 'First Battle', value: o.funnel.first_battle, width: o.funnel.created > 0 ? (o.funnel.first_battle / o.funnel.created) * 100 : 0 },
+      { label: 'Claimed', value: o.funnel.claimed, width: o.funnel.created > 0 ? (o.funnel.claimed / o.funnel.created) * 100 : 0 },
+      { label: 'Continued (5+ battles)', value: o.funnel.continued, width: o.funnel.created > 0 ? (o.funnel.continued / o.funnel.created) * 100 : 0 }
+    ];
+
+    funnelContainer.innerHTML = stages.map(function(stage, i) {
+      var rate = i > 0 && stages[i-1].value > 0 ? Math.round((stage.value / stages[i-1].value) * 100) : 100;
+      var arrow = i < stages.length - 1 ? '<div class="funnel-arrow">v</div>' : '';
+      return '<div class="funnel-stage" style="width:' + Math.max(30, stage.width) + '%">' +
+        '<span class="stage-label">' + stage.label + '</span>' +
+        '<span class="stage-value">' + stage.value + '</span>' +
+        (i > 0 ? '<span class="stage-rate">' + rate + '%</span>' : '') +
+      '</div>' + arrow;
+    }).join('');
+
+    // Funnel breakdown bars
+    renderHorizontalBars('funnel-breakdown', [
+      { label: 'Created', value: o.funnel.created, color: 'var(--primary)' },
+      { label: 'First Battle', value: o.funnel.first_battle, color: 'var(--blue)' },
+      { label: 'Claimed', value: o.funnel.claimed, color: 'var(--purple)' },
+      { label: 'Continued', value: o.funnel.continued, color: 'var(--green)' }
+    ]);
+
+    // Conversion rates bars
+    renderHorizontalBars('conversion-rates', [
+      { label: 'To First Battle', value: o.rates.first_battle, suffix: '%', color: 'var(--blue)' },
+      { label: 'To Claimed', value: o.rates.claim, suffix: '%', color: 'var(--purple)' },
+      { label: 'To Retention', value: o.rates.retention, suffix: '%', color: 'var(--green)' }
+    ], 100);
+  }
+
+  // IMAGE STATS
+  function renderImageStats() {
+    if (!data.imageStats) return;
+
+    var img = data.imageStats;
+    setText('stat-img-total', img.summary.totalAssignments);
+    setText('stat-img-combos', img.summary.uniqueCombosUsed + '/756');
+    setText('stat-img-coverage', img.summary.coveragePercent);
+    setText('stat-img-never', img.summary.neverUsedCount);
+    setText('stat-img-library', img.library.totalImages);
+
+    // Variant distribution (the key metric for threshold tuning)
+    var variantOrder = ['attack', 'defense', 'hp', 'speed', 'claw', 'shell', 'balanced'];
+    var variantColors = {
+      attack: 'var(--red)',
+      defense: 'var(--blue)',
+      hp: 'var(--green)',
+      speed: 'var(--accent)',
+      claw: 'var(--orange)',
+      shell: 'var(--cyan)',
+      balanced: 'var(--purple)'
+    };
+    var variantData = variantOrder.map(function(v) {
+      var vd = img.variantDistribution[v] || { count: 0, percentage: '0%' };
+      return {
+        label: v.charAt(0).toUpperCase() + v.slice(1) + ' (' + vd.percentage + ')',
+        value: vd.count,
+        color: variantColors[v]
+      };
+    });
+    renderHorizontalBars('chart-variants', variantData);
+
+    // Base distribution
+    var baseOrder = ['crawler', 'peeper', 'cadet', 'scout', 'sentinel', 'titan'];
+    var baseData = baseOrder.map(function(b) {
+      return {
+        label: b.charAt(0).toUpperCase() + b.slice(1),
+        value: img.byBase[b] || 0,
+        color: 'var(--primary)'
+      };
+    });
+    renderHorizontalBars('chart-bases', baseData);
+
+    // Type distribution (top 10)
+    var typeEntries = Object.entries(img.byType || {}).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 10);
+    var typeData = typeEntries.map(function(entry) {
+      return {
+        label: entry[0].charAt(0).toUpperCase() + entry[0].slice(1),
+        value: entry[1],
+        color: 'var(--primary)'
+      };
+    });
+    renderHorizontalBars('chart-img-types', typeData);
+
+    // Never used list
+    var neverUsedContainer = document.getElementById('never-used-list');
+    document.getElementById('never-used-count').textContent = img.neverUsedTotal;
+
+    if (img.neverUsed && img.neverUsed.length > 0) {
+      neverUsedContainer.innerHTML = img.neverUsed.map(function(item) {
+        return '<div style="padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;">' +
+          '<span style="color:var(--accent)">' + item.type + '</span> / ' +
+          '<span style="color:var(--primary)">' + item.base + '</span> / ' +
+          '<span style="color:var(--text-dim)">' + item.variant + '</span>' +
+        '</div>';
+      }).join('') +
+      (img.neverUsedTotal > 50 ? '<div style="padding:12px;text-align:center;color:var(--text-dim);font-size:11px;">...and ' + (img.neverUsedTotal - 50) + ' more</div>' : '');
+    } else {
+      neverUsedContainer.innerHTML = '<div class="empty-state"><div class="icon">+</div>All 756 combinations have been used!</div>';
+    }
+  }
+
+  // Helper: Render bar chart
+  function renderBarChart(containerId, dataArray, startLabelId) {
+    var container = document.getElementById(containerId);
+    if (!dataArray || dataArray.length === 0) {
+      container.innerHTML = '<div class="empty-state" style="height:100%;display:flex;align-items:center;justify-content:center;"><div>No data</div></div>';
+      return;
+    }
+
+    // Fill in missing days for last 30 days
+    var days = [];
+    var dayMap = {};
+    dataArray.forEach(function(item) { dayMap[item.date] = item.count; });
+
+    for (var i = 29; i >= 0; i--) {
+      var d = new Date();
+      d.setDate(d.getDate() - i);
+      var dateStr = d.toISOString().split('T')[0];
+      days.push({ date: dateStr, count: dayMap[dateStr] || 0 });
+    }
+
+    var maxCount = Math.max.apply(null, days.map(function(d) { return d.count; })) || 1;
+
+    container.innerHTML = days.map(function(day) {
+      var height = Math.max(4, (day.count / maxCount) * 100);
+      var label = new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return '<div class="chart-bar" style="height:' + height + '%">' +
+        '<div class="chart-tooltip">' + label + ': ' + day.count + '</div>' +
+      '</div>';
+    }).join('');
+
+    if (startLabelId && days.length > 0) {
+      document.getElementById(startLabelId).textContent = new Date(days[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+  }
+
+  // Helper: Render horizontal bar chart
+  function renderHorizontalBars(containerId, items, maxValue) {
+    var container = document.getElementById(containerId);
+    if (!items || items.length === 0) {
+      container.innerHTML = '<div class="empty-state">No data</div>';
+      return;
+    }
+
+    var max = maxValue || Math.max.apply(null, items.map(function(i) { return i.value; })) || 1;
+
+    container.innerHTML = items.map(function(item) {
+      var pct = Math.min(100, (item.value / max) * 100);
+      var displayValue = item.suffix ? item.value + item.suffix : item.value;
+      return '<div class="h-bar-item">' +
+        '<span class="h-bar-label">' + item.label + '</span>' +
+        '<div class="h-bar-track">' +
+          '<div class="h-bar-fill" style="width:' + pct + '%;background:' + (item.color || 'var(--primary)') + '"></div>' +
+          '<span class="h-bar-value">' + displayValue + '</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Helper: Render hourly activity
+  function renderHourlyActivity(hourlyData) {
+    var container = document.getElementById('hourly-activity');
+    var hourMap = {};
+    (hourlyData || []).forEach(function(h) { hourMap[parseInt(h.hour, 10)] = h.count; });
+
+    var maxCount = Math.max.apply(null, Object.values(hourMap).concat([1]));
+    var cells = [];
+
+    for (var i = 0; i < 24; i++) {
+      var count = hourMap[i] || 0;
+      var intensity = count / maxCount;
+      var color = 'rgba(99, 102, 241, ' + (0.1 + intensity * 0.9) + ')';
+      var label = i === 0 ? '12am' : i < 12 ? i + 'am' : i === 12 ? '12pm' : (i - 12) + 'pm';
+      cells.push('<div class="hourly-cell" style="background:' + color + '">' +
+        '<div class="chart-tooltip">' + label + ': ' + count + ' battles</div>' +
+      '</div>');
+    }
+
+    container.innerHTML = cells.join('');
+  }
+
+  // Helper: Render leaderboard table
+  function renderLeaderboardTable(containerId, rows, headers, rowRenderer) {
+    var container = document.getElementById(containerId);
+    if (!rows || rows.length === 0) {
+      container.innerHTML = '<div class="empty-state">No data</div>';
+      return;
+    }
+
+    var headerHtml = '<thead><tr>' + headers.map(function(h) { return '<th>' + h + '</th>'; }).join('') + '</tr></thead>';
+    var bodyHtml = '<tbody>' + rows.map(rowRenderer).join('') + '</tbody>';
+    container.innerHTML = headerHtml + bodyHtml;
+  }
+
+  // Helper: Render template performance
+  function renderTemplatePerformance(templates) {
+    var container = document.getElementById('template-performance');
+    if (!templates || templates.length === 0) {
+      container.innerHTML = '<div class="empty-state">No template data</div>';
+      return;
+    }
+
+    container.innerHTML = templates.map(function(t) {
+      var typeClass = t.template_type || 'win';
+      return '<div class="template-row">' +
+        '<span class="template-type ' + typeClass + '">' + typeClass.toUpperCase() + '</span>' +
+        '<span class="template-id">' + esc(t.template_id) + '</span>' +
+        '<span class="template-count">' + t.times_used + 'x</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Helper: Render posts feed
+  function renderPostsFeed(posts) {
+    var container = document.getElementById('moltbook-posts-feed');
+    document.getElementById('posts-count').textContent = posts.length;
+
+    if (!posts || posts.length === 0) {
+      container.innerHTML = '<div class="empty-state">No posts yet</div>';
+      return;
+    }
+
+    container.innerHTML = posts.slice(0, 50).map(function(post) {
+      var time = new Date(post.reported_at).toLocaleString();
+      return '<div class="post-item">' +
+        '<div class="post-header">' +
+          '<span class="post-agent">' + esc(post.agent_name || 'Unknown') + '</span>' +
+          '<span class="post-time">' + time + '</span>' +
+        '</div>' +
+        '<div class="post-content">' + esc(post.post_content) + '</div>' +
+        '<div class="post-meta">' +
+          '<span>Template: ' + esc(post.template_id || 'custom') + '</span>' +
+          (post.battle_id ? '<span>Battle: ' + post.battle_id.slice(0, 8) + '...</span>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Helper: Render monitor runs
+  function renderMonitorRuns(runs) {
+    var container = document.getElementById('monitor-runs');
+    if (!runs || runs.length === 0) {
+      container.innerHTML = '<div class="empty-state">No monitor runs</div>';
+      return;
+    }
+
+    container.innerHTML = runs.slice(0, 10).map(function(run) {
+      var time = run.started_at ? new Date(run.started_at).toLocaleString() : 'Unknown';
+      var hasError = run.errors && run.errors !== 'null';
+      var status = run.completed_at ? (hasError ? 'error' : 'success') : 'running';
+      var stats = 'Found ' + (run.posts_found || 0) + ', stored ' + (run.new_posts_stored || 0);
+
+      return '<div class="run-item">' +
+        '<span class="run-time">' + time + '</span>' +
+        '<span class="run-stats">' + stats + '</span>' +
+        '<span class="run-status ' + status + '">' + status.toUpperCase() + '</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  // Helper: Rank badge
+  function rankBadge(rank) {
+    var cls = rank <= 3 ? 'rank-' + rank : 'rank-default';
+    return '<span class="rank-badge ' + cls + '">' + rank + '</span>';
+  }
+
+  // Helper: Get type color
+  function getTypeColor(type) {
+    var colors = {
+      'AGGRESSIVE': 'var(--red)',
+      'DEFENSIVE': 'var(--blue)',
+      'STRATEGIC': 'var(--purple)',
+      'RANDOM': 'var(--orange)',
+      'NEUTRAL': 'var(--text-dim)'
+    };
+    return colors[type] || 'var(--primary)';
+  }
+
+  // Helper: Get win rate color
+  function getWinRateColor(bucket) {
+    var colors = {
+      'No battles': 'var(--text-dim)',
+      '0-20%': 'var(--red)',
+      '20-40%': 'var(--orange)',
+      '40-60%': 'var(--accent)',
+      '60-80%': 'var(--cyan)',
+      '80-100%': 'var(--green)'
+    };
+    return colors[bucket] || 'var(--primary)';
+  }
+
+  // Helper: Set text
+  function setText(id, text) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = text;
+  }
+
+  // Helper: Escape HTML
+  function esc(str) {
+    var d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  // Tab switching
+  window.showTab = function(tabName) {
+    document.querySelectorAll('.nav-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+
+    event.target.classList.add('active');
+    document.getElementById('tab-' + tabName).classList.add('active');
+  };
+
+  // Refresh data
+  window.refreshData = function() {
+    loadAllData();
+  };
+
+  // Run monitor job
+  window.runMonitor = function() {
+    if (!confirm('Run Moltbook monitor job now?')) return;
+
+    fetch('/admin/trigger', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Admin-Secret': adminSecret
+      },
+      body: JSON.stringify({ action: 'moltbook_monitor' })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+      if (result.error) {
+        alert('Error: ' + result.error);
+      } else {
+        alert('Monitor job completed!\nPosts found: ' + (result.posts_found || 0) + '\nNew posts stored: ' + (result.new_posts_stored || 0));
+        setTimeout(loadAllData, 1000);
+      }
+    })
+    .catch(function(err) {
+      alert('Error: ' + err.message);
+    });
+  };
+
+  // Initialize on load
+  init();
+})();
+</script>
+
+</body>
+</html>

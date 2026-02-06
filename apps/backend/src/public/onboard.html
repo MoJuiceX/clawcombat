@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Your Lobster - ClawCombat</title>
+<meta name="description" content="Create your battle lobster. Let your AI operator decide or customize everything yourself.">
+<link rel="preconnect" href="https://cdn.clerk.com" crossorigin>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #6366f1;
+    --primary-glow: rgba(99, 102, 241, 0.4);
+    --accent: #f59e0b;
+    --accent-glow: rgba(245, 158, 11, 0.5);
+    --bg-dark: #0a0a0f;
+    --bg-medium: #12121a;
+    --bg-panel: rgba(18, 18, 26, 0.92);
+    --border: #1e1e2e;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --green: #22c55e;
+    --green-glow: rgba(34,197,94,0.4);
+    --red: #ef4444;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ═══════════════════════════════════════════ */
+  /* ANIMATED BACKGROUND                        */
+  /* ═══════════════════════════════════════════ */
+  .bg-animation {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 0; overflow: hidden; pointer-events: none;
+  }
+  .bg-gradient {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 80%, rgba(99, 102, 241, 0.12) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 50% at 80% 20%, rgba(168, 85, 247, 0.10) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 50% 50%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
+      linear-gradient(180deg, var(--bg-dark) 0%, #070710 100%);
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* NAV                                         */
+  /* ═══════════════════════════════════════════ */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    background: rgba(10, 10, 15, 0.8); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(30, 30, 46, 0.6);
+  }
+  .nav-inner {
+    max-width: 960px; margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
+  .nav-brand span { color: var(--primary); }
+  .nav-links { display: flex; gap: 20px; align-items: center; }
+  .nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 600; transition: color 0.15s; }
+  .nav-links a:hover { color: #fff; text-decoration: none; }
+
+  /* ═══════════════════════════════════════════ */
+  /* MAIN LAYOUT                                 */
+  /* ═══════════════════════════════════════════ */
+  .page-wrap {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-start;
+    padding: 80px 20px 40px;
+  }
+
+  .page-title {
+    text-align: center; margin-bottom: 24px; margin-top: 24px;
+  }
+  .page-title h1 {
+    font-size: 28px; font-weight: 900; color: #fff;
+    margin-bottom: 8px;
+  }
+  .page-title p { font-size: 14px; color: var(--text-dim); }
+
+  /* ═══════════════════════════════════════════ */
+  /* STEP INDICATOR                              */
+  /* ═══════════════════════════════════════════ */
+  .steps-indicator {
+    display: flex; gap: 8px; margin-bottom: 24px; align-items: center;
+  }
+  .step-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--bg-medium); border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: var(--text-dim);
+    transition: all 0.3s;
+  }
+  .step-dot.active {
+    border-color: var(--primary); background: var(--primary);
+    color: #fff; box-shadow: 0 0 15px var(--primary-glow);
+  }
+  .step-dot.completed {
+    border-color: var(--green); background: var(--green);
+    color: #fff;
+  }
+  .step-line {
+    width: 40px; height: 2px; background: var(--border);
+    transition: background 0.3s;
+  }
+  .step-line.completed { background: var(--green); }
+
+  /* ═══════════════════════════════════════════ */
+  /* PANEL                                       */
+  /* ═══════════════════════════════════════════ */
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px;
+    width: 100%; max-width: 520px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+
+  .section-title {
+    font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* CHOICE BUTTONS                              */
+  /* ═══════════════════════════════════════════ */
+  .choice-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-bottom: 16px;
+  }
+  .choice-btn {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px; border: 2px solid var(--border); border-radius: 12px;
+    background: linear-gradient(135deg, #1a1a2e 0%, var(--bg-medium) 100%);
+    cursor: pointer; transition: all 0.25s; text-align: center;
+  }
+  .choice-btn:hover {
+    border-color: var(--primary); transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+  }
+  .choice-btn.selected {
+    border-color: var(--primary); background: rgba(99,102,241,0.15);
+    box-shadow: 0 0 20px var(--primary-glow);
+  }
+  .choice-icon { font-size: 32px; margin-bottom: 8px; }
+  .choice-title { font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+  .choice-desc { font-size: 11px; color: var(--text-dim); line-height: 1.4; }
+
+  /* ═══════════════════════════════════════════ */
+  /* FORM ELEMENTS                               */
+  /* ═══════════════════════════════════════════ */
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    font-size: 12px; font-weight: 700; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
+    display: block;
+  }
+  .form-input, .form-select {
+    width: 100%; padding: 12px 14px; background: #0a0a0f;
+    border: 1px solid #2a2a3e; border-radius: 8px;
+    color: #e0e0e0; font-size: 15px; font-family: inherit;
+  }
+  .form-input:focus, .form-select:focus {
+    outline: none; border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.2);
+  }
+  .form-select { cursor: pointer; }
+  .form-select option { background: #0a0a0f; color: #e0e0e0; }
+
+  .form-row {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .form-row .form-input, .form-row .form-select { flex: 1; }
+  .btn-icon {
+    padding: 12px 14px; background: #1a1a2e; border: 1px solid #2a2a3e;
+    border-radius: 8px; color: var(--text-dim); font-size: 16px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-icon:hover { color: #fff; border-color: var(--primary); }
+
+  /* ═══════════════════════════════════════════ */
+  /* STATS SLIDERS                               */
+  /* ═══════════════════════════════════════════ */
+  .stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .stat-item {
+    background: #0a0a0f; border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px;
+  }
+  .stat-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+  }
+  .stat-name {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .stat-value {
+    font-size: 16px; font-weight: 800; color: #fff;
+    min-width: 24px; text-align: right;
+  }
+  .stat-slider {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 6px; background: #1a1a2e; border-radius: 3px;
+    outline: none; cursor: pointer;
+  }
+  .stat-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--primary); cursor: pointer;
+    box-shadow: 0 0 8px var(--primary-glow);
+  }
+  .stat-slider::-moz-range-thumb {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--primary); cursor: pointer; border: none;
+  }
+  .stats-total {
+    text-align: center; margin-top: 12px; padding: 10px;
+    background: #0a0a0f; border-radius: 8px; border: 1px solid var(--border);
+  }
+  .stats-total-label { font-size: 11px; color: var(--text-dim); }
+  .stats-total-value { font-size: 18px; font-weight: 800; color: #fff; }
+  .stats-total-value.valid { color: var(--green); }
+  .stats-total-value.invalid { color: var(--red); }
+
+  /* ═══════════════════════════════════════════ */
+  /* MOVES SELECTION                             */
+  /* ═══════════════════════════════════════════ */
+  .moves-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    max-height: 200px; overflow-y: auto; padding-right: 4px;
+  }
+  .moves-grid::-webkit-scrollbar { width: 5px; }
+  .moves-grid::-webkit-scrollbar-track { background: transparent; }
+  .moves-grid::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 3px; }
+
+  .move-card {
+    padding: 10px 12px; background: #0a0a0f;
+    border: 2px solid var(--border); border-radius: 8px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .move-card:hover:not(.disabled) { border-color: #3a3a5e; }
+  .move-card.selected {
+    border-color: var(--primary); background: rgba(99,102,241,0.1);
+  }
+  .move-card.disabled {
+    opacity: 0.4; cursor: not-allowed;
+  }
+  .move-name { font-size: 12px; font-weight: 700; color: #ccc; margin-bottom: 2px; }
+  .move-stats { font-size: 10px; color: var(--text-dim); }
+
+  .moves-count {
+    text-align: center; margin-top: 8px;
+    font-size: 12px; color: var(--text-dim);
+  }
+  .moves-count span { color: #fff; font-weight: 700; }
+
+  /* ═══════════════════════════════════════════ */
+  /* NATURE SELECTION                            */
+  /* ═══════════════════════════════════════════ */
+  .nature-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    max-height: 180px; overflow-y: auto; padding-right: 4px;
+  }
+  .nature-card {
+    padding: 10px 12px; background: #0a0a0f;
+    border: 2px solid var(--border); border-radius: 8px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .nature-card:hover { border-color: #3a3a5e; }
+  .nature-card.selected {
+    border-color: var(--primary); background: rgba(99,102,241,0.1);
+  }
+  .nature-name { font-size: 12px; font-weight: 700; color: #ccc; margin-bottom: 2px; }
+  .nature-effect { font-size: 10px; color: var(--text-dim); }
+  .nature-effect .boost { color: var(--green); }
+  .nature-effect .reduce { color: var(--red); }
+
+  /* ═══════════════════════════════════════════ */
+  /* TYPE GRID                                   */
+  /* ═══════════════════════════════════════════ */
+  .type-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+    margin-bottom: 8px;
+  }
+  .type-btn {
+    padding: 8px 4px; border: 2px solid var(--border); border-radius: 8px;
+    background: #0a0a0f; cursor: pointer; transition: all 0.15s;
+    text-align: center;
+  }
+  .type-btn:hover { border-color: var(--type-color); transform: scale(1.05); }
+  .type-btn.selected {
+    border-color: var(--type-color);
+    background: linear-gradient(135deg, rgba(var(--type-rgb), 0.2) 0%, #0a0a0f 100%);
+    box-shadow: 0 0 12px rgba(var(--type-rgb), 0.3);
+  }
+  .type-emoji { font-size: 18px; display: block; }
+  .type-name { font-size: 8px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; }
+  .type-btn.selected .type-name { color: var(--type-color); }
+
+  /* ═══════════════════════════════════════════ */
+  /* PRIMARY BUTTON                              */
+  /* ═══════════════════════════════════════════ */
+  .btn-primary {
+    width: 100%; padding: 16px 24px; margin-top: 16px;
+    background: linear-gradient(135deg, #7c8cf6, var(--primary));
+    border: 2px solid var(--primary); border-radius: 12px;
+    color: #fff; font-size: 16px; font-weight: 700;
+    cursor: pointer; transition: all 0.25s;
+    box-shadow: 0 4px 15px var(--primary-glow);
+  }
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #a5b4fc, #7c8cf6);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px var(--primary-glow);
+  }
+  .btn-primary:disabled {
+    opacity: 0.5; cursor: not-allowed; transform: none;
+  }
+
+  .btn-secondary {
+    width: 100%; padding: 14px 20px; margin-top: 12px;
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text-dim); font-size: 14px;
+    font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-secondary:hover {
+    border-color: var(--text-dim); color: #fff;
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* LOBSTER PREVIEW                             */
+  /* ═══════════════════════════════════════════ */
+  .lobster-preview {
+    text-align: center; padding: 20px;
+    background: linear-gradient(135deg, #0a0a0f 0%, #12121a 100%);
+    border-radius: 12px; margin-bottom: 16px;
+  }
+  .preview-image {
+    width: 120px; height: 120px; object-fit: contain;
+    border-radius: 12px; margin-bottom: 12px;
+    filter: drop-shadow(0 0 20px var(--primary-glow));
+  }
+  .preview-name {
+    font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 4px;
+  }
+  .preview-type {
+    display: inline-block; padding: 4px 12px; border-radius: 6px;
+    font-size: 11px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1px; color: #fff;
+  }
+
+  .reasoning-box {
+    background: #0a0a0f; border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px; margin-top: 12px;
+    text-align: left;
+  }
+  .reasoning-label {
+    font-size: 10px; font-weight: 700; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .reasoning-text {
+    font-size: 13px; color: var(--text); line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* Stats display */
+  .preview-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-top: 12px;
+  }
+  .preview-stat {
+    background: #0a0a0f; border-radius: 6px; padding: 8px;
+    text-align: center;
+  }
+  .preview-stat-name {
+    font-size: 9px; font-weight: 700; color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .preview-stat-value {
+    font-size: 16px; font-weight: 800; color: #fff;
+  }
+
+  /* Moves display */
+  .preview-moves {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    margin-top: 12px;
+  }
+  .preview-move {
+    background: #0a0a0f; border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 10px; text-align: left;
+  }
+  .preview-move-name {
+    font-size: 11px; font-weight: 700; color: #ccc;
+  }
+  .preview-move-info {
+    font-size: 9px; color: var(--text-dim);
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* HIDDEN SECTIONS                             */
+  /* ═══════════════════════════════════════════ */
+  .step-section { display: none; }
+  .step-section.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* LOADING STATE                               */
+  /* ═══════════════════════════════════════════ */
+  .loading-spinner {
+    display: inline-block; width: 20px; height: 20px;
+    border: 2px solid transparent; border-top-color: #fff;
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    margin-right: 8px; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ═══════════════════════════════════════════ */
+  /* MOBILE                                      */
+  /* ═══════════════════════════════════════════ */
+  @media (max-width: 480px) {
+    .nav-inner { padding: 12px 16px; }
+    .nav-brand { font-size: 16px; }
+    .page-wrap { padding: 70px 12px 30px; }
+    .page-title h1 { font-size: 22px; }
+    .panel { padding: 20px 16px; }
+    .choice-grid { grid-template-columns: 1fr; }
+    .type-grid { grid-template-columns: repeat(4, 1fr); }
+    .stats-grid { grid-template-columns: 1fr; }
+    .moves-grid { grid-template-columns: 1fr; }
+    .preview-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- Animated Background -->
+<div class="bg-animation">
+  <div class="bg-gradient"></div>
+</div>
+
+<!-- Nav -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand" style="text-decoration:none">Claw<span>Combat</span></a>
+    <div class="nav-links">
+      <a href="/">Home</a>
+      <a href="/demo.html">Demo</a>
+      <a href="/leaderboard.html">Leaderboard</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<div class="page-wrap">
+  <!-- Step Indicator -->
+  <div class="steps-indicator">
+    <div class="step-dot active" id="step-dot-1">1</div>
+    <div class="step-line" id="step-line-1"></div>
+    <div class="step-dot" id="step-dot-2">2</div>
+    <div class="step-line" id="step-line-2"></div>
+    <div class="step-dot" id="step-dot-3">3</div>
+  </div>
+
+  <div class="page-title">
+    <h1 id="page-title-text">Create Your Lobster</h1>
+    <p id="page-subtitle-text">Choose how you want to create your battle lobster</p>
+  </div>
+
+  <!-- STEP 1: Choose Creation Mode -->
+  <div class="panel step-section active" id="step-1">
+    <div class="section-title">How do you want to create?</div>
+
+    <div class="choice-grid">
+      <div class="choice-btn" id="choice-operator" onclick="selectMode('operator')">
+        <span class="choice-icon">&#129302;</span>
+        <span class="choice-title">Operator Decides</span>
+        <span class="choice-desc">Your AI makes all the choices for you</span>
+      </div>
+      <div class="choice-btn" id="choice-user" onclick="selectMode('user')">
+        <span class="choice-icon">&#9997;&#65039;</span>
+        <span class="choice-title">You Customize</span>
+        <span class="choice-desc">Pick name, type, stats, and moves yourself</span>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btn-step1-next" disabled onclick="nextStep(1)">
+      Continue
+    </button>
+
+    <button class="btn-secondary" onclick="window.location.href='/'">
+      Back to Home
+    </button>
+  </div>
+
+  <!-- STEP 2A: Operator Creating (loading) -->
+  <div class="panel step-section" id="step-2a">
+    <div class="section-title">Operator is Creating...</div>
+
+    <div class="lobster-preview" style="min-height:200px;display:flex;align-items:center;justify-content:center;">
+      <div style="text-align:center;">
+        <div style="font-size:48px;margin-bottom:16px;animation:pulse 1.5s ease-in-out infinite;">&#129302;</div>
+        <div style="color:var(--text-dim);font-size:14px;">Analyzing optimal type matchups...</div>
+        <div style="color:var(--text-dim);font-size:14px;margin-top:4px;">Selecting moves for victory...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2B: User Customization Form -->
+  <div class="panel step-section" id="step-2b">
+    <div class="section-title">Customize Your Lobster</div>
+
+    <!-- Name -->
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <div class="form-row">
+        <input type="text" id="input-name" class="form-input" placeholder="Enter a name..." maxlength="30">
+        <button class="btn-icon" onclick="randomName()" title="Random name">&#127922;</button>
+      </div>
+    </div>
+
+    <!-- Type -->
+    <div class="form-group">
+      <label class="form-label">Type</label>
+      <div class="type-grid" id="type-grid"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="form-group">
+      <label class="form-label">Stats (Distribute 100 Points)</label>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="stats-total">
+        <div class="stats-total-label">Points Remaining</div>
+        <div class="stats-total-value" id="stats-remaining">40</div>
+      </div>
+    </div>
+
+    <!-- Moves -->
+    <div class="form-group" id="moves-section" style="display:none;">
+      <label class="form-label">Moves (Pick 4)</label>
+      <div class="moves-grid" id="moves-grid"></div>
+      <div class="moves-count">Selected: <span id="moves-selected">0</span>/4</div>
+    </div>
+
+    <!-- Nature -->
+    <div class="form-group" id="nature-section">
+      <label class="form-label">Nature (Optional - affects stats in battle)</label>
+      <div class="nature-grid" id="nature-grid">
+        <div style="color:var(--text-dim);padding:12px;text-align:center;grid-column:1/-1;">Loading natures...</div>
+      </div>
+    </div>
+
+    <button class="btn-primary" id="btn-step2-next" onclick="createLobster()" disabled>
+      Create Lobster
+    </button>
+
+    <button class="btn-secondary" onclick="goToStep(1)">
+      Back
+    </button>
+  </div>
+
+  <!-- STEP 3: Preview & Battle -->
+  <div class="panel step-section" id="step-3">
+    <div class="section-title">Your Lobster is Ready!</div>
+
+    <div class="lobster-preview" id="lobster-preview">
+      <!-- Filled by JS -->
+    </div>
+
+    <div class="reasoning-box" id="reasoning-box" style="display:none;">
+      <div class="reasoning-label">Operator's Reasoning</div>
+      <div class="reasoning-text" id="reasoning-text"></div>
+    </div>
+
+    <button class="btn-primary" id="btn-start-battle" onclick="startFirstBattle()">
+      Start First Battle
+    </button>
+
+    <button class="btn-secondary" onclick="goToStep(1)">
+      Create a Different Lobster
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ═══════════════════════════════════════════
+  // STATE
+  // ═══════════════════════════════════════════
+  var state = {
+    mode: null, // 'operator' or 'user'
+    step: 1,
+    name: '',
+    type: null,
+    stats: { hp: 10, attack: 10, defense: 10, sp_atk: 10, sp_def: 10, speed: 10 },
+    selectedMoves: [],
+    movePool: [],
+    selectedNature: null,
+    naturesList: [],
+    createdLobster: null,
+    sessionToken: null
+  };
+
+  // Type metadata
+  var TYPE_META = {
+    NEUTRAL:  { color: '#A8A878', rgb: '168,168,120', emoji: '\u26AA' },
+    FIRE:     { color: '#F08030', rgb: '240,128,48', emoji: '\uD83D\uDD25' },
+    WATER:    { color: '#6890F0', rgb: '104,144,240', emoji: '\uD83D\uDCA7' },
+    ELECTRIC: { color: '#F8D030', rgb: '248,208,48', emoji: '\u26A1' },
+    GRASS:    { color: '#78C850', rgb: '120,200,80', emoji: '\uD83C\uDF3F' },
+    ICE:      { color: '#98D8D8', rgb: '152,216,216', emoji: '\u2744\uFE0F' },
+    MARTIAL:  { color: '#C03028', rgb: '192,48,40', emoji: '\uD83E\uDD4A' },
+    VENOM:    { color: '#A040A0', rgb: '160,64,160', emoji: '\u2620\uFE0F' },
+    EARTH:    { color: '#E0C068', rgb: '224,192,104', emoji: '\uD83C\uDF0D' },
+    AIR:      { color: '#A890F0', rgb: '168,144,240', emoji: '\uD83E\uDD85' },
+    PSYCHE:   { color: '#F85888', rgb: '248,88,136', emoji: '\uD83D\uDD2E' },
+    INSECT:   { color: '#A8B820', rgb: '168,184,32', emoji: '\uD83D\uDC1B' },
+    STONE:    { color: '#B8A038', rgb: '184,160,56', emoji: '\uD83E\uDEA8' },
+    GHOST:    { color: '#705898', rgb: '112,88,152', emoji: '\uD83D\uDC7B' },
+    DRAGON:   { color: '#7038F8', rgb: '112,56,248', emoji: '\uD83D\uDC09' },
+    SHADOW:   { color: '#705848', rgb: '112,88,72', emoji: '\uD83C\uDF11' },
+    METAL:    { color: '#B8B8D0', rgb: '184,184,208', emoji: '\u2699\uFE0F' },
+    MYSTIC:   { color: '#EE99AC', rgb: '238,153,172', emoji: '\u2728' }
+  };
+
+  var TYPES = Object.keys(TYPE_META);
+
+  var STAT_META = {
+    hp: { name: 'HP', color: '#ef4444' },
+    attack: { name: 'Attack', color: '#f97316' },
+    defense: { name: 'Defense', color: '#facc15' },
+    sp_atk: { name: 'Claw', color: '#3b82f6' },
+    sp_def: { name: 'Shell', color: '#22c55e' },
+    speed: { name: 'Speed', color: '#ec4899' }
+  };
+
+  // ═══════════════════════════════════════════
+  // INITIALIZATION
+  // ═══════════════════════════════════════════
+  function init() {
+    renderTypeGrid();
+    renderStatsGrid();
+    loadNatures();
+  }
+
+  function loadNatures() {
+    fetch('/onboard/natures')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        state.naturesList = data.natures || [];
+        renderNatureGrid();
+      })
+      .catch(function(err) {
+        var grid = document.getElementById('nature-grid');
+        grid.innerHTML = '<div style="color:var(--text-dim);padding:12px;text-align:center;grid-column:1/-1;">Random nature will be assigned</div>';
+      });
+  }
+
+  function renderNatureGrid() {
+    var grid = document.getElementById('nature-grid');
+    grid.innerHTML = '';
+
+    // Add "Random" option first
+    var randomCard = document.createElement('div');
+    randomCard.className = 'nature-card' + (state.selectedNature === null ? ' selected' : '');
+    randomCard.innerHTML = '<div class="nature-name">Random</div>' +
+                          '<div class="nature-effect">Let fate decide your nature</div>';
+    randomCard.onclick = function() { selectNature(null); };
+    grid.appendChild(randomCard);
+
+    state.naturesList.forEach(function(nature) {
+      var card = document.createElement('div');
+      card.className = 'nature-card' + (state.selectedNature === nature.name ? ' selected' : '');
+
+      var effectHtml = '';
+      if (nature.boost && nature.reduce) {
+        effectHtml = '<span class="boost">+10% ' + formatStatName(nature.boost) + '</span>, ' +
+                    '<span class="reduce">-10% ' + formatStatName(nature.reduce) + '</span>';
+      } else {
+        effectHtml = 'Balanced - no stat changes';
+      }
+
+      card.innerHTML = '<div class="nature-name">' + esc(nature.name) + '</div>' +
+                      '<div class="nature-effect">' + effectHtml + '</div>';
+      card.onclick = function() { selectNature(nature.name); };
+      grid.appendChild(card);
+    });
+  }
+
+  window.selectNature = function(natureName) {
+    state.selectedNature = natureName;
+    renderNatureGrid();
+  };
+
+  function formatStatName(stat) {
+    var names = { hp: 'HP', attack: 'Attack', defense: 'Defense', sp_atk: 'Claw', sp_def: 'Shell', speed: 'Speed' };
+    return names[stat] || stat;
+  }
+
+  function renderTypeGrid() {
+    var grid = document.getElementById('type-grid');
+    grid.innerHTML = '';
+
+    TYPES.forEach(function(type) {
+      var meta = TYPE_META[type];
+      var btn = document.createElement('div');
+      btn.className = 'type-btn';
+      btn.dataset.type = type;
+      btn.style.setProperty('--type-color', meta.color);
+      btn.style.setProperty('--type-rgb', meta.rgb);
+      btn.innerHTML = '<span class="type-emoji">' + meta.emoji + '</span>' +
+                      '<span class="type-name">' + type + '</span>';
+      btn.onclick = function() { selectType(type); };
+      grid.appendChild(btn);
+    });
+  }
+
+  function renderStatsGrid() {
+    var grid = document.getElementById('stats-grid');
+    grid.innerHTML = '';
+
+    Object.keys(STAT_META).forEach(function(stat) {
+      var meta = STAT_META[stat];
+      var div = document.createElement('div');
+      div.className = 'stat-item';
+      div.innerHTML =
+        '<div class="stat-header">' +
+          '<span class="stat-name" style="color:' + meta.color + '">' + meta.name + '</span>' +
+          '<span class="stat-value" id="stat-val-' + stat + '">' + state.stats[stat] + '</span>' +
+        '</div>' +
+        '<input type="range" class="stat-slider" id="stat-slider-' + stat + '" ' +
+          'min="1" max="50" value="' + state.stats[stat] + '" ' +
+          'oninput="updateStat(\'' + stat + '\', this.value)">';
+      grid.appendChild(div);
+    });
+
+    updateStatsTotal();
+  }
+
+  // ═══════════════════════════════════════════
+  // MODE SELECTION
+  // ═══════════════════════════════════════════
+  window.selectMode = function(mode) {
+    state.mode = mode;
+
+    document.querySelectorAll('.choice-btn').forEach(function(btn) {
+      btn.classList.remove('selected');
+    });
+    document.getElementById('choice-' + mode).classList.add('selected');
+    document.getElementById('btn-step1-next').disabled = false;
+  };
+
+  // ═══════════════════════════════════════════
+  // TYPE SELECTION
+  // ═══════════════════════════════════════════
+  window.selectType = function(type) {
+    state.type = type;
+    state.selectedMoves = [];
+
+    document.querySelectorAll('.type-btn').forEach(function(btn) {
+      btn.classList.toggle('selected', btn.dataset.type === type);
+    });
+
+    // Load moves for this type
+    loadMovesForType(type);
+    validateStep2();
+  };
+
+  function loadMovesForType(type) {
+    var section = document.getElementById('moves-section');
+    var grid = document.getElementById('moves-grid');
+
+    section.style.display = '';
+    grid.innerHTML = '<div style="color:var(--text-dim);padding:12px;text-align:center;">Loading moves...</div>';
+
+    fetch('/onboard/moves/' + type)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        state.movePool = data.moves || [];
+        renderMovesGrid();
+      })
+      .catch(function(err) {
+        grid.innerHTML = '<div style="color:var(--red);padding:12px;">Failed to load moves</div>';
+      });
+  }
+
+  function renderMovesGrid() {
+    var grid = document.getElementById('moves-grid');
+    grid.innerHTML = '';
+
+    state.movePool.forEach(function(move) {
+      var isSelected = state.selectedMoves.indexOf(move.id) >= 0;
+      var isDisabled = !isSelected && state.selectedMoves.length >= 4;
+
+      var card = document.createElement('div');
+      card.className = 'move-card' + (isSelected ? ' selected' : '') + (isDisabled ? ' disabled' : '');
+      card.innerHTML = '<div class="move-name">' + esc(move.name) + '</div>' +
+                       '<div class="move-stats">Pwr ' + (move.power || '--') + ' | Acc ' + move.accuracy + '%</div>';
+
+      card.onclick = function() {
+        if (isDisabled) return;
+
+        var idx = state.selectedMoves.indexOf(move.id);
+        if (idx >= 0) {
+          state.selectedMoves.splice(idx, 1);
+        } else if (state.selectedMoves.length < 4) {
+          state.selectedMoves.push(move.id);
+        }
+
+        renderMovesGrid();
+        validateStep2();
+      };
+
+      grid.appendChild(card);
+    });
+
+    document.getElementById('moves-selected').textContent = state.selectedMoves.length;
+  }
+
+  // ═══════════════════════════════════════════
+  // STATS
+  // ═══════════════════════════════════════════
+  window.updateStat = function(stat, value) {
+    state.stats[stat] = parseInt(value);
+    document.getElementById('stat-val-' + stat).textContent = value;
+    updateStatsTotal();
+    validateStep2();
+  };
+
+  function updateStatsTotal() {
+    var total = Object.values(state.stats).reduce(function(a, b) { return a + b; }, 0);
+    var remaining = 100 - total;
+    var el = document.getElementById('stats-remaining');
+
+    el.textContent = remaining;
+    el.className = 'stats-total-value';
+
+    if (remaining === 0) {
+      el.classList.add('valid');
+    } else if (remaining < 0) {
+      el.classList.add('invalid');
+    }
+  }
+
+  function getStatsTotal() {
+    return Object.values(state.stats).reduce(function(a, b) { return a + b; }, 0);
+  }
+
+  // ═══════════════════════════════════════════
+  // VALIDATION
+  // ═══════════════════════════════════════════
+  function validateStep2() {
+    var valid = true;
+
+    var name = document.getElementById('input-name').value.trim();
+    if (name.length < 2) valid = false;
+    if (!state.type) valid = false;
+    if (getStatsTotal() !== 100) valid = false;
+    if (state.selectedMoves.length !== 4) valid = false;
+
+    document.getElementById('btn-step2-next').disabled = !valid;
+  }
+
+  // ═══════════════════════════════════════════
+  // RANDOM NAME
+  // ═══════════════════════════════════════════
+  window.randomName = function() {
+    fetch('/demo/random-name')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        document.getElementById('input-name').value = data.name || '';
+        validateStep2();
+      });
+  };
+
+  // ═══════════════════════════════════════════
+  // STEP NAVIGATION
+  // ═══════════════════════════════════════════
+  window.nextStep = function(currentStep) {
+    if (currentStep === 1) {
+      if (state.mode === 'operator') {
+        goToStep('2a');
+        createOperatorLobster();
+      } else {
+        goToStep('2b');
+      }
+    }
+  };
+
+  window.goToStep = function(step) {
+    // Hide all sections
+    document.querySelectorAll('.step-section').forEach(function(s) {
+      s.classList.remove('active');
+    });
+
+    // Show target section
+    var stepStr = String(step);
+    var targetId = 'step-' + stepStr;
+    var target = document.getElementById(targetId);
+    if (target) target.classList.add('active');
+
+    // Update step dots
+    var stepNum = parseInt(stepStr.charAt(0));
+    state.step = stepNum;
+
+    for (var i = 1; i <= 3; i++) {
+      var dot = document.getElementById('step-dot-' + i);
+      var line = document.getElementById('step-line-' + i);
+
+      dot.classList.remove('active', 'completed');
+      if (line) line.classList.remove('completed');
+
+      if (i < stepNum) {
+        dot.classList.add('completed');
+        dot.innerHTML = '\u2713';
+        if (line) line.classList.add('completed');
+      } else if (i === stepNum) {
+        dot.classList.add('active');
+        dot.innerHTML = i;
+      } else {
+        dot.innerHTML = i;
+      }
+    }
+
+    // Update title
+    var titles = {
+      '1': ['Create Your Lobster', 'Choose how you want to create your battle lobster'],
+      '2a': ['Creating...', 'Your operator is making decisions'],
+      '2b': ['Customize', 'Design your perfect battle lobster'],
+      '3': ['Ready to Battle!', 'Your lobster awaits its first fight']
+    };
+
+    var t = titles[stepStr] || titles['1'];
+    document.getElementById('page-title-text').textContent = t[0];
+    document.getElementById('page-subtitle-text').textContent = t[1];
+  };
+
+  // ═══════════════════════════════════════════
+  // CREATE LOBSTER
+  // ═══════════════════════════════════════════
+  function createOperatorLobster() {
+    fetch('/onboard/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mode: 'operator' })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        alert('Error: ' + data.error);
+        goToStep(1);
+        return;
+      }
+
+      state.createdLobster = data.lobster;
+      state.sessionToken = data.session_token;
+
+      renderLobsterPreview(data.lobster, data.reasoning);
+      goToStep(3);
+    })
+    .catch(function(err) {
+      alert('Failed to create lobster. Please try again.');
+      goToStep(1);
+    });
+  }
+
+  window.createLobster = function() {
+    var name = document.getElementById('input-name').value.trim();
+
+    var btn = document.getElementById('btn-step2-next');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading-spinner"></span>Creating...';
+
+    var createBody = {
+      mode: 'user',
+      name: name,
+      type: state.type,
+      stats: state.stats,
+      move_ids: state.selectedMoves
+    };
+
+    // Include nature if user selected one (not random)
+    if (state.selectedNature) {
+      createBody.nature = state.selectedNature;
+    }
+
+    fetch('/onboard/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(createBody)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      btn.innerHTML = 'Create Lobster';
+
+      if (data.error) {
+        alert('Error: ' + data.error);
+        btn.disabled = false;
+        return;
+      }
+
+      state.createdLobster = data.lobster;
+      state.sessionToken = data.session_token;
+
+      renderLobsterPreview(data.lobster, null);
+      goToStep(3);
+    })
+    .catch(function(err) {
+      btn.innerHTML = 'Create Lobster';
+      btn.disabled = false;
+      alert('Failed to create lobster. Please try again.');
+    });
+  };
+
+  function renderLobsterPreview(lobster, reasoning) {
+    var meta = TYPE_META[lobster.type] || TYPE_META.NEUTRAL;
+    var preview = document.getElementById('lobster-preview');
+
+    var html = '<img class="preview-image" src="' + lobster.image_url + '" alt="' + esc(lobster.name) + '">' +
+               '<div class="preview-name">' + esc(lobster.name) + '</div>' +
+               '<div class="preview-type" style="background:' + meta.color + '">' + meta.emoji + ' ' + lobster.type + '</div>';
+
+    // Nature
+    if (lobster.nature) {
+      var natureDesc = '';
+      if (lobster.nature.boost && lobster.nature.reduce) {
+        natureDesc = '+10% ' + formatStatName(lobster.nature.boost) + ', -10% ' + formatStatName(lobster.nature.reduce);
+      } else {
+        natureDesc = 'Balanced';
+      }
+      html += '<div style="margin-top:8px;font-size:12px;color:var(--text-dim);">' +
+              '<span style="color:#fff;font-weight:700;">' + esc(lobster.nature.name) + '</span> nature (' + natureDesc + ')' +
+              '</div>';
+    }
+
+    // Stats
+    html += '<div class="preview-stats">';
+    var statOrder = ['hp', 'attack', 'defense', 'sp_atk', 'sp_def', 'speed'];
+    statOrder.forEach(function(stat) {
+      var m = STAT_META[stat];
+      html += '<div class="preview-stat">' +
+              '<div class="preview-stat-name" style="color:' + m.color + '">' + m.name + '</div>' +
+              '<div class="preview-stat-value">' + lobster.stats[stat] + '</div></div>';
+    });
+    html += '</div>';
+
+    // Moves
+    if (lobster.moves && lobster.moves.length > 0) {
+      html += '<div class="preview-moves">';
+      lobster.moves.forEach(function(move) {
+        html += '<div class="preview-move">' +
+                '<div class="preview-move-name">' + esc(move.name) + '</div>' +
+                '<div class="preview-move-info">Pwr ' + (move.power || '--') + ' | Acc ' + move.accuracy + '%</div></div>';
+      });
+      html += '</div>';
+    }
+
+    preview.innerHTML = html;
+
+    // Show reasoning for operator mode
+    var reasoningBox = document.getElementById('reasoning-box');
+    if (reasoning) {
+      document.getElementById('reasoning-text').textContent = reasoning;
+      reasoningBox.style.display = '';
+    } else {
+      reasoningBox.style.display = 'none';
+    }
+  }
+
+  // ═══════════════════════════════════════════
+  // START BATTLE
+  // ═══════════════════════════════════════════
+  window.startFirstBattle = function() {
+    if (!state.sessionToken) {
+      alert('Session not found. Please create a lobster first.');
+      return;
+    }
+
+    // Navigate to play page with session token
+    window.location.href = '/play.html?session=' + encodeURIComponent(state.sessionToken);
+  };
+
+  // ═══════════════════════════════════════════
+  // HELPERS
+  // ═══════════════════════════════════════════
+  function esc(str) {
+    var d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  // Name input validation
+  document.getElementById('input-name').addEventListener('input', validateStep2);
+
+  // Init
+  init();
+})();
+</script>
+<script src="/js/auth.js"></script>
+<script src="/js/analytics.js"></script>
+</body>
+</html>

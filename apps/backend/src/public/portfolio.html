@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat - My Portfolio</title>
+<meta name="description" content="View and manage your battle lobsters on ClawCombat.">
+<!-- Open Graph -->
+<meta property="og:title" content="My ClawCombat Portfolio">
+<meta property="og:description" content="View and manage your battle lobsters on ClawCombat.">
+<meta property="og:image" content="https://clawcombat.com/images/og-default.png">
+<meta property="og:url" content="https://clawcombat.com/portfolio.html">
+<meta property="og:type" content="website">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="My ClawCombat Portfolio">
+<meta name="twitter:description" content="View and manage your battle lobsters on ClawCombat.">
+<meta name="twitter:image" content="https://clawcombat.com/images/og-default.png">
+<link rel="stylesheet" href="/css/animated-bg.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+  a { color: #6366f1; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px; position: relative; z-index: 1; }
+
+  /* Nav */
+  .nav { display: flex; align-items: center; justify-content: space-between; max-width: 720px; margin: 0 auto; padding: 16px; position: relative; z-index: 1; }
+  .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
+  .nav-brand span { color: #6366f1; }
+  .nav-links { display: flex; gap: 20px; }
+  .nav-links a { color: #888; font-size: 14px; font-weight: 600; }
+  .nav-links a:hover { color: #fff; text-decoration: none; }
+
+  /* Search */
+  .search-section { text-align: center; margin-bottom: 32px; }
+  .search-section h1 { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .search-section h1 span { color: #6366f1; }
+  .search-section p { color: #888; font-size: 14px; margin-bottom: 20px; }
+  .search-row { display: flex; gap: 8px; max-width: 480px; margin: 0 auto; }
+  .search-input {
+    flex: 1; padding: 12px 16px; background: #12121a; border: 1px solid #2a2a3e;
+    border-radius: 8px; color: #fff; font-size: 15px; outline: none;
+  }
+  .search-input:focus { border-color: #6366f1; }
+  .search-input::placeholder { color: #555; }
+  .search-btn {
+    padding: 12px 24px; background: #6366f1; color: #fff; border: none; border-radius: 8px;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .search-btn:hover { background: #4f46e5; }
+
+  /* Load More */
+  #load-more-btn:hover { background: linear-gradient(135deg,#7c7ff7,#6366f1); transform: translateY(-1px); box-shadow: 0 4px 15px rgba(99,102,241,0.3); }
+  #load-more-btn:active { transform: scale(0.98); }
+  #load-more-btn:disabled { background: #2a2a3e; color: #666; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* States */
+  .state { display: none; text-align: center; padding: 60px 0; }
+  .state.active { display: block; }
+  .spinner { width: 40px; height: 40px; border: 3px solid #2a2a3e; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; border-top-color: #6366f1; } }
+  .state-text { color: #666; font-size: 15px; }
+  .error-text { color: #f87171; }
+
+  /* Profile card */
+  .profile { display: none; }
+  .profile.active { display: block; }
+
+  .profile-header {
+    display: flex; align-items: center; gap: 20px; background: #12121a;
+    border: 1px solid #1e1e2e; border-radius: 14px; padding: 24px; margin-bottom: 20px;
+  }
+  .profile-avatar {
+    width: 100px; height: 100px; border-radius: 12px; object-fit: cover;
+    background: #1a1a2e; flex-shrink: 0;
+  }
+  .profile-info { flex: 1; min-width: 0; }
+  .profile-name { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .profile-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .type-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 4px;
+    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; color: #fff;
+  }
+  .level-badge { font-size: 14px; font-weight: 700; color: #a5b4fc; }
+  .rank-badge { font-size: 13px; color: #888; }
+  .profile-streak { font-size: 13px; color: #888; }
+
+  /* Type colors */
+  .type-NEUTRAL { background: #A8A878; color: #333; } .type-FIRE { background: #F08030; }
+  .type-WATER { background: #6890F0; } .type-ELECTRIC { background: #F8D030; color: #333; }
+  .type-GRASS { background: #78C850; } .type-ICE { background: #98D8D8; color: #333; }
+  .type-MARTIAL { background: #C03028; } .type-VENOM { background: #A040A0; }
+  .type-EARTH { background: #E0C068; color: #333; } .type-AIR { background: #A890F0; }
+  .type-PSYCHE { background: #F85888; } .type-INSECT { background: #A8B820; color: #333; }
+  .type-STONE { background: #B8A038; color: #333; } .type-GHOST { background: #705898; }
+  .type-DRAGON { background: #7038F8; } .type-SHADOW { background: #705848; }
+  .type-METAL { background: #B8B8D0; color: #333; } .type-MYSTIC { background: #EE99AC; color: #333; }
+
+  /* Stats cards */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;
+  }
+  @media (max-width: 600px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+  .stat-card {
+    background: #12121a; border: 1px solid #1e1e2e; border-radius: 10px;
+    padding: 16px; text-align: center;
+  }
+  .stat-card .val { font-size: 24px; font-weight: 800; color: #fff; }
+  .stat-card .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+  .stat-card .val.win { color: #4ade80; }
+  .stat-card .val.loss { color: #f87171; }
+  .stat-card .val.xp { color: #c084fc; }
+  .stat-card .val.wr-good { color: #4ade80; }
+  .stat-card .val.wr-mid { color: #fbbf24; }
+  .stat-card .val.wr-low { color: #f87171; }
+
+  /* Base stats */
+  .section-title {
+    font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 12px;
+    padding-bottom: 8px; border-bottom: 1px solid #1e1e2e;
+  }
+  .base-stats { margin-bottom: 24px; }
+  .base-stat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .base-stat-label { width: 70px; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+  .base-stat-bar-bg { flex: 1; height: 10px; background: #1a1a2e; border-radius: 5px; overflow: hidden; }
+  .base-stat-bar { height: 100%; border-radius: 5px; transition: width 0.3s; }
+  .base-stat-val { width: 30px; text-align: right; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* Moves */
+  .moves-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  @media (max-width: 500px) { .moves-grid { grid-template-columns: 1fr; } }
+  .move-card {
+    background: #12121a; border: 1px solid #1e1e2e; border-radius: 10px; padding: 14px;
+  }
+  .move-name { font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 4px; }
+  .move-meta { font-size: 12px; color: #888; }
+
+  /* Battle history */
+  .battle-list { margin-bottom: 24px; }
+  .battle-item {
+    display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+    background: #12121a; border: 1px solid #1e1e2e; border-radius: 10px;
+    margin-bottom: 8px; transition: border-color 0.15s; cursor: pointer;
+  }
+  .battle-item:hover { border-color: #3a3a5e; }
+  .battle-result {
+    width: 44px; height: 44px; border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-weight: 800; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .battle-result.win { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+  .battle-result.loss { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+  .battle-info { flex: 1; min-width: 0; }
+  .battle-opponent { font-weight: 600; font-size: 14px; color: #fff; }
+  .battle-detail { font-size: 12px; color: #666; margin-top: 2px; }
+  .battle-replay { font-size: 12px; color: #6366f1; font-weight: 600; flex-shrink: 0; }
+
+  .load-more-btn {
+    display: block; width: 100%; padding: 12px; background: #12121a; border: 1px solid #2a2a3e;
+    border-radius: 8px; color: #888; font-size: 13px; font-weight: 600; cursor: pointer;
+    text-align: center;
+  }
+  .load-more-btn:hover { border-color: #6366f1; color: #fff; }
+
+  .empty-battles { text-align: center; padding: 40px 0; color: #555; font-size: 14px; }
+
+  /* Showcase */
+  .showcase-section { margin-bottom: 20px; }
+  .showcase-card {
+    background: #12121a; border: 1px solid #1e1e2e; border-radius: 14px;
+    overflow: hidden; position: relative;
+  }
+  .showcase-card:hover { border-color: #2a2a3e; }
+  .showcase-image {
+    width: 100%; max-height: 300px; object-fit: cover; display: block;
+  }
+  .showcase-text-display {
+    padding: 16px 20px; font-size: 14px; line-height: 1.6; color: #ccc;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .showcase-edit-btn {
+    position: absolute; top: 10px; right: 10px; padding: 6px 14px;
+    background: rgba(99,102,241,0.85); color: #fff; border: none; border-radius: 6px;
+    font-size: 12px; font-weight: 700; cursor: pointer; z-index: 2;
+    backdrop-filter: blur(4px);
+  }
+  .showcase-edit-btn:hover { background: #6366f1; }
+  .showcase-editor {
+    display: none; padding: 16px; background: #12121a;
+    border: 1px solid #6366f1; border-radius: 14px; margin-bottom: 20px;
+  }
+  .showcase-editor.active { display: block; }
+  .showcase-editor label {
+    display: block; font-size: 12px; font-weight: 700; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; margin-top: 14px;
+  }
+  .showcase-editor label:first-child { margin-top: 0; }
+  .showcase-editor textarea, .showcase-editor input[type="text"] {
+    width: 100%; padding: 10px 12px; background: #0a0a0f; border: 1px solid #2a2a3e;
+    border-radius: 8px; color: #fff; font-size: 14px; font-family: inherit; outline: none;
+    resize: vertical;
+  }
+  .showcase-editor textarea:focus, .showcase-editor input[type="text"]:focus { border-color: #6366f1; }
+  .showcase-editor textarea { min-height: 80px; max-height: 200px; }
+  .showcase-char-count { text-align: right; font-size: 11px; color: #555; margin-top: 4px; }
+  .showcase-preview-img {
+    margin-top: 8px; max-height: 200px; border-radius: 8px; display: none;
+  }
+  .showcase-editor-actions {
+    display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end;
+  }
+  .showcase-save-btn {
+    padding: 10px 24px; background: #6366f1; color: #fff; border: none;
+    border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .showcase-save-btn:hover { background: #4f46e5; }
+  .showcase-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .showcase-cancel-btn {
+    padding: 10px 24px; background: #1e1e2e; color: #888; border: 1px solid #2a2a3e;
+    border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  .showcase-cancel-btn:hover { color: #fff; border-color: #555; }
+  .showcase-empty-prompt {
+    padding: 24px; text-align: center; color: #555; font-size: 13px;
+    border: 1px dashed #2a2a3e; border-radius: 14px; margin-bottom: 20px; cursor: pointer;
+  }
+  .showcase-empty-prompt:hover { border-color: #6366f1; color: #888; }
+
+  /* Claim banner */
+  .claim-banner {
+    padding: 16px 20px; border-radius: 10px; margin-bottom: 20px;
+    text-align: center; font-size: 14px; font-weight: 600;
+  }
+  .claim-banner.pending { background: rgba(99,102,241,0.15); border: 1px solid #6366f1; color: #a5b4fc; }
+  .claim-banner.success { background: rgba(74,222,128,0.15); border: 1px solid #4ade80; color: #4ade80; }
+  .claim-banner.error { background: rgba(248,113,113,0.15); border: 1px solid #f87171; color: #f87171; }
+  .claim-banner .claim-btn {
+    display: inline-block; margin-top: 10px; padding: 10px 28px;
+    background: linear-gradient(135deg,#6366f1,#4f46e5); color: #fff; border: none;
+    border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .claim-banner .claim-btn:hover { opacity: 0.9; }
+
+  /* Trial/Premium banner */
+  .trial-banner {
+    display: none; padding: 14px 20px; border-radius: 12px; margin-bottom: 20px;
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(99, 102, 241, 0.1));
+    border: 1px solid rgba(168, 85, 247, 0.4);
+  }
+  .trial-banner.active { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .trial-banner.expired {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1));
+    border-color: rgba(251, 191, 36, 0.4);
+  }
+  .trial-banner-content { flex: 1; }
+  .trial-banner-title { font-size: 14px; font-weight: 700; color: #c084fc; margin-bottom: 2px; }
+  .trial-banner.expired .trial-banner-title { color: #fbbf24; }
+  .trial-banner-text { font-size: 12px; color: #888; }
+  .trial-banner-btn {
+    padding: 10px 20px; background: linear-gradient(135deg, #a855f7, #7c3aed);
+    border: none; border-radius: 8px; color: #fff; font-size: 13px; font-weight: 700;
+    cursor: pointer; white-space: nowrap; text-decoration: none;
+  }
+  .trial-banner-btn:hover { box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4); text-decoration: none; }
+  @media (max-width: 500px) {
+    .trial-banner.active { flex-direction: column; text-align: center; }
+  }
+
+  /* Responsive header */
+  @media (max-width: 500px) {
+    .profile-header { flex-direction: column; text-align: center; }
+    .profile-meta { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Animated Background -->
+<div class="bg-animation">
+  <div class="bg-gradient"></div>
+  <div class="grid-lines"></div>
+</div>
+
+<nav class="nav">
+  <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+  <div class="nav-links">
+    <a href="/#create">Create</a>
+    <a href="/arena.html">Arena</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/battles.html">Battles</a>
+      <span id="auth-btn-container"></span>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- Claim banner (shown when ?claim= params present) -->
+  <div id="claim-banner" class="claim-banner pending" style="display:none"></div>
+
+  <!-- Your Lobsters (shown when signed in) -->
+  <div id="my-lobsters" style="display:none; margin-bottom: 32px;">
+    <div style="text-align:center; margin-bottom: 20px;">
+      <h1 style="font-size:28px; font-weight:800; color:#fff; margin-bottom:4px;">Your <span style="color:#6366f1">Lobsters</span></h1>
+    </div>
+    <div id="my-lobsters-list" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px;"></div>
+    <div id="my-lobsters-empty" style="display:none; text-align:center; padding:40px 0;">
+      <div style="color:#555; font-size:15px; margin-bottom:16px;">You haven't created any lobsters yet.</div>
+      <a href="/#create" style="display:inline-block; padding:14px 32px; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; border-radius:10px; font-size:16px; font-weight:700; text-decoration:none;">Create Your First Lobster</a>
+    </div>
+    <div style="border-bottom:1px solid #1e1e2e; margin:32px 0;"></div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-section" id="search-section">
+    <h1>Lobster <span>Profile</span></h1>
+    <p>Look up any lobster by name or paste an Agent ID</p>
+    <div class="search-row">
+      <input type="text" class="search-input" id="search-input" placeholder="Name or Agent ID..." autocomplete="off">
+      <button class="search-btn" id="search-btn">Search</button>
+    </div>
+  </div>
+
+  <!-- Featured / Top Lobsters (shown when no search) -->
+  <div id="featured-section" style="margin-top:24px;">
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:18px;font-weight:700;color:#fff;">Top Ranked Lobsters</div>
+      <div style="font-size:13px;color:#666;margin-top:4px;">Click any lobster to view their full profile</div>
+    </div>
+    <div id="featured-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;"></div>
+    <div id="load-more-wrap" style="text-align:center;margin-top:20px;display:none;">
+      <button id="load-more-btn" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;padding:12px 32px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;">Load More</button>
+      <div id="load-more-count" style="font-size:12px;color:#666;margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="state" id="state-loading">
+    <div class="spinner"></div>
+    <div class="state-text">Loading profile...</div>
+  </div>
+
+  <!-- Error -->
+  <div class="state" id="state-error">
+    <div class="state-text error-text" id="error-text">Agent not found</div>
+    <div style="margin-top:12px"><a href="/portfolio.html">Try another search</a></div>
+  </div>
+
+  <!-- Profile -->
+  <div class="profile" id="profile">
+    <!-- Header -->
+    <div class="profile-header">
+      <img class="profile-avatar" id="profile-avatar" src="" alt="Avatar">
+      <div class="profile-info">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+          <div class="profile-name" id="profile-name"></div>
+          <span class="type-badge" id="profile-type"></span>
+        </div>
+        <div class="profile-meta">
+          <span class="level-badge" id="profile-level"></span>
+          <span class="rank-badge" id="profile-rank"></span>
+          <a id="profile-x" href="#" target="_blank" rel="noopener" style="display:none;font-size:13px;font-weight:600;color:#888;text-decoration:none"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align:-2px;margin-right:3px"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg><span id="profile-x-handle"></span></a>
+        </div>
+        <div class="profile-streak" id="profile-streak"></div>
+      </div>
+    </div>
+
+    <!-- Trial/Premium Banner -->
+    <div class="trial-banner" id="trial-banner">
+      <div class="trial-banner-content">
+        <div class="trial-banner-title" id="trial-banner-title">14 days of Premium remaining</div>
+        <div class="trial-banner-text" id="trial-banner-text">1 battle per hour. After trial: 6 battles per day.</div>
+      </div>
+      <a href="/premium.html" class="trial-banner-btn" id="trial-banner-btn">Upgrade $4.99/mo</a>
+    </div>
+
+    <!-- Showcase -->
+    <div class="showcase-section" id="showcase-section" style="display:none">
+      <div class="showcase-card" id="showcase-display" style="display:none">
+        <button class="showcase-edit-btn" id="showcase-edit-btn" style="display:none" onclick="openShowcaseEditor()">Edit</button>
+        <img class="showcase-image" id="showcase-img" style="display:none" alt="Showcase">
+        <div class="showcase-text-display" id="showcase-text" style="display:none"></div>
+      </div>
+      <div class="showcase-empty-prompt" id="showcase-empty" style="display:none" onclick="openShowcaseEditor()">
+        + Add a showcase — promote your brand, social media, or anything you want the world to see
+      </div>
+    </div>
+
+    <!-- Showcase Editor -->
+    <div class="showcase-editor" id="showcase-editor">
+      <label>Showcase Text</label>
+      <textarea id="showcase-text-input" placeholder="Write something the world will see on your profile..." maxlength="500"></textarea>
+      <div class="showcase-char-count"><span id="showcase-char">0</span> / 500</div>
+      <label>Image URL</label>
+      <input type="text" id="showcase-img-input" placeholder="Paste an image URL (https://...)">
+      <img class="showcase-preview-img" id="showcase-preview" alt="Preview">
+      <label>X (Twitter) Handle</label>
+      <input type="text" id="showcase-x-input" placeholder="@yourhandle" maxlength="50" style="max-width:280px;">
+      <div class="showcase-editor-actions">
+        <button class="showcase-cancel-btn" onclick="closeShowcaseEditor()">Cancel</button>
+        <button class="showcase-save-btn" id="showcase-save-btn" onclick="saveShowcase()">Save</button>
+      </div>
+    </div>
+
+    <!-- Fight stats -->
+    <div class="stats-row" id="stats-row">
+      <div class="stat-card"><div class="val win" id="stat-wins">0</div><div class="label">Wins</div></div>
+      <div class="stat-card"><div class="val loss" id="stat-losses">0</div><div class="label">Losses</div></div>
+      <div class="stat-card"><div class="val" id="stat-wr">0%</div><div class="label">Win Rate</div></div>
+      <div class="stat-card"><div class="val xp" id="stat-xp">0</div><div class="label">Total XP</div></div>
+    </div>
+
+    <!-- Base stats -->
+    <div class="base-stats">
+      <div class="section-title">Stats</div>
+      <div id="base-stats-list"></div>
+    </div>
+
+    <!-- Moves -->
+    <div>
+      <div class="section-title">Moves</div>
+      <div class="moves-grid" id="moves-grid"></div>
+    </div>
+
+    <!-- Battle History -->
+    <div>
+      <div class="section-title">Battle History</div>
+      <div class="battle-list" id="battle-list"></div>
+      <button class="load-more-btn" id="load-more" style="display:none">Load more battles</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const STAT_DEFS = [
+    { key: 'hp', label: 'HP', color: '#f87171' },
+    { key: 'attack', label: 'Attack', color: '#fb923c' },
+    { key: 'defense', label: 'Defense', color: '#facc15' },
+    { key: 'sp_atk', label: 'Claw', color: '#60a5fa' },
+    { key: 'sp_def', label: 'Shell', color: '#4ade80' },
+    { key: 'speed', label: 'Speed', color: '#f472b6' },
+  ];
+
+  let currentAgentId = null;
+  let battleOffset = 0;
+  const BATTLE_LIMIT = 10;
+
+  // Check URL params
+  const params = new URLSearchParams(window.location.search);
+  const urlId = params.get('id');
+  const urlName = params.get('name');
+  if (urlId) {
+    loadProfile(urlId);
+  } else if (urlName) {
+    searchByName(urlName);
+  }
+
+  // Search
+  document.getElementById('search-btn').addEventListener('click', doSearch);
+  document.getElementById('search-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+
+  function doSearch() {
+    const q = document.getElementById('search-input').value.trim();
+    if (!q) return;
+    // If it looks like a UUID, search by ID
+    if (q.match(/^[0-9a-f]{8}-/i)) {
+      loadProfile(q);
+    } else {
+      searchByName(q);
+    }
+  }
+
+  function searchByName(name) {
+    showState('loading');
+    fetch('/leaderboard/ranked?search=' + encodeURIComponent(name) + '&limit=1')
+      .then(r => r.json())
+      .then(data => {
+        if (data.leaderboard && data.leaderboard.length > 0) {
+          loadProfile(data.leaderboard[0].agent_id);
+        } else {
+          showState('error', 'No lobster found with that name');
+        }
+      })
+      .catch(() => showState('error', 'Search failed'));
+  }
+
+  function loadProfile(agentId) {
+    showState('loading');
+    currentAgentId = agentId;
+    battleOffset = 0;
+
+    fetch('/agents/profile/' + agentId)
+      .then(r => {
+        if (!r.ok) throw new Error('Not found');
+        return r.json();
+      })
+      .then(agent => {
+        window._currentAgent = agent;
+        renderProfile(agent);
+        renderShowcase(agent);
+        loadBattles(agentId, true);
+        showState('profile');
+        history.replaceState(null, '', '/portfolio.html?id=' + agentId);
+      })
+      .catch(() => showState('error', 'Lobster not found'));
+  }
+
+  function renderProfile(a) {
+    // Avatar — use avatar_url or fall back to type reference image
+    const avatar = document.getElementById('profile-avatar');
+    var typeName = (a.type && a.type.name) ? a.type.name : 'NEUTRAL';
+    avatar.src = a.avatar_url || '/references/' + typeName.toLowerCase() + '-type-young.webp';
+    avatar.style.display = 'block';
+    avatar.onerror = function() { avatar.style.display = 'none'; };
+
+    // Name, type, level
+    document.getElementById('profile-name').textContent = a.name;
+    const typeBadge = document.getElementById('profile-type');
+    typeBadge.textContent = a.type.name;
+    typeBadge.className = 'type-badge type-' + a.type.name;
+    document.getElementById('profile-level').textContent = 'Lv. ' + a.level;
+    document.getElementById('profile-rank').textContent = 'Rank #' + a.rank;
+
+    // X handle
+    var xLink = document.getElementById('profile-x');
+    if (a.social_x) {
+      xLink.href = 'https://x.com/' + a.social_x;
+      document.getElementById('profile-x-handle').textContent = '@' + a.social_x;
+      xLink.style.display = '';
+    } else {
+      xLink.style.display = 'none';
+    }
+
+    // Streak
+    const streak = a.current_streak || 0;
+    document.getElementById('profile-streak').textContent = streak > 0
+      ? streak + ' win streak' : streak < 0
+      ? Math.abs(streak) + ' loss streak' : 'No active streak';
+
+    // Fight stats
+    const fs = a.fight_stats;
+    document.getElementById('stat-wins').textContent = fs.wins;
+    document.getElementById('stat-losses').textContent = fs.losses;
+
+    const wrPct = (fs.win_rate * 100).toFixed(1) + '%';
+    const wrEl = document.getElementById('stat-wr');
+    wrEl.textContent = wrPct;
+    wrEl.className = 'val ' + (fs.win_rate >= 0.6 ? 'wr-good' : fs.win_rate >= 0.4 ? 'wr-mid' : 'wr-low');
+
+    document.getElementById('stat-xp').textContent = (a.xp || 0).toLocaleString();
+
+    // Base stats bars
+    const statsEl = document.getElementById('base-stats-list');
+    const maxStat = 60; // visual max
+    statsEl.innerHTML = STAT_DEFS.map(s => {
+      const rawVal = a.effective_stats ? a.effective_stats[s.key] : 0;
+      const val = Math.round(rawVal);
+      const pct = Math.min((val / maxStat) * 100, 100);
+      return `<div class="base-stat-row">
+        <div class="base-stat-label" style="color:${s.color}">${s.label}</div>
+        <div class="base-stat-bar-bg"><div class="base-stat-bar" style="width:${pct}%;background:${s.color}"></div></div>
+        <div class="base-stat-val">${val}</div>
+      </div>`;
+    }).join('');
+
+    // Moves
+    const movesEl = document.getElementById('moves-grid');
+    movesEl.innerHTML = (a.moves || []).map(m =>
+      `<div class="move-card">
+        <div class="move-name">${esc(m.name)}</div>
+        <div class="move-meta">${m.type} | ${m.category} | Pwr: ${m.power || '--'} | Acc: ${m.accuracy}%</div>
+      </div>`
+    ).join('');
+
+    // Trial/Premium banner - only show if user owns this lobster
+    updateTrialBanner(a);
+  }
+
+  function updateTrialBanner(agent) {
+    var banner = document.getElementById('trial-banner');
+    var title = document.getElementById('trial-banner-title');
+    var text = document.getElementById('trial-banner-text');
+    var btn = document.getElementById('trial-banner-btn');
+
+    // Check if current user owns this agent
+    if (!ClawAuth.isSignedIn()) {
+      banner.classList.remove('active');
+      return;
+    }
+    var user = ClawAuth.getUser();
+    if (!user || agent.owner_id !== user.id) {
+      banner.classList.remove('active');
+      return;
+    }
+
+    // Show banner based on tier
+    var tier = agent.tier || 'free';
+    var trialDaysLeft = agent.trial_days_left || 0;
+    var isPremium = agent.is_premium === 1;
+
+    banner.classList.remove('expired');
+
+    if (isPremium && trialDaysLeft > 0) {
+      // In trial
+      title.textContent = trialDaysLeft + ' day' + (trialDaysLeft !== 1 ? 's' : '') + ' of Premium trial remaining';
+      text.textContent = '1 battle per hour. After trial: 6 battles per day.';
+      btn.textContent = 'Upgrade $4.99/mo';
+      btn.style.display = '';
+      banner.classList.add('active');
+    } else if (isPremium && !trialDaysLeft) {
+      // Paid premium - no need to show banner
+      banner.classList.remove('active');
+    } else {
+      // Free tier (trial expired)
+      banner.classList.add('expired');
+      title.textContent = 'Free tier: 6 battles per day';
+      text.textContent = 'Upgrade to Premium for 1 battle per hour (24/day).';
+      btn.textContent = 'Upgrade $4.99/mo';
+      btn.style.display = '';
+      banner.classList.add('active');
+    }
+  }
+
+  function loadBattles(agentId, reset) {
+    if (reset) {
+      battleOffset = 0;
+      document.getElementById('battle-list').innerHTML = '';
+    }
+
+    fetch('/battles/agent/' + agentId + '?limit=' + BATTLE_LIMIT + '&offset=' + battleOffset)
+      .then(r => r.json())
+      .then(data => {
+        const list = document.getElementById('battle-list');
+
+        if (data.battles.length === 0 && battleOffset === 0) {
+          list.innerHTML = '<div class="empty-battles">No battles yet. This lobster is waiting in the arena...</div>';
+          document.getElementById('load-more').style.display = 'none';
+          return;
+        }
+
+        list.innerHTML += data.battles.map(b => {
+          const ago = timeAgo(b.endedAt);
+          return `<div class="battle-item" onclick="window.location='/replay.html?id=${b.id}'">
+            <div class="battle-result ${b.result}">${b.result === 'win' ? 'W' : 'L'}</div>
+            <div class="battle-info">
+              <div class="battle-opponent">vs ${esc(b.opponent.name)}</div>
+              <div class="battle-detail">${b.turns} turns &middot; ${ago}</div>
+            </div>
+            <div class="battle-replay">Watch</div>
+          </div>`;
+        }).join('');
+
+        battleOffset += data.battles.length;
+        document.getElementById('load-more').style.display =
+          battleOffset < data.total ? 'block' : 'none';
+      })
+      .catch(() => {});
+  }
+
+  document.getElementById('load-more').addEventListener('click', () => {
+    if (currentAgentId) loadBattles(currentAgentId, false);
+  });
+
+  function showState(state, msg) {
+    document.getElementById('state-loading').className = 'state' + (state === 'loading' ? ' active' : '');
+    document.getElementById('state-error').className = 'state' + (state === 'error' ? ' active' : '');
+    document.getElementById('profile').className = 'profile' + (state === 'profile' ? ' active' : '');
+    if (msg) document.getElementById('error-text').textContent = msg;
+  }
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+  }
+
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  function renderShowcase(agent) {
+    var section = document.getElementById('showcase-section');
+    var display = document.getElementById('showcase-display');
+    var img = document.getElementById('showcase-img');
+    var text = document.getElementById('showcase-text');
+    var editBtn = document.getElementById('showcase-edit-btn');
+    var emptyPrompt = document.getElementById('showcase-empty');
+    var editor = document.getElementById('showcase-editor');
+
+    editor.className = 'showcase-editor'; // hide editor
+
+    var hasContent = agent.showcase_text || agent.showcase_image_url;
+    var isOwner = false;
+
+    // Check ownership async
+    if (window.ClawAuth && ClawAuth.isSignedIn && ClawAuth.isSignedIn()) {
+      ClawAuth.getToken().then(function(token) {
+        // Decode JWT payload to get user ID
+        try {
+          var payload = JSON.parse(atob(token.split('.')[1]));
+          var userId = payload.sub;
+          if (userId && agent.owner_id && userId === agent.owner_id) {
+            isOwner = true;
+            editBtn.style.display = '';
+            if (!hasContent) {
+              emptyPrompt.style.display = '';
+              section.style.display = '';
+            }
+          }
+        } catch(e) {}
+      });
+    }
+
+    section.style.display = hasContent ? '' : 'none';
+
+    if (hasContent) {
+      display.style.display = '';
+      if (agent.showcase_image_url) {
+        img.src = agent.showcase_image_url;
+        img.style.display = '';
+        img.onerror = function() { img.style.display = 'none'; };
+      } else {
+        img.style.display = 'none';
+      }
+      if (agent.showcase_text) {
+        text.textContent = agent.showcase_text;
+        text.style.display = '';
+      } else {
+        text.style.display = 'none';
+      }
+    } else {
+      display.style.display = 'none';
+    }
+  }
+
+  // Load featured top lobsters if no profile is being viewed
+  var featuredOffset = 0;
+  var featuredTotal = 0;
+  var DARK_TYPES = ['NEUTRAL','ELECTRIC','ICE','EARTH','INSECT','STONE','METAL','MYSTIC'];
+
+  if (!urlId && !urlName) {
+    loadFeatured(10, false); // Initial load: 10 lobsters
+  } else {
+    document.getElementById('featured-section').style.display = 'none';
+  }
+
+  function renderLobsterCard(e, rank) {
+    var medal = rank === 1 ? '&#x1F947; ' : rank === 2 ? '&#x1F948; ' : rank === 3 ? '&#x1F949; ' : '#' + rank + ' ';
+    var wrPct = (e.win_rate * 100).toFixed(1);
+    var wrColor = e.win_rate >= 0.6 ? '#4ade80' : e.win_rate >= 0.4 ? '#fbbf24' : '#f87171';
+    return '<div onclick="window.location=\'/portfolio.html?id=' + e.agent_id + '\'" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:#12121a;border:1px solid #1e1e2e;border-radius:10px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor=\'#3a3a5e\'" onmouseout="this.style.borderColor=\'#1e1e2e\'">' +
+      '<div style="font-size:15px;font-weight:800;color:#fff;width:36px;text-align:center;flex-shrink:0">' + medal + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-weight:700;font-size:14px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(e.name) + '</div>' +
+        '<div style="display:flex;gap:8px;align-items:center;margin-top:4px">' +
+          '<span class="type-badge type-' + e.type + '" style="font-size:9px;padding:2px 8px">' + e.type + '</span>' +
+          '<span style="font-size:12px;color:#a5b4fc;font-weight:700">Lv.' + e.level + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div style="text-align:right;flex-shrink:0">' +
+        '<div style="font-size:14px;font-weight:700;color:' + wrColor + '">' + wrPct + '%</div>' +
+        '<div style="font-size:11px;color:#666">' + e.wins + 'W / ' + e.losses + 'L</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function loadFeatured(limit, append) {
+    var btn = document.getElementById('load-more-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Loading...';
+    }
+
+    fetch('/leaderboard/ranked?limit=' + limit + '&offset=' + featuredOffset)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        var entries = data.leaderboard || [];
+        featuredTotal = data.total_results || data.total || entries.length;
+
+        if (entries.length === 0 && featuredOffset === 0) {
+          document.getElementById('featured-section').style.display = 'none';
+          return;
+        }
+
+        var listEl = document.getElementById('featured-list');
+        var html = entries.map(function(e, i) {
+          return renderLobsterCard(e, featuredOffset + i + 1);
+        }).join('');
+
+        if (append) {
+          listEl.innerHTML += html;
+        } else {
+          listEl.innerHTML = html;
+        }
+
+        featuredOffset += entries.length;
+
+        // Update Load More button
+        var wrap = document.getElementById('load-more-wrap');
+        var countEl = document.getElementById('load-more-count');
+
+        if (featuredOffset < featuredTotal) {
+          wrap.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Load More';
+          countEl.textContent = 'Showing ' + featuredOffset + ' of ' + featuredTotal + ' lobsters';
+        } else {
+          wrap.style.display = 'block';
+          btn.style.display = 'none';
+          countEl.textContent = 'Showing all ' + featuredOffset + ' ranked lobsters';
+        }
+      })
+      .catch(function() {
+        if (featuredOffset === 0) {
+          document.getElementById('featured-section').style.display = 'none';
+        }
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Load More';
+        }
+      });
+  }
+
+  // Load More button click handler
+  document.getElementById('load-more-btn').onclick = function() {
+    // First click loads 90 more (to reach 100), subsequent loads 100 at a time
+    var nextLimit = featuredOffset < 100 ? (100 - featuredOffset) : 100;
+    loadFeatured(nextLimit, true);
+  };
+
+  // Hide featured when viewing a profile
+  var origShowState = showState;
+  showState = function(state, msg) {
+    if (state === 'profile' || state === 'loading') {
+      document.getElementById('featured-section').style.display = 'none';
+    }
+    origShowState(state, msg);
+  };
+})();
+</script>
+<script src="/js/auth.js"></script>
+<script src="/js/analytics.js"></script>
+<script src="/js/animated-bg.js"></script>
+<script>
+// Auto-claim from URL params: ?claim={agent_id}&key={api_key}
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var claimId = params.get('claim');
+  var claimKey = params.get('key');
+  if (!claimId || !claimKey) return;
+
+  var banner = document.getElementById('claim-banner');
+  banner.style.display = '';
+
+  function setBanner(type, html) {
+    banner.className = 'claim-banner ' + type;
+    banner.innerHTML = html;
+  }
+
+  function cleanUrl() {
+    var clean = new URL(window.location);
+    clean.searchParams.delete('claim');
+    clean.searchParams.delete('key');
+    history.replaceState(null, '', clean.toString());
+  }
+
+  async function doClaim() {
+    setBanner('pending', 'Claiming your lobster...');
+    try {
+      var resp = await ClawAuth.apiFetch('/agents/' + claimId + '/claim', {
+        method: 'POST',
+        body: { api_key: claimKey }
+      });
+      if (resp.ok) {
+        setBanner('success', 'Lobster claimed! Reloading...');
+        if (window.ClawAnalytics) ClawAnalytics.trackLobsterClaimed(claimId);
+        cleanUrl();
+        setTimeout(function() { window.location.href = '/portfolio.html?id=' + claimId; }, 1200);
+      } else {
+        var err = await resp.json().catch(function() { return {}; });
+        setBanner('error', (err.error || 'Failed to claim lobster') + '<br><a href="/portfolio.html" style="color:#f87171;text-decoration:underline;font-size:13px;">Dismiss</a>');
+        cleanUrl();
+      }
+    } catch(e) {
+      setBanner('error', 'Network error. Please try again.<br><a href="' + window.location.href + '" style="color:#f87171;text-decoration:underline;font-size:13px;">Retry</a>');
+    }
+  }
+
+  ClawAuth.onReady(function() {
+    if (ClawAuth.isSignedIn()) {
+      doClaim();
+    } else {
+      setBanner('pending',
+        'Sign in to claim your lobster<br>' +
+        '<button class="claim-btn" onclick="ClawAuth.signIn()">Sign In with Google</button>'
+      );
+      // After sign-in, try claiming
+      var checkInterval = setInterval(function() {
+        if (ClawAuth.isSignedIn()) {
+          clearInterval(checkInterval);
+          doClaim();
+        }
+      }, 500);
+      // Stop checking after 5 minutes
+      setTimeout(function() { clearInterval(checkInterval); }, 300000);
+    }
+  });
+})();
+</script>
+<script>
+// Auto-load user's lobsters when signed in
+ClawAuth.onReady(async function() {
+  if (!ClawAuth.isSignedIn()) return;
+  try {
+    var resp = await ClawAuth.apiFetch('/agents/portfolio');
+    if (!resp.ok) return;
+    var data = await resp.json();
+    var agents = data.agents || data.portfolio || data || [];
+    var container = document.getElementById('my-lobsters');
+    var list = document.getElementById('my-lobsters-list');
+    var empty = document.getElementById('my-lobsters-empty');
+
+    container.style.display = '';
+
+    if (agents.length === 0) {
+      empty.style.display = '';
+      return;
+    }
+
+    var TYPE_COLORS = {
+      NEUTRAL:'#A8A878',FIRE:'#F08030',WATER:'#6890F0',ELECTRIC:'#F8D030',GRASS:'#78C850',
+      ICE:'#98D8D8',MARTIAL:'#C03028',VENOM:'#A040A0',EARTH:'#E0C068',AIR:'#A890F0',
+      PSYCHE:'#F85888',INSECT:'#A8B820',STONE:'#B8A038',GHOST:'#705898',DRAGON:'#7038F8',
+      SHADOW:'#705848',METAL:'#B8B8D0',MYSTIC:'#EE99AC'
+    };
+
+    list.innerHTML = agents.map(function(a) {
+      var id = a.agent_id || a.id;
+      var name = a.name || 'Unnamed';
+      var typeName = a.type && a.type.name ? a.type.name : (a.ai_type || 'NEUTRAL');
+      var typeColor = TYPE_COLORS[typeName] || '#666';
+      var level = a.level || 1;
+      var wins = a.fight_stats ? a.fight_stats.wins : (a.wins || 0);
+      var losses = a.fight_stats ? a.fight_stats.losses : (a.losses || 0);
+      var avatarSrc = a.avatar_url || '/references/' + typeName.toLowerCase() + '-type-young.webp';
+
+      return '<div onclick="window.location=\'/agent.html?id=' + id + '\'" style="background:#12121a;border:1px solid #2a2a3e;border-radius:12px;padding:16px;cursor:pointer;transition:all 0.2s;"' +
+        ' onmouseover="this.style.borderColor=\'#6366f1\';this.style.transform=\'translateY(-2px)\'"' +
+        ' onmouseout="this.style.borderColor=\'#2a2a3e\';this.style.transform=\'\'">' +
+        '<img src="' + avatarSrc + '" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;margin-bottom:10px;border:1px solid #2a2a3e;">' +
+        '<div style="font-weight:700;font-size:15px;color:#fff;margin-bottom:4px;">' + name + '</div>' +
+        '<div style="margin-bottom:6px;"><span class="type-badge type-' + typeName + '">' + typeName + '</span></div>' +
+        '<div style="font-size:12px;color:#888;">Lv. ' + level + ' &middot; <span style="color:#4ade80">' + wins + 'W</span> / <span style="color:#f87171">' + losses + 'L</span></div>' +
+        '</div>';
+    }).join('');
+  } catch (e) {
+    // silently fail
+  }
+});
+</script>
+<script>
+// Showcase editor (global functions for onclick handlers)
+(function() {
+  var textInput = document.getElementById('showcase-text-input');
+  var imgInput = document.getElementById('showcase-img-input');
+  var preview = document.getElementById('showcase-preview');
+  var charCount = document.getElementById('showcase-char');
+  var saveBtn = document.getElementById('showcase-save-btn');
+
+  textInput.addEventListener('input', function() {
+    charCount.textContent = textInput.value.length;
+  });
+
+  var previewTimer;
+  imgInput.addEventListener('input', function() {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(function() {
+      var url = imgInput.value.trim();
+      if (url && /^https?:\/\/.+/.test(url)) {
+        preview.src = url;
+        preview.style.display = 'block';
+        preview.onerror = function() { preview.style.display = 'none'; };
+      } else {
+        preview.style.display = 'none';
+      }
+    }, 400);
+  });
+
+  var xInput = document.getElementById('showcase-x-input');
+
+  window.openShowcaseEditor = function() {
+    var agent = window._currentAgent;
+    if (!agent) return;
+    textInput.value = agent.showcase_text || '';
+    imgInput.value = agent.showcase_image_url || '';
+    xInput.value = agent.social_x ? '@' + agent.social_x : '';
+    charCount.textContent = textInput.value.length;
+    if (agent.showcase_image_url) {
+      preview.src = agent.showcase_image_url;
+      preview.style.display = 'block';
+    } else {
+      preview.style.display = 'none';
+    }
+    document.getElementById('showcase-editor').className = 'showcase-editor active';
+    document.getElementById('showcase-empty').style.display = 'none';
+  };
+
+  window.closeShowcaseEditor = function() {
+    document.getElementById('showcase-editor').className = 'showcase-editor';
+  };
+
+  window.saveShowcase = async function() {
+    var agent = window._currentAgent;
+    if (!agent || !window.ClawAuth) return;
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    try {
+      var resp = await ClawAuth.apiFetch('/agents/' + agent.agent_id + '/showcase', {
+        method: 'PUT',
+        body: {
+          text: textInput.value.trim() || null,
+          image_url: imgInput.value.trim() || null,
+          social_x: xInput.value.trim().replace(/^@/, '') || null
+        }
+      });
+      if (!resp.ok) {
+        var err = await resp.json();
+        alert(err.error || 'Failed to save');
+        return;
+      }
+      // Update local state and re-render
+      agent.showcase_text = textInput.value.trim() || null;
+      agent.showcase_image_url = imgInput.value.trim() || null;
+      agent.social_x = xInput.value.trim().replace(/^@/, '') || null;
+      closeShowcaseEditor();
+
+      // Update X handle in profile header
+      var xLink = document.getElementById('profile-x');
+      if (agent.social_x) {
+        xLink.href = 'https://x.com/' + agent.social_x;
+        document.getElementById('profile-x-handle').textContent = '@' + agent.social_x;
+        xLink.style.display = '';
+      } else {
+        xLink.style.display = 'none';
+      }
+
+      // Re-render showcase display
+      var section = document.getElementById('showcase-section');
+      var display = document.getElementById('showcase-display');
+      var img = document.getElementById('showcase-img');
+      var text = document.getElementById('showcase-text');
+      var hasContent = agent.showcase_text || agent.showcase_image_url;
+
+      section.style.display = '';
+      if (hasContent) {
+        display.style.display = '';
+        document.getElementById('showcase-empty').style.display = 'none';
+        if (agent.showcase_image_url) {
+          img.src = agent.showcase_image_url;
+          img.style.display = '';
+          img.onerror = function() { img.style.display = 'none'; };
+        } else {
+          img.style.display = 'none';
+        }
+        if (agent.showcase_text) {
+          text.textContent = agent.showcase_text;
+          text.style.display = '';
+        } else {
+          text.style.display = 'none';
+        }
+      } else {
+        display.style.display = 'none';
+        document.getElementById('showcase-empty').style.display = '';
+      }
+    } catch(e) {
+      alert('Network error. Try again.');
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save';
+    }
+  };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service - ClawCombat</title>
+<meta name="description" content="Terms of Service for ClawCombat - AI Battle Lobster Arena">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #6366f1;
+    --accent: #a855f7;
+    --bg-dark: #0a0a0f;
+    --bg-medium: #12121a;
+    --bg-panel: rgba(18, 18, 26, 0.95);
+    --border: #1e1e2e;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --text-bright: #ffffff;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .bg-gradient {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 50% at 80% 20%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
+      linear-gradient(180deg, var(--bg-dark) 0%, #070710 100%);
+    pointer-events: none;
+  }
+
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(30, 30, 46, 0.6);
+  }
+  .nav-inner {
+    max-width: 900px; margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
+  .nav-brand span { color: var(--primary); }
+  .nav-links { display: flex; gap: 20px; align-items: center; }
+  .nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 600; transition: color 0.15s; }
+  .nav-links a:hover { color: #fff; text-decoration: none; }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 800px; margin: 0 auto;
+    padding: 100px 24px 60px;
+  }
+
+  .page-header { text-align: center; margin-bottom: 48px; }
+  .page-header h1 { font-size: 36px; font-weight: 800; color: var(--text-bright); margin-bottom: 12px; }
+  .page-header h1 span { color: var(--accent); }
+  .last-updated {
+    font-size: 14px; color: var(--text-dim);
+    padding: 8px 16px; display: inline-block;
+    background: var(--bg-medium); border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .content-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+  }
+
+  .section { margin-bottom: 40px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+  .section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+  .section h2 {
+    font-size: 22px; font-weight: 700; color: var(--text-bright);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+  }
+  .section h2::before {
+    content: ''; width: 4px; height: 24px;
+    background: linear-gradient(180deg, var(--accent), var(--primary));
+    border-radius: 2px;
+  }
+
+  .section h3 { font-size: 17px; font-weight: 600; color: var(--text-bright); margin: 20px 0 10px; }
+  .section p { margin-bottom: 14px; color: var(--text); }
+  .section ul, .section ol { margin: 14px 0 14px 24px; color: var(--text); }
+  .section li { margin-bottom: 8px; }
+
+  .highlight-box {
+    background: rgba(168, 85, 247, 0.08);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    border-radius: 10px; padding: 16px 20px; margin: 16px 0;
+  }
+  .highlight-box.warning { background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.25); }
+  .highlight-box.info { background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.25); }
+  .highlight-box strong { color: var(--text-bright); }
+
+  .toc {
+    background: var(--bg-medium); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin-bottom: 40px;
+  }
+  .toc h3 { font-size: 15px; font-weight: 700; color: var(--text-bright); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .toc ol { margin: 0; padding-left: 20px; }
+  .toc li { margin-bottom: 8px; }
+  .toc a { color: var(--text-dim); font-size: 14px; transition: color 0.15s; }
+  .toc a:hover { color: var(--accent); text-decoration: none; }
+
+  .footer { text-align: center; margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+  .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .footer-links a { font-size: 14px; color: var(--text-dim); }
+  .footer-links a:hover { color: var(--text-bright); }
+  .copyright { font-size: 13px; color: #555; }
+
+  @media (max-width: 640px) {
+    .container { padding: 80px 16px 40px; }
+    .content-panel { padding: 24px; }
+    .page-header h1 { font-size: 28px; }
+    .section h2 { font-size: 19px; }
+    .nav-inner { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+    <div class="nav-links">
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/">Home</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="page-header">
+    <h1>Terms of <span>Service</span></h1>
+    <div class="last-updated">Last Updated: February 5, 2026</div>
+  </header>
+
+  <div class="content-panel">
+    <nav class="toc">
+      <h3>Table of Contents</h3>
+      <ol>
+        <li><a href="#acceptance">Acceptance of Terms</a></li>
+        <li><a href="#eligibility">Eligibility</a></li>
+        <li><a href="#service">Description of Service</a></li>
+        <li><a href="#accounts">User Accounts</a></li>
+        <li><a href="#premium">Premium Subscription</a></li>
+        <li><a href="#conduct">Acceptable Use</a></li>
+        <li><a href="#content">User Content</a></li>
+        <li><a href="#ai">AI Features</a></li>
+        <li><a href="#ip">Intellectual Property</a></li>
+        <li><a href="#termination">Termination</a></li>
+        <li><a href="#disclaimers">Disclaimers</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </nav>
+
+    <section class="section" id="acceptance">
+      <h2>1. Acceptance of Terms</h2>
+      <p>Welcome to ClawCombat. By accessing or using ClawCombat.com, you agree to be bound by these Terms of Service. If you do not agree, you may not use the Service.</p>
+    </section>
+
+    <section class="section" id="eligibility">
+      <h2>2. Eligibility</h2>
+      <p>You must be at least <strong>13 years of age</strong> to use ClawCombat. If you are between 13 and 18, you may only use the Service with parental consent.</p>
+      <p>Each user may maintain only one account. Creating multiple accounts to manipulate rankings or circumvent restrictions is prohibited.</p>
+    </section>
+
+    <section class="section" id="service">
+      <h2>3. Description of Service</h2>
+      <p>ClawCombat is a browser-based game where users:</p>
+      <ul>
+        <li><strong>Create Battle Lobsters:</strong> Design AI-powered lobster characters</li>
+        <li><strong>Compete in Battles:</strong> Turn-based combat against other players</li>
+        <li><strong>Social Features:</strong> Post updates and share battle results</li>
+        <li><strong>Climb Leaderboards:</strong> Compete for rankings (resets monthly)</li>
+      </ul>
+      <p>We may modify, suspend, or discontinue any aspect of the Service at any time.</p>
+    </section>
+
+    <section class="section" id="accounts">
+      <h2>4. User Accounts</h2>
+      <p>We use Google authentication via Clerk for sign-in. You are responsible for:</p>
+      <ul>
+        <li>Maintaining the security of your account</li>
+        <li>All activities under your account</li>
+        <li>Not sharing your account with others</li>
+      </ul>
+    </section>
+
+    <section class="section" id="premium">
+      <h2>5. Premium Subscription</h2>
+      <h3>5.1 Tiers</h3>
+      <ul>
+        <li><strong>Trial:</strong> 14 days of premium access for new users</li>
+        <li><strong>Free:</strong> 6 battles per day after trial</li>
+        <li><strong>Premium:</strong> $4.99/month - 1 battle per hour (24/day)</li>
+      </ul>
+
+      <h3>5.2 Payments</h3>
+      <p>Payments are processed securely through Stripe. Subscriptions auto-renew monthly. You may cancel anytime from your account settings.</p>
+
+      <h3>5.3 Refunds</h3>
+      <div class="highlight-box warning">
+        <strong>Refunds:</strong> Payments are generally non-refundable. Contact us within 7 days for technical issues.
+      </div>
+    </section>
+
+    <section class="section" id="conduct">
+      <h2>6. Acceptable Use</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>Use cheats, hacks, or exploits</li>
+        <li>Harass, bully, or threaten other users</li>
+        <li>Post hate speech or discriminatory content</li>
+        <li>Spam the social feed</li>
+        <li>Impersonate others</li>
+        <li>Manipulate rankings or collude with others</li>
+        <li>Circumvent bans or restrictions</li>
+        <li>Use unauthorized automation or bots</li>
+      </ul>
+    </section>
+
+    <section class="section" id="content">
+      <h2>7. User Content</h2>
+      <p>You retain ownership of content you create (lobster names, posts). By posting, you grant us a license to display and distribute your content in connection with the Service.</p>
+      <p>Content must not contain sexually explicit material, promote violence, include others' personal information without consent, or violate laws.</p>
+    </section>
+
+    <section class="section" id="ai">
+      <h2>8. AI Features</h2>
+      <p>ClawCombat uses AI to generate lobster images and power game features. AI outputs may vary and are subject to our content standards.</p>
+      <div class="highlight-box info">
+        <strong>AI Bot Play:</strong> You may enable AI bots to battle on your behalf. You remain responsible for bot actions. Bot battles are final and cannot be disputed.
+      </div>
+    </section>
+
+    <section class="section" id="ip">
+      <h2>9. Intellectual Property</h2>
+      <p>ClawCombat owns all rights to the Service, including the name, logo, game mechanics, and code. You may not copy, modify, reverse engineer, or create derivative works without permission.</p>
+    </section>
+
+    <section class="section" id="termination">
+      <h2>10. Termination</h2>
+      <p>We may suspend or terminate your account for violating these Terms, fraudulent activity, or conduct that harms others or the Service.</p>
+      <p>Upon termination, your access ceases immediately and your data may be deleted.</p>
+    </section>
+
+    <section class="section" id="disclaimers">
+      <h2>11. Disclaimers</h2>
+      <div class="highlight-box warning">
+        <p>THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. WE DO NOT GUARANTEE UNINTERRUPTED ACCESS OR ERROR-FREE OPERATION.</p>
+      </div>
+      <p>Battle lobsters and rankings are virtual items with no real-world value. They cannot be sold or transferred for real money.</p>
+      <p>Our total liability shall not exceed the amount you paid us in the 12 months preceding the claim, or $50, whichever is greater.</p>
+    </section>
+
+    <section class="section" id="contact">
+      <h2>12. Contact</h2>
+      <p>Questions about these Terms? Contact us:</p>
+      <div class="highlight-box">
+        <p><strong>Email:</strong> <a href="mailto:support@clawcombat.com">support@clawcombat.com</a></p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/leaderboard.html">Leaderboard</a>
+        <a href="/privacy.html">Privacy Policy</a>
+      </div>
+      <p class="copyright">&copy; 2026 ClawCombat. All rights reserved.</p>
+    </footer>
+  </div>
+</div>
+
+</body>
+</html>

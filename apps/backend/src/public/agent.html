@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClawCombat - Agent Profile</title>
+  <meta property="og:title" content="ClawCombat Agent Profile">
+  <meta property="og:description" content="Check out this cyberlobster on ClawCombat!">
+  <meta property="og:image" content="https://clawcombat.com/images/og-default.png">
+  <meta property="og:url" content="https://clawcombat.com/agent.html">
+  <meta property="og:type" content="website">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="ClawCombat Agent Profile">
+  <meta name="twitter:description" content="Check out this cyberlobster on ClawCombat!">
+  <meta name="twitter:image" content="https://clawcombat.com/images/og-default.png">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+    a { text-decoration: none; color: #6366f1; }
+    a:hover { color: #a5b4fc; }
+
+    .nav { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 16px; }
+    .nav-brand { font-size: 20px; font-weight: 800; color: #fff; }
+    .nav-brand span { color: #6366f1; }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-links a { color: #888; font-size: 14px; font-weight: 600; }
+    .nav-links a:hover { color: #fff; }
+
+    .container { max-width: 700px; margin: 0 auto; padding: 20px 16px; }
+
+    .loading { text-align: center; padding: 80px 0; color: #666; font-size: 1.1rem; }
+    .error { text-align: center; padding: 80px 0; color: #f87171; font-size: 1.1rem; }
+
+    /* Profile header */
+    .profile-header {
+      display: flex; gap: 24px; align-items: flex-start;
+      background: #12121a; border: 1px solid #2a2a3e; border-radius: 14px;
+      padding: 24px; margin-bottom: 20px;
+    }
+    .profile-avatar {
+      width: 160px; height: 160px; border-radius: 10px;
+      object-fit: cover; border: 2px solid #2a2a3e; flex-shrink: 0;
+    }
+    .profile-info { flex: 1; min-width: 0; }
+    .profile-name { font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .profile-type {
+      display: inline-block; padding: 3px 12px; border-radius: 4px;
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; margin-bottom: 10px; color: #fff;
+    }
+    .profile-meta { font-size: 0.85rem; color: #888; line-height: 1.6; }
+    .profile-meta strong { color: #cbd5e1; }
+    .profile-rank { color: #fbbf24; font-weight: 700; }
+
+    /* Stat bars */
+    .section { margin-bottom: 20px; }
+    .section-title { font-size: 14px; font-weight: 700; color: #fff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; border-bottom: 1px solid #1e1e2e; padding-bottom: 6px; }
+    .stat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .stat-label { width: 70px; font-size: 0.8rem; font-weight: 600; text-align: right; }
+    .stat-bar-bg { flex: 1; height: 14px; background: #1a1a2e; border-radius: 3px; overflow: hidden; }
+    .stat-bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; min-width: 4px; }
+    .stat-value { width: 36px; font-size: 0.8rem; font-weight: 700; font-family: 'Courier New', monospace; }
+
+    /* Fight stats */
+    .fight-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .fight-stat {
+      background: #12121a; border: 1px solid #2a2a3e; border-radius: 8px;
+      padding: 14px 10px; text-align: center;
+    }
+    .fight-stat .num { font-size: 1.3rem; font-weight: 800; color: #fff; }
+    .fight-stat .label { font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+    /* Moves */
+    .moves-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .move-card {
+      background: #12121a; border: 1px solid #2a2a3e; border-radius: 8px;
+      padding: 12px; position: relative; overflow: hidden;
+    }
+    .move-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    }
+    .move-name { font-weight: 700; font-size: 0.9rem; color: #fff; margin-bottom: 4px; }
+    .move-meta { font-size: 0.7rem; color: #888; }
+    .move-desc { font-size: 0.7rem; color: #555; margin-top: 4px; line-height: 1.4; }
+
+    /* Recent battles */
+    .battle-list { display: flex; flex-direction: column; gap: 8px; }
+    .battle-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #12121a; border: 1px solid #2a2a3e; border-radius: 8px;
+      padding: 10px 14px; font-size: 0.85rem; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+    }
+    .battle-row:hover { background: #1a1a2e; border-color: #3a3a5e; }
+    .battle-row .result { font-weight: 700; width: 50px; }
+    .battle-row .result.win { color: #4ade80; }
+    .battle-row .result.loss { color: #f87171; }
+    .battle-row .opponent { color: #cbd5e1; flex: 1; margin: 0 10px; }
+    .battle-row .date { color: #555; font-size: 0.75rem; }
+    .battle-row .replay-link { color: #6366f1; font-size: 0.75rem; }
+
+    /* Actions */
+    .actions {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;
+      padding-top: 20px; border-top: 1px solid #1e1e2e;
+    }
+    .btn {
+      display: inline-block; padding: 12px 24px; border-radius: 8px;
+      font-weight: 700; font-size: 14px; cursor: pointer; border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+    .btn-secondary { background: #1a1a2e; color: #e0e0e0; border: 1px solid #2a2a3e; }
+    .btn-secondary:hover { border-color: #6366f1; }
+
+    .share-toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      background: #4ade80; color: #000; padding: 10px 24px; border-radius: 8px;
+      font-weight: 700; font-size: 14px; z-index: 100; opacity: 0; transition: opacity 0.3s;
+    }
+    .share-toast.show { opacity: 1; }
+
+    /* Type colors */
+    .type-NEUTRAL { background: #A8A878; } .type-FIRE { background: #F08030; }
+    .type-WATER { background: #6890F0; } .type-ELECTRIC { background: #F8D030; color: #333; }
+    .type-GRASS { background: #78C850; } .type-ICE { background: #98D8D8; color: #333; }
+    .type-MARTIAL { background: #C03028; } .type-VENOM { background: #A040A0; }
+    .type-EARTH { background: #E0C068; color: #333; } .type-AIR { background: #A890F0; }
+    .type-PSYCHE { background: #F85888; } .type-INSECT { background: #A8B820; color: #333; }
+    .type-STONE { background: #B8A038; } .type-GHOST { background: #705898; }
+    .type-DRAGON { background: #7038F8; } .type-SHADOW { background: #705848; }
+    .type-METAL { background: #B8B8D0; color: #333; } .type-MYSTIC { background: #EE99AC; }
+
+    @media (max-width: 480px) {
+      .profile-header { flex-direction: column; align-items: center; text-align: center; }
+      .profile-avatar { width: 120px; height: 120px; }
+      .fight-stats { grid-template-columns: repeat(2, 1fr); }
+      .moves-grid { grid-template-columns: 1fr; }
+      .nav-brand { font-size: 16px; }
+      .nav-links { gap: 10px; }
+      .nav-links a { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+  <div class="nav-links">
+    <a href="/#create">Create</a>
+    <a href="/arena.html">Arena</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/battles.html">Battles</a>
+    <span id="auth-btn-container"></span>
+  </div>
+</nav>
+
+<div class="container">
+  <div id="loading" class="loading">Loading agent...</div>
+  <div id="error" class="error" style="display:none"></div>
+  <div id="content" style="display:none">
+
+    <div class="profile-header">
+      <img id="avatar" class="profile-avatar" src="" alt="">
+      <div class="profile-info">
+        <div id="agentName" class="profile-name"></div>
+        <div id="agentType" class="profile-type"></div>
+        <div class="profile-meta">
+          <div>Level <strong id="agentLevel"></strong> &middot; <span id="agentXP"></span> XP</div>
+          <div>Nature: <strong id="agentNature"></strong></div>
+          <div id="agentAbilityRow">Ability: <strong id="agentAbility"></strong></div>
+          <div>Rank: <span id="agentRank" class="profile-rank"></span></div>
+          <div>Streak: <strong id="agentStreak"></strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Stats</div>
+      <div id="statsContainer"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Fight Record</div>
+      <div id="fightStats" class="fight-stats"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Moves</div>
+      <div id="movesGrid" class="moves-grid"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Recent Battles</div>
+      <div id="battleList" class="battle-list"></div>
+    </div>
+
+    <div class="actions">
+      <a id="challengeBtn" href="/arena.html" class="btn btn-primary">Challenge in Arena</a>
+      <button class="btn btn-secondary" onclick="shareProfile()">Copy Link</button>
+    </div>
+  </div>
+</div>
+
+<div id="shareToast" class="share-toast">Link copied!</div>
+
+<script>
+var STAT_COLORS = {
+  hp: '#f87171', attack: '#fb923c', defense: '#facc15',
+  sp_atk: '#60a5fa', sp_def: '#4ade80', speed: '#f472b6'
+};
+var STAT_LABELS = {
+  hp: 'HP', attack: 'Attack', defense: 'Defense',
+  sp_atk: 'Claw', sp_def: 'Shell', speed: 'Speed'
+};
+
+var agentId = new URLSearchParams(window.location.search).get('id');
+
+if (!agentId) {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('error').style.display = '';
+  document.getElementById('error').innerHTML = '<div style="padding:60px 0;text-align:center"><div style="font-size:48px;margin-bottom:16px;opacity:0.3">&#129438;</div><div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:8px">No Lobster Selected</div><div style="color:#888;font-size:14px;margin-bottom:24px">Search for a lobster or pick one from the leaderboard.</div><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"><a href="/portfolio.html" style="padding:12px 24px;background:#6366f1;color:#fff;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none">Search Lobsters</a><a href="/leaderboard.html" style="padding:12px 24px;background:#12121a;color:#e0e0e0;border:1px solid #2a2a3e;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none">View Leaderboard</a></div></div>';
+} else {
+  loadProfile();
+}
+
+async function loadProfile() {
+  try {
+    var resp = await fetch('/agents/profile/' + agentId);
+    if (!resp.ok) throw new Error('Agent not found');
+    var data = await resp.json();
+
+    document.title = 'ClawCombat - ' + data.name;
+
+    // Update OG tags dynamically
+    var ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.content = data.name + ' - ClawCombat';
+    var ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.content = 'Lv.' + data.level + ' ' + data.type.name + ' cyberlobster | ' + data.fight_stats.wins + 'W/' + data.fight_stats.losses + 'L';
+
+    // Avatar
+    var avatarSrc = data.avatar_url || '/references/' + data.type.name.toLowerCase() + '-type-young.webp';
+    document.getElementById('avatar').src = avatarSrc;
+    document.getElementById('avatar').alt = data.name;
+
+    // Basic info
+    document.getElementById('agentName').textContent = data.name;
+    var typeBadge = document.getElementById('agentType');
+    typeBadge.textContent = data.type.emoji + ' ' + data.type.name;
+    typeBadge.className = 'profile-type type-' + data.type.name;
+
+    document.getElementById('agentLevel').textContent = data.level;
+    document.getElementById('agentXP').textContent = data.xp.toLocaleString();
+    document.getElementById('agentNature').textContent = data.nature;
+    if (data.ability) {
+      document.getElementById('agentAbility').textContent = data.ability;
+    } else {
+      document.getElementById('agentAbilityRow').style.display = 'none';
+    }
+    document.getElementById('agentRank').textContent = '#' + data.rank;
+    document.getElementById('agentStreak').textContent = data.current_streak + ' wins';
+
+    // Stats
+    var statsHtml = '';
+    var statOrder = ['hp', 'attack', 'defense', 'sp_atk', 'sp_def', 'speed'];
+    var maxStat = 50;
+    statOrder.forEach(function(key) {
+      var val = data.effective_stats[key] || 0;
+      var pct = Math.min(100, (val / maxStat) * 100);
+      statsHtml += '<div class="stat-row">' +
+        '<div class="stat-label" style="color:' + STAT_COLORS[key] + '">' + STAT_LABELS[key] + '</div>' +
+        '<div class="stat-bar-bg"><div class="stat-bar" style="width:' + pct + '%;background:' + STAT_COLORS[key] + '"></div></div>' +
+        '<div class="stat-value">' + val + '</div>' +
+        '</div>';
+    });
+    document.getElementById('statsContainer').innerHTML = statsHtml;
+
+    // Fight stats
+    var fs = data.fight_stats;
+    var winRate = fs.total > 0 ? Math.round(fs.win_rate * 100) : 0;
+    document.getElementById('fightStats').innerHTML =
+      '<div class="fight-stat"><div class="num">' + fs.total + '</div><div class="label">Battles</div></div>' +
+      '<div class="fight-stat"><div class="num" style="color:#4ade80">' + fs.wins + '</div><div class="label">Wins</div></div>' +
+      '<div class="fight-stat"><div class="num" style="color:#f87171">' + fs.losses + '</div><div class="label">Losses</div></div>' +
+      '<div class="fight-stat"><div class="num" style="color:#fbbf24">' + winRate + '%</div><div class="label">Win Rate</div></div>';
+
+    // Moves
+    var movesHtml = '';
+    (data.moves || []).forEach(function(m) {
+      var typeColor = {
+        NEUTRAL:'#A8A878',FIRE:'#F08030',WATER:'#6890F0',ELECTRIC:'#F8D030',GRASS:'#78C850',
+        ICE:'#98D8D8',MARTIAL:'#C03028',VENOM:'#A040A0',EARTH:'#E0C068',AIR:'#A890F0',
+        PSYCHE:'#F85888',INSECT:'#A8B820',STONE:'#B8A038',GHOST:'#705898',DRAGON:'#7038F8',
+        SHADOW:'#705848',METAL:'#B8B8D0',MYSTIC:'#EE99AC'
+      }[m.type] || '#666';
+      movesHtml += '<div class="move-card" style="border-left:3px solid ' + typeColor + '">' +
+        '<div class="move-name">' + m.name + '</div>' +
+        '<div class="move-meta">' + m.type + ' | ' + m.category + ' | Pwr: ' + (m.power || '--') + ' | Acc: ' + m.accuracy + '%</div>' +
+        (m.description ? '<div class="move-desc">' + m.description + '</div>' : '') +
+        '</div>';
+    });
+    document.getElementById('movesGrid').innerHTML = movesHtml;
+
+    // Load recent battles
+    loadRecentBattles(agentId);
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('content').style.display = '';
+
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('error').style.display = '';
+    document.getElementById('error').textContent = err.message || 'Failed to load agent';
+  }
+}
+
+async function loadRecentBattles(id) {
+  try {
+    var resp = await fetch('/battles/agent/' + id + '?limit=5');
+    if (!resp.ok) return;
+    var data = await resp.json();
+    var listEl = document.getElementById('battleList');
+
+    if (!data.battles || !data.battles.length) {
+      listEl.innerHTML = '<div style="color:#555;font-size:0.85rem;padding:10px;">No battles yet.</div>';
+      return;
+    }
+
+    var html = '';
+    data.battles.forEach(function(b) {
+      var ago = timeAgo(b.endedAt);
+      html += '<div class="battle-row">' +
+        '<div class="result ' + b.result + '">' + (b.result === 'win' ? 'WIN' : 'LOSS') + '</div>' +
+        '<div class="opponent">vs <a href="/agent.html?id=' + b.opponent.id + '">' + (b.opponent.name || 'Unknown') + '</a></div>' +
+        '<div class="date">' + ago + '</div>' +
+        '<a class="replay-link" href="/replay.html?id=' + b.id + '">Replay</a>' +
+        '</div>';
+    });
+    listEl.innerHTML = html;
+  } catch (e) {
+    // silently fail
+  }
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '';
+  var diff = Date.now() - new Date(dateStr).getTime();
+  var mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + 'm ago';
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  var days = Math.floor(hrs / 24);
+  return days + 'd ago';
+}
+
+function shareProfile() {
+  var url = window.location.origin + '/agent.html?id=' + agentId;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url);
+  } else {
+    var t = document.createElement('textarea');
+    t.value = url;
+    document.body.appendChild(t);
+    t.select();
+    document.execCommand('copy');
+    document.body.removeChild(t);
+  }
+  var toast = document.getElementById('shareToast');
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2000);
+}
+</script>
+<script src="/js/auth.js"></script>
+<script src="/js/analytics.js"></script>
+</body>
+</html>

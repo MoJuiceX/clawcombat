@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat - Image Selector</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0a0a0f;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding-bottom: 120px;
+  }
+
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #1e1e2e;
+    padding: 12px 20px;
+  }
+  .header h1 { font-size: 20px; color: #fff; margin-bottom: 8px; }
+  .header-stats {
+    display: flex; gap: 20px; font-size: 13px; color: #888;
+  }
+  .header-stats .approved { color: #22c55e; }
+  .header-stats .rejected { color: #ef4444; }
+
+  .controls {
+    display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;
+  }
+  .btn {
+    padding: 8px 16px; background: #1e1e2e; border: 1px solid #333;
+    border-radius: 6px; color: #ccc; font-size: 12px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: #2a2a3e; border-color: #6366f1; }
+  .btn.primary { background: #6366f1; border-color: #6366f1; color: #fff; }
+
+  .type-nav {
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 20px;
+    background: #12121a; border-bottom: 1px solid #1e1e2e;
+    position: sticky; top: 76px; z-index: 99;
+  }
+  .type-nav a {
+    padding: 6px 12px; background: #1e1e2e; border-radius: 4px;
+    color: #888; text-decoration: none; font-size: 12px;
+    font-weight: 600; text-transform: uppercase;
+  }
+  .type-nav a:hover { background: #2a2a3e; color: #fff; }
+
+  .type-section {
+    padding: 20px; border-bottom: 2px solid #1e1e2e;
+  }
+  .type-title {
+    font-size: 28px; font-weight: 800; color: #fff;
+    margin-bottom: 24px; text-transform: uppercase; letter-spacing: 2px;
+  }
+
+  .base-section { margin-bottom: 24px; }
+  .base-title {
+    font-size: 16px; font-weight: 700; color: #a5b4fc;
+    margin-bottom: 10px; text-transform: capitalize;
+    padding-left: 8px; border-left: 4px solid #6366f1;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .base-title .variant-legend {
+    display: flex; gap: 8px; font-size: 10px; font-weight: 500;
+  }
+  .base-title .variant-legend span {
+    padding: 2px 6px; border-radius: 3px; background: #1e1e2e;
+  }
+
+  .images-row {
+    display: flex; gap: 12px; padding: 8px 0;
+    overflow-x: auto; scrollbar-width: thin;
+    scrollbar-color: #333 #1e1e2e;
+  }
+  .images-row::-webkit-scrollbar { height: 8px; }
+  .images-row::-webkit-scrollbar-track { background: #1e1e2e; border-radius: 4px; }
+  .images-row::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+  .images-row::-webkit-scrollbar-thumb:hover { background: #555; }
+
+  .variant-group {
+    display: flex; gap: 8px; padding-right: 16px;
+    border-right: 2px solid #333; flex-shrink: 0;
+  }
+  .variant-group:last-child { border-right: none; padding-right: 0; }
+  .variant-group::before {
+    content: attr(data-variant);
+    writing-mode: vertical-rl; text-orientation: mixed;
+    font-size: 10px; font-weight: 600; color: #f59e0b;
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 4px 0; align-self: center;
+  }
+
+  .card {
+    position: relative; background: #1e1e2e; border: 3px solid #333;
+    border-radius: 10px; overflow: hidden; cursor: pointer;
+    transition: all 0.2s; width: 328px; flex-shrink: 0;
+  }
+  .card:hover { border-color: #6366f1; transform: scale(1.02); }
+  .card.selected { border-color: #22c55e; }
+  .card.deselected { opacity: 0.3; border-color: #ef4444; }
+  .card.deselected::after {
+    content: '\2715'; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); font-size: 90px; color: #ef4444;
+    font-weight: bold; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+  }
+
+  .card img {
+    width: 100%; height: 291px; object-fit: contain; background: #0a0a0f;
+  }
+  .card-label {
+    padding: 6px 8px; font-size: 10px; color: #888;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    background: #12121a; text-align: center;
+  }
+
+  .export-panel {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(18, 18, 26, 0.98); backdrop-filter: blur(10px);
+    border-top: 1px solid #333; padding: 16px 20px; z-index: 200;
+  }
+  .export-panel .stats {
+    display: flex; gap: 20px; margin-bottom: 10px; font-size: 14px;
+  }
+  .export-panel .approved { color: #22c55e; font-weight: 700; }
+  .export-panel .rejected { color: #ef4444; font-weight: 700; }
+  .export-panel .btn-export {
+    width: 100%; max-width: 400px; padding: 14px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border: none; border-radius: 8px; color: #fff;
+    font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .export-panel .btn-export:hover {
+    transform: translateY(-2px); box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  }
+
+  .loading { text-align: center; padding: 60px 20px; color: #888; font-size: 18px; }
+
+  /* Type colors */
+  [data-type="fire"] .type-title { color: #F08030; }
+  [data-type="water"] .type-title { color: #6890F0; }
+  [data-type="grass"] .type-title { color: #78C850; }
+  [data-type="electric"] .type-title { color: #F8D030; }
+  [data-type="ice"] .type-title { color: #98D8D8; }
+  [data-type="martial"] .type-title { color: #C03028; }
+  [data-type="venom"] .type-title { color: #A040A0; }
+  [data-type="earth"] .type-title { color: #E0C068; }
+  [data-type="air"] .type-title { color: #A890F0; }
+  [data-type="psyche"] .type-title { color: #F85888; }
+  [data-type="insect"] .type-title { color: #A8B820; }
+  [data-type="stone"] .type-title { color: #B8A038; }
+  [data-type="ghost"] .type-title { color: #705898; }
+  [data-type="dragon"] .type-title { color: #7038F8; }
+  [data-type="shadow"] .type-title { color: #705848; }
+  [data-type="metal"] .type-title { color: #B8B8D0; }
+  [data-type="mystic"] .type-title { color: #EE99AC; }
+  [data-type="neutral"] .type-title { color: #A8A878; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ClawCombat Image Selector</h1>
+  <div class="header-stats">
+    <span>All images auto-selected. Click to <strong>DESELECT</strong>.</span>
+    <span class="approved">Approved: <span id="approvedCount">0</span></span>
+    <span class="rejected">Rejected: <span id="rejectedCount">0</span></span>
+  </div>
+  <div class="controls">
+    <button class="btn" onclick="selectAll()">Select All</button>
+    <button class="btn" onclick="deselectAll()">Deselect All</button>
+    <button class="btn primary" onclick="copyApproved()">Copy Approved List</button>
+  </div>
+</div>
+
+<div class="type-nav" id="typeNav"></div>
+
+<div id="content">
+  <div class="loading">Loading images...</div>
+</div>
+
+<div class="export-panel">
+  <div class="stats">
+    <span class="approved">Approved: <span id="approvedCount2">0</span></span>
+    <span class="rejected">Rejected: <span id="rejectedCount2">0</span></span>
+    <span style="color:#888;">Total: <span id="totalCount">0</span></span>
+  </div>
+  <button class="btn-export" onclick="copyApproved()">Copy Approved List to Clipboard</button>
+</div>
+
+<script>
+var TYPES = ['air', 'dragon', 'earth', 'electric', 'fire', 'ghost', 'grass', 'ice',
+             'insect', 'martial', 'metal', 'mystic', 'neutral', 'psyche', 'shadow',
+             'stone', 'venom', 'water'];
+var BASES = ['crawler', 'peeper', 'cadet', 'scout', 'sentinel', 'titan'];
+var VARIANTS = ['balanced', 'attack', 'defense', 'hp', 'speed', 'claw', 'shell'];
+
+var allImages = {};
+var selected = {};
+
+async function loadImages() {
+  var typeNav = document.getElementById('typeNav');
+  TYPES.forEach(function(type) {
+    var a = document.createElement('a');
+    a.href = '#' + type;
+    a.textContent = type;
+    typeNav.appendChild(a);
+  });
+
+  try {
+    var resp = await fetch('/api/reference-images');
+    var data = await resp.json();
+    allImages = data.images;
+    renderAll();
+  } catch (err) {
+    document.getElementById('content').innerHTML = '<div class="loading">Error: ' + err.message + '</div>';
+    console.error(err);
+  }
+}
+
+function classifyImage(filename) {
+  var fn = filename.toLowerCase();
+  var base = 'other';
+  var variant = 'other';
+
+  // Find base
+  for (var i = 0; i < BASES.length; i++) {
+    if (fn.includes(BASES[i])) {
+      base = BASES[i];
+      break;
+    }
+  }
+
+  // Find variant
+  for (var i = 0; i < VARIANTS.length; i++) {
+    if (fn.includes(VARIANTS[i]) || fn.includes(VARIANTS[i].substring(0,3))) {
+      variant = VARIANTS[i];
+      break;
+    }
+  }
+  // Special cases
+  if (fn.includes('def') && variant === 'other') variant = 'defense';
+  if (fn.includes('spd') && variant === 'other') variant = 'speed';
+  if (fn.includes('atk') && variant === 'other') variant = 'attack';
+  if (fn.includes('bal') && variant === 'other') variant = 'balanced';
+
+  return { base: base, variant: variant };
+}
+
+function renderAll() {
+  var content = document.getElementById('content');
+  content.innerHTML = '';
+  var totalCount = 0;
+
+  TYPES.forEach(function(type, typeIndex) {
+    var images = allImages[type] || [];
+    if (images.length === 0) return;
+
+    var section = document.createElement('div');
+    section.className = 'type-section';
+    section.id = type;
+    section.setAttribute('data-type', type);
+
+    var title = document.createElement('div');
+    title.className = 'type-title';
+    title.textContent = type + ' (' + images.length + ' images)';
+    section.appendChild(title);
+
+    // Organize: base -> variant -> images
+    var organized = {};
+    BASES.concat(['other']).forEach(function(b) {
+      organized[b] = {};
+      VARIANTS.concat(['other']).forEach(function(v) {
+        organized[b][v] = [];
+      });
+    });
+
+    images.forEach(function(imgPath) {
+      var filename = imgPath.split('/').pop();
+      var cls = classifyImage(filename);
+      organized[cls.base][cls.variant].push(imgPath);
+    });
+
+    // Render each base - all variants in ONE horizontal scrollable row
+    BASES.concat(['other']).forEach(function(base) {
+      var hasImages = false;
+      for (var v in organized[base]) {
+        if (organized[base][v].length > 0) hasImages = true;
+      }
+      if (!hasImages) return;
+
+      var baseSection = document.createElement('div');
+      baseSection.className = 'base-section';
+
+      var baseTitle = document.createElement('div');
+      baseTitle.className = 'base-title';
+      var baseImageCount = 0;
+      for (var v in organized[base]) baseImageCount += organized[base][v].length;
+      baseTitle.textContent = base + ' (' + baseImageCount + ')';
+      baseSection.appendChild(baseTitle);
+
+      // Single horizontal scrollable row for all variants
+      var row = document.createElement('div');
+      row.className = 'images-row';
+
+      // Add variant groups in order
+      VARIANTS.concat(['other']).forEach(function(variant) {
+        var imgs = organized[base][variant];
+        if (imgs.length === 0) return;
+
+        // Create variant group container
+        var variantGroup = document.createElement('div');
+        variantGroup.className = 'variant-group';
+        variantGroup.setAttribute('data-variant', variant);
+
+        imgs.forEach(function(imgPath) {
+          if (selected[imgPath] === undefined) selected[imgPath] = true;
+
+          var card = document.createElement('div');
+          card.className = 'card ' + (selected[imgPath] ? 'selected' : 'deselected');
+          card.onclick = function() { toggleCard(card, imgPath); };
+
+          var img = document.createElement('img');
+          img.src = imgPath;
+          img.alt = imgPath.split('/').pop();
+          img.loading = 'lazy';
+          img.onerror = function() {
+            card.style.display = 'none';
+            console.log('Failed to load:', imgPath);
+          };
+
+          var label = document.createElement('div');
+          label.className = 'card-label';
+          label.textContent = imgPath.split('/').pop();
+          label.title = imgPath;
+
+          card.appendChild(img);
+          card.appendChild(label);
+          variantGroup.appendChild(card);
+          totalCount++;
+        });
+
+        row.appendChild(variantGroup);
+      });
+
+      baseSection.appendChild(row);
+      section.appendChild(baseSection);
+    });
+
+    content.appendChild(section);
+  });
+
+  document.getElementById('totalCount').textContent = totalCount;
+  updateCounts();
+}
+
+function toggleCard(card, path) {
+  selected[path] = !selected[path];
+  card.className = 'card ' + (selected[path] ? 'selected' : 'deselected');
+  updateCounts();
+}
+
+function updateCounts() {
+  var approved = 0, rejected = 0;
+  for (var p in selected) {
+    if (selected[p]) approved++; else rejected++;
+  }
+  document.getElementById('approvedCount').textContent = approved;
+  document.getElementById('rejectedCount').textContent = rejected;
+  document.getElementById('approvedCount2').textContent = approved;
+  document.getElementById('rejectedCount2').textContent = rejected;
+}
+
+function selectAll() {
+  for (var p in selected) selected[p] = true;
+  document.querySelectorAll('.card').forEach(function(c) { c.className = 'card selected'; });
+  updateCounts();
+}
+
+function deselectAll() {
+  for (var p in selected) selected[p] = false;
+  document.querySelectorAll('.card').forEach(function(c) { c.className = 'card deselected'; });
+  updateCounts();
+}
+
+function copyApproved() {
+  var lines = [];
+  TYPES.forEach(function(type) {
+    var typeImages = [];
+    for (var p in selected) {
+      if (selected[p] && p.includes('/' + type + '/')) {
+        typeImages.push(p);
+      }
+    }
+    if (typeImages.length > 0) {
+      lines.push('# ' + type.toUpperCase());
+      typeImages.sort().forEach(function(img) { lines.push(img); });
+      lines.push('');
+    }
+  });
+
+  var text = lines.join('\n');
+  navigator.clipboard.writeText(text).then(function() {
+    alert('Copied ' + Object.values(selected).filter(Boolean).length + ' approved images!');
+  }).catch(function(err) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('Copied ' + Object.values(selected).filter(Boolean).length + ' approved images!');
+  });
+}
+
+loadImages();
+</script>
+</body>
+</html>

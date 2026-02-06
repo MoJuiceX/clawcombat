@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClawCombat Premium - Unlimited Battles</title>
+  <meta property="og:title" content="ClawCombat Premium">
+  <meta property="og:description" content="Upgrade to Premium for unlimited battles - $4.99/month">
+  <meta property="og:image" content="https://clawcombat.com/images/og-default.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+    a { text-decoration: none; color: #6366f1; }
+    a:hover { color: #a5b4fc; }
+
+    .nav { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 16px; }
+    .nav-brand { font-size: 20px; font-weight: 800; color: #fff; }
+    .nav-brand span { color: #6366f1; }
+    .nav-links { display: flex; gap: 20px; align-items: center; }
+    .nav-links a { color: #888; font-size: 14px; font-weight: 600; }
+    .nav-links a:hover { color: #fff; }
+    #auth-btn-container { display: flex; align-items: center; }
+
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 16px; }
+
+    .hero { text-align: center; margin-bottom: 40px; }
+    .hero h1 { font-size: 2.5rem; font-weight: 800; color: #fff; margin-bottom: 12px; }
+    .hero h1 span { background: linear-gradient(135deg, #a855f7, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero p { font-size: 1.1rem; color: #888; max-width: 500px; margin: 0 auto; }
+
+    /* Clerk Pricing Table container */
+    #pricing-table-container {
+      min-height: 400px;
+      margin-bottom: 40px;
+    }
+
+    /* Status messages */
+    .status-box {
+      text-align: center; background: #12121a; border: 1px solid #2a2a3e;
+      border-radius: 16px; padding: 40px; margin-bottom: 40px;
+    }
+    .status-box.success { border-color: #22c55e; }
+    .status-box .icon { font-size: 3rem; margin-bottom: 16px; }
+    .status-box h2 { font-size: 1.5rem; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .status-box p { color: #888; margin-bottom: 20px; }
+    .status-btn {
+      display: inline-block; padding: 12px 32px; border-radius: 10px;
+      background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;
+      font-weight: 700; cursor: pointer; border: none; font-size: 1rem;
+      text-decoration: none;
+    }
+    .status-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(168, 85, 247, 0.3); }
+
+    /* Comparison grid (shown before Clerk table loads or as supplement) */
+    .comparison { margin-bottom: 40px; }
+    .comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 600px) { .comparison-grid { grid-template-columns: 1fr; } }
+
+    .plan-card {
+      background: #12121a; border: 1px solid #2a2a3e; border-radius: 16px;
+      padding: 28px; position: relative; overflow: hidden;
+    }
+    .plan-card.featured { border-color: #a855f7; box-shadow: 0 0 40px rgba(168, 85, 247, 0.15); }
+    .plan-card.featured::before {
+      content: 'BEST VALUE'; position: absolute; top: 12px; right: -28px;
+      background: linear-gradient(135deg, #a855f7, #6366f1); color: #fff;
+      font-size: 10px; font-weight: 700; padding: 4px 40px;
+      transform: rotate(45deg); letter-spacing: 0.5px;
+    }
+
+    .plan-tier { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; }
+    .plan-price { font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+    .plan-price span { font-size: 1rem; font-weight: 500; color: #666; }
+    .plan-desc { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
+
+    .feature-list { list-style: none; margin-bottom: 24px; }
+    .feature-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.9rem; color: #ccc; margin-bottom: 10px; }
+    .feature-list .check { color: #22c55e; font-weight: bold; flex-shrink: 0; }
+    .feature-list .x { color: #666; font-weight: bold; flex-shrink: 0; }
+
+    /* FAQ */
+    .faq { margin-top: 50px; }
+    .faq h2 { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 20px; text-align: center; }
+    .faq-item { background: #12121a; border: 1px solid #2a2a3e; border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; }
+    .faq-q { font-weight: 700; color: #fff; margin-bottom: 6px; }
+    .faq-a { font-size: 0.9rem; color: #888; line-height: 1.6; }
+
+    .loading { text-align: center; padding: 40px; color: #666; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+    <div class="nav-links">
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/portfolio.html">Portfolio</a>
+      <div id="auth-btn-container"></div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="hero">
+      <h1>Upgrade to <span>Premium</span></h1>
+      <p>Battle more, climb faster. Premium members get 4x more battles than free players.</p>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loading" class="loading">Loading...</div>
+
+    <!-- Sign in required -->
+    <div id="signin-prompt" class="status-box hidden">
+      <div class="icon">&#128274;</div>
+      <h2>Sign in to upgrade</h2>
+      <p>You need to be signed in to subscribe to Premium.</p>
+      <button class="status-btn" onclick="ClawAuth.signIn()">Sign In with Google</button>
+    </div>
+
+    <!-- Already premium -->
+    <div id="already-premium" class="status-box success hidden">
+      <div class="icon">&#127881;</div>
+      <h2>You're Premium!</h2>
+      <p>Your subscription is active. Enjoy 1 battle per hour!</p>
+      <a href="/portfolio.html" class="status-btn">View My Portfolio</a>
+    </div>
+
+    <!-- Feature comparison -->
+    <div id="comparison-section" class="comparison hidden">
+      <div class="comparison-grid">
+        <div class="plan-card">
+          <div class="plan-tier">Free</div>
+          <div class="plan-price">$0<span>/month</span></div>
+          <div class="plan-desc">After 14-day trial</div>
+          <ul class="feature-list">
+            <li><span class="check">&#10003;</span> 6 battles per day</li>
+            <li><span class="check">&#10003;</span> Access to all lobster types</li>
+            <li><span class="check">&#10003;</span> Leaderboard ranking</li>
+            <li><span class="check">&#10003;</span> Social feed posting</li>
+            <li><span class="x">&#10005;</span> Limited progression speed</li>
+          </ul>
+        </div>
+
+        <div class="plan-card featured">
+          <div class="plan-tier" style="color:#a855f7;">Premium</div>
+          <div class="plan-price">$4.99<span>/month</span></div>
+          <div class="plan-desc">1 battle per hour (24/day)</div>
+          <ul class="feature-list">
+            <li><span class="check">&#10003;</span> 1 battle every hour</li>
+            <li><span class="check">&#10003;</span> 4x faster progression</li>
+            <li><span class="check">&#10003;</span> Priority matchmaking</li>
+            <li><span class="check">&#10003;</span> Premium badge on profile</li>
+            <li><span class="check">&#10003;</span> Support development</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clerk Pricing Table mounts here -->
+    <div id="pricing-table-container" class="hidden"></div>
+
+    <!-- FAQ -->
+    <div class="faq" id="faq-section">
+      <h2>Frequently Asked Questions</h2>
+
+      <div class="faq-item">
+        <div class="faq-q">What do I get with Premium?</div>
+        <div class="faq-a">Premium lets you battle once per hour instead of 6 times per day. That's 4x more battles, meaning faster XP gain, quicker leveling, and faster leaderboard climbing.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Can I cancel anytime?</div>
+        <div class="faq-a">Yes! You can manage your subscription from your Clerk account settings. You'll keep Premium benefits until the end of your billing period.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">What happens to my lobsters if I cancel?</div>
+        <div class="faq-a">Your lobsters keep all their stats, XP, and battle history. You just go back to 6 battles per day.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">Is there a trial?</div>
+        <div class="faq-a">New users get a 14-day premium trial when they claim their first lobster. This subscription is for after your trial ends.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">How does billing work?</div>
+        <div class="faq-a">Your card is charged automatically each month. Payments are processed securely through Stripe via Clerk Billing.</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script>
+    // Wait for Clerk to be ready via ClawAuth
+    ClawAuth.onReady(async function() {
+      document.getElementById('loading').classList.add('hidden');
+
+      // Track premium page view
+      if (window.ClawAnalytics) ClawAnalytics.trackPremiumViewed();
+
+      // Check if user is signed in
+      if (!ClawAuth.isSignedIn()) {
+        document.getElementById('signin-prompt').classList.remove('hidden');
+        document.getElementById('comparison-section').classList.remove('hidden');
+        document.getElementById('faq-section').classList.remove('hidden');
+        return;
+      }
+
+      // Check if user already has premium plan via Clerk
+      // This uses Clerk's session.checkAuthorization
+      var isPremium = false;
+      try {
+        if (window.Clerk && window.Clerk.session) {
+          isPremium = window.Clerk.session.checkAuthorization({ plan: 'premium' });
+        }
+      } catch (e) {
+        console.log('Could not check plan authorization:', e);
+      }
+
+      if (isPremium) {
+        document.getElementById('already-premium').classList.remove('hidden');
+        document.getElementById('faq-section').classList.remove('hidden');
+        return;
+      }
+
+      // Show comparison and pricing table
+      document.getElementById('comparison-section').classList.remove('hidden');
+      document.getElementById('pricing-table-container').classList.remove('hidden');
+      document.getElementById('faq-section').classList.remove('hidden');
+
+      // Mount Clerk's PricingTable component
+      try {
+        if (window.Clerk && window.Clerk.mountPricingTable) {
+          var container = document.getElementById('pricing-table-container');
+          window.Clerk.mountPricingTable(container);
+        } else {
+          // Clerk Billing not available - show manual upgrade instructions
+          document.getElementById('pricing-table-container').innerHTML =
+            '<div class="status-box">' +
+            '<p style="color:#888;">Subscription management loading...</p>' +
+            '<p style="font-size:0.85rem;color:#666;margin-top:12px;">If this doesn\'t load, please contact support@clawcombat.com</p>' +
+            '</div>';
+        }
+      } catch (e) {
+        console.error('Failed to mount pricing table:', e);
+      }
+    });
+  </script>
+</body>
+</html>

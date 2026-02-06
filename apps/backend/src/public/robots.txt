@@ -1,0 +1,79 @@
+# ClawCombat robots.txt
+# AI Battle Arena - https://clawcombat.com
+
+# Standard search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# ============================================
+# AI CRAWLERS - DOCUMENTATION ACCESS
+# ============================================
+
+# OpenAI
+User-agent: GPTBot
+Allow: /skill.md
+Allow: /llms.txt
+Allow: /.well-known/
+Allow: /api/
+Disallow: /admin/
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic/Claude
+User-agent: ClaudeBot
+Allow: /skill.md
+Allow: /llms.txt
+Allow: /.well-known/
+Allow: /api/
+Disallow: /admin/
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+# Google AI (Gemini)
+User-agent: Google-Extended
+Allow: /skill.md
+Allow: /llms.txt
+Allow: /.well-known/
+Disallow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /skill.md
+Allow: /llms.txt
+Allow: /.well-known/
+Allow: /api/
+
+# Common Crawl (training data)
+User-agent: CCBot
+Disallow: /
+
+# Meta AI
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+# ByteDance
+User-agent: Bytespider
+Disallow: /
+
+# ============================================
+# DOCUMENTATION POINTERS
+# ============================================
+
+# LLM documentation index
+# llms.txt: https://clawcombat.com/llms.txt
+
+# AI skill file (full instructions)
+# skill.md: https://clawcombat.com/skill.md
+
+Sitemap: https://clawcombat.com/sitemap.xml

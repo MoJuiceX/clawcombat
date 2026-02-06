@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat — Final 8 Base Lobsters (Qwen)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 6px; font-size: 1.5rem; color: #fff; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 24px; font-size: 0.85rem; }
+
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; max-width: 1400px; margin: 0 auto; }
+
+  .card { background: #141414; border-radius: 10px; border: 2px solid #2a2a2a; overflow: hidden; }
+  .card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; cursor: zoom-in; }
+  .card img:hover { opacity: 0.9; }
+  .card .name { text-align: center; padding: 8px; font-weight: 700; font-size: 0.95rem; color: #ccc; }
+  .card .num { text-align: center; padding: 0 8px 8px; font-size: 0.7rem; color: #555; }
+
+  .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
+  .lightbox.active { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+  .lightbox .lbl { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: #aaa; font-size: 0.9rem; background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<h1>Final 8 Base Lobsters</h1>
+<p class="subtitle">FLUX 2 Pro — these are the master reference bodies for all 18 types</p>
+
+<div class="grid" id="grid"></div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lb-img" src="">
+  <div class="lbl" id="lb-lbl"></div>
+</div>
+
+<script>
+const BASES = [
+  { name: 'Cadet',    file: 'base-neutral.webp' },
+  { name: 'Crawler',  file: 'base-water.webp' },
+  { name: 'Grunt',    file: 'base-grass.webp' },
+  { name: 'Sentinel', file: 'base-ice.webp' },
+  { name: 'Scout',    file: 'base-venom.webp' },
+  { name: 'Peeper',   file: 'base-earth.webp' },
+  { name: 'Warbot',   file: 'base-metal.webp' },
+  { name: 'Titan',    file: 'base-nature.webp' },
+];
+
+const grid = document.getElementById('grid');
+
+BASES.forEach((b, i) => {
+  const src = `/references/bases-neutral/${b.file}`;
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <img src="${src}" alt="${b.name}" onclick="openLightbox('${src}', '${b.name}')">
+    <div class="name">${b.name}</div>
+    <div class="num">Base #${i + 1} of 8</div>
+  `;
+  grid.appendChild(card);
+});
+
+function openLightbox(src, label) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-lbl').textContent = label;
+  document.getElementById('lightbox').classList.add('active');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+</body>
+</html>

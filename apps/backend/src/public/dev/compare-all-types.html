@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat — All Types Review</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 16px; font-size: 1.5rem; color: #fff; }
+
+  .type-nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 24px; max-width: 1200px; margin-left: auto; margin-right: auto; }
+  .type-btn {
+    padding: 8px 14px; border-radius: 6px; border: 2px solid #333; background: #141414;
+    color: #aaa; font-size: 0.75rem; font-weight: 700; cursor: pointer; text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .type-btn:hover { border-color: #555; color: #fff; }
+  .type-btn.active { color: #fff; }
+
+  .type-label { text-align: center; font-size: 0.8rem; color: #888; margin-bottom: 20px; }
+
+  .base-section { max-width: 1600px; margin: 0 auto 30px; }
+  .base-section h2 { color: #fff; font-size: 1.1rem; margin-bottom: 10px; padding-left: 4px; }
+  .row { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+  .cell { background: #141414; border-radius: 8px; border: 1px solid #2a2a2a; overflow: hidden; }
+  .cell img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; cursor: zoom-in; }
+  .cell img:hover { opacity: 0.9; }
+  .cell .label { text-align: center; padding: 4px; font-size: 0.65rem; color: #888; font-weight: 600; }
+  .cell.base-cell { border-color: #444; }
+  .cell.base-cell .label { color: #aaa; }
+
+  .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
+  .lightbox.active { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+  .lightbox .lbl { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: #aaa; font-size: 0.9rem; background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 6px; }
+
+  .loading { text-align: center; color: #555; padding: 40px; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<h1>ClawCombat — All Types Review</h1>
+
+<div class="type-nav" id="type-nav"></div>
+<div class="type-label" id="type-label"></div>
+<div id="content"></div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lb-img" src="">
+  <div class="lbl" id="lb-lbl"></div>
+</div>
+
+<script>
+const TYPES = [
+  { key: 'fire',     label: 'Fire',     color: '#F08030' },
+  { key: 'water',    label: 'Water',    color: '#6890F0' },
+  { key: 'electric', label: 'Electric', color: '#F8D030' },
+  { key: 'grass',    label: 'Grass',    color: '#78C850' },
+  { key: 'ice',      label: 'Ice',      color: '#98D8D8' },
+  { key: 'martial',  label: 'Martial',  color: '#C03028' },
+  { key: 'venom',    label: 'Venom',    color: '#A040A0' },
+  { key: 'earth',    label: 'Earth',    color: '#E0C068' },
+  { key: 'air',      label: 'Air',      color: '#A890F0' },
+  { key: 'psyche',   label: 'Psyche',   color: '#F85888' },
+  { key: 'insect',   label: 'Insect',   color: '#A8B820' },
+  { key: 'stone',    label: 'Stone',    color: '#B8A038' },
+  { key: 'ghost',    label: 'Ghost',    color: '#705898' },
+  { key: 'dragon',   label: 'Dragon',   color: '#7038F8' },
+  { key: 'shadow',   label: 'Shadow',   color: '#705848' },
+  { key: 'metal',    label: 'Metal',    color: '#B8B8D0' },
+  { key: 'mystic',   label: 'Mystic',   color: '#EE99AC' },
+  { key: 'neutral',  label: 'Neutral',  color: '#A8A878' },
+];
+
+const BASES = [
+  { name: 'Crawler',  key: 'crawler' },
+  { name: 'Cadet',    key: 'cadet' },
+  { name: 'Scout',    key: 'scout' },
+  { name: 'Sentinel', key: 'sentinel' },
+  { name: 'Peeper',   key: 'peeper' },
+  { name: 'Titan',    key: 'titan' },
+];
+
+const BODY_MOD_TYPES = ['dragon', 'ghost', 'mystic', 'air'];
+
+const STATS = [
+  { label: 'Base', isBase: true },
+  { label: 'Balanced', stat: 'balanced' },
+  { label: 'Attack', stat: 'attack' },
+  { label: 'Defense', stat: 'defense' },
+  { label: 'HP', stat: 'hp' },
+  { label: 'Speed', stat: 'speed' },
+  { label: 'Claw', stat: 'claw' },
+  { label: 'Shell', stat: 'shell' },
+];
+
+// Build nav buttons
+const nav = document.getElementById('type-nav');
+TYPES.forEach(type => {
+  const btn = document.createElement('div');
+  btn.className = 'type-btn';
+  btn.textContent = type.label;
+  btn.dataset.type = type.key;
+  btn.style.borderColor = '#333';
+  btn.addEventListener('click', () => selectType(type));
+  nav.appendChild(btn);
+});
+
+function selectType(type) {
+  // Update active button
+  document.querySelectorAll('.type-btn').forEach(b => {
+    b.classList.remove('active');
+    b.style.borderColor = '#333';
+    b.style.background = '#141414';
+  });
+  const activeBtn = document.querySelector(`[data-type="${type.key}"]`);
+  activeBtn.classList.add('active');
+  activeBtn.style.borderColor = type.color;
+  activeBtn.style.background = type.color + '20';
+
+  // Update URL hash
+  window.location.hash = type.key;
+
+  // Update label
+  const isBodyMod = BODY_MOD_TYPES.includes(type.key);
+  document.getElementById('type-label').textContent = isBodyMod
+    ? `${type.label} — Body-modified type (uses ${type.key} bases)`
+    : `${type.label} — Color-swap type (uses standard bases)`;
+
+  // Build grid
+  const content = document.getElementById('content');
+  content.innerHTML = '';
+  const v = Date.now();
+
+  BASES.forEach(base => {
+    const section = document.createElement('div');
+    section.className = 'base-section';
+    section.innerHTML = `<h2>${base.name}</h2>`;
+
+    const row = document.createElement('div');
+    row.className = 'row';
+
+    STATS.forEach(s => {
+      let src;
+      if (s.isBase) {
+        src = isBodyMod
+          ? `/references/bases/${base.key}-${type.key}.webp?v=${v}`
+          : `/references/bases/${base.key}.webp?v=${v}`;
+      } else {
+        src = `/references/${type.key}/${base.key}-${s.stat}.webp?v=${v}`;
+      }
+      const lbl = `${base.name} — ${s.label}`;
+
+      const cell = document.createElement('div');
+      cell.className = s.isBase ? 'cell base-cell' : 'cell';
+      cell.innerHTML = `
+        <img src="${src}" alt="${lbl}" onclick="openLightbox('${src}', '${lbl}')" onerror="this.style.opacity=0.2">
+        <div class="label">${s.label}</div>
+      `;
+      row.appendChild(cell);
+    });
+
+    section.appendChild(row);
+    content.appendChild(section);
+  });
+}
+
+function openLightbox(src, label) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-lbl').textContent = label;
+  document.getElementById('lightbox').classList.add('active');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeLightbox();
+  // Arrow keys to navigate types
+  const current = TYPES.findIndex(t => document.querySelector(`[data-type="${t.key}"]`)?.classList.contains('active'));
+  if (e.key === 'ArrowRight' && current < TYPES.length - 1) selectType(TYPES[current + 1]);
+  if (e.key === 'ArrowLeft' && current > 0) selectType(TYPES[current - 1]);
+});
+
+// Load from URL hash or default to fire
+const hash = window.location.hash.replace('#', '');
+const initial = TYPES.find(t => t.key === hash) || TYPES[0];
+selectType(initial);
+</script>
+</body>
+</html>

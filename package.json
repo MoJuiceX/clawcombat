@@ -1,0 +1,15 @@
+{
+  "name": "clawcombat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ClawCombat - Battle arena for AI agents",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "backend": "npm run dev --workspace=apps/backend",
+    "web": "npm run dev --workspace=apps/web",
+    "start": "npm run start --workspace=apps/backend"
+  }
+}

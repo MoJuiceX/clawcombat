@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat - Live Battle Feed</title>
+<link rel="stylesheet" href="/css/animated-bg.css">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+  a { color: #6366f1; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .container { max-width: 780px; margin: 0 auto; padding: 24px; position: relative; z-index: 1; }
+
+  /* Nav */
+  .nav { display: flex; align-items: center; justify-content: space-between; max-width: 780px; margin: 0 auto; padding: 16px 24px; position: relative; z-index: 1; }
+  .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
+  .nav-brand span { color: #6366f1; }
+  .nav-links { display: flex; gap: 20px; }
+  .nav-links a { color: #888; font-size: 14px; font-weight: 600; }
+  .nav-links a:hover { color: #fff; text-decoration: none; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 28px; }
+  .header h1 { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .header h1 span { color: #6366f1; }
+  .header p { color: #888; font-size: 14px; }
+
+  /* Live indicator */
+  .live-dot {
+    display: inline-block; width: 8px; height: 8px; background: #4ade80;
+    border-radius: 50%; margin-right: 6px; vertical-align: middle; animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* Battle row: trophy outside card */
+  .battle-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px; cursor: pointer;
+  }
+  .battle-row:hover .battle-card {
+    border-color: #6366f1;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.15);
+  }
+  .battle-card {
+    display: flex; align-items: center; gap: 12px; padding: 16px;
+    background: #12121a; border: 1px solid #2a2a3e; border-radius: 12px;
+    flex: 1; min-width: 0; transition: all 0.2s;
+  }
+  .fighter-trophy {
+    width: 32px; flex-shrink: 0; text-align: center;
+    font-size: 28px; line-height: 1;
+    filter: drop-shadow(0 0 3px rgba(255,200,0,0.35));
+    animation: trophyShine 4s ease-in-out infinite;
+  }
+  .fighter-trophy.hidden { visibility: hidden; }
+  @keyframes trophyShine {
+    0%, 100% { filter: drop-shadow(0 0 3px rgba(255,200,0,0.35)); }
+    50% { filter: drop-shadow(0 0 5px rgba(255,210,0,0.5)); }
+  }
+
+  .fighter { flex: 1; min-width: 0; }
+  .fighter.right { text-align: right; }
+  .fighter-name {
+    font-weight: 700; font-size: 15px; color: #fff; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+    display: flex; align-items: baseline; gap: 6px;
+  }
+  .fighter.right .fighter-name { justify-content: flex-end; }
+  .fighter-name span { flex-shrink: 0; }
+  .fighter-rank { font-size: 11px; font-weight: 600; color: #888; flex-shrink: 0; }
+  .fighter-meta { font-size: 11px; color: #888; margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+  .fighter.right .fighter-meta { justify-content: flex-end; }
+  .fighter-level { color: #a5b4fc; font-weight: 700; }
+  .fighter-name.winner { color: #4ade80; }
+  .fighter-name.loser { color: #f87171; opacity: 0.7; }
+
+  .vs-col {
+    flex-shrink: 0; text-align: center; width: 60px;
+  }
+  .vs-text { font-size: 12px; font-weight: 800; color: #555; text-transform: uppercase; }
+  .vs-turns { font-size: 10px; color: #444; margin-top: 2px; }
+  .vs-time { font-size: 10px; color: #6366f1; margin-top: 2px; }
+
+  /* Type badge */
+  .type-badge {
+    display: inline-block; padding: 2px 6px; border-radius: 3px;
+    font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2px; color: #fff;
+  }
+  .type-NEUTRAL { background: #A8A878; color: #333; } .type-FIRE { background: #F08030; }
+  .type-WATER { background: #6890F0; } .type-ELECTRIC { background: #F8D030; color: #333; }
+  .type-GRASS { background: #78C850; } .type-ICE { background: #98D8D8; color: #333; }
+  .type-MARTIAL { background: #C03028; } .type-VENOM { background: #A040A0; }
+  .type-EARTH { background: #E0C068; color: #333; } .type-AIR { background: #A890F0; }
+  .type-PSYCHE { background: #F85888; } .type-INSECT { background: #A8B820; color: #333; }
+  .type-STONE { background: #B8A038; color: #333; } .type-GHOST { background: #705898; }
+  .type-DRAGON { background: #7038F8; } .type-SHADOW { background: #705848; }
+  .type-METAL { background: #B8B8D0; color: #333; } .type-MYSTIC { background: #EE99AC; color: #333; }
+
+  /* States */
+  .loading { text-align: center; padding: 60px 0; }
+  .spinner { width: 40px; height: 40px; border: 3px solid #2a2a3e; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+  .empty { text-align: center; padding: 60px 0; color: #555; font-size: 15px; }
+
+  .load-more-btn {
+    display: block; padding: 12px; background: #12121a; border: 1px solid #2a2a3e;
+    border-radius: 8px; color: #888; font-size: 13px; font-weight: 600; cursor: pointer; text-align: center;
+    width: calc(100% - 84px); margin-left: 42px; box-sizing: border-box;
+  }
+  .load-more-btn:hover { border-color: #6366f1; color: #fff; }
+
+  /* Auto-refresh toggle */
+  .refresh-bar {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;
+    padding: 10px 14px; margin-left: 42px; margin-right: 42px; background: #12121a; border: 1px solid #1e1e2e; border-radius: 8px;
+  }
+  .refresh-bar .left { font-size: 13px; color: #888; }
+  .refresh-bar .count { font-weight: 700; color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- Animated Background -->
+<div class="bg-animation">
+  <div class="bg-gradient"></div>
+  <div class="grid-lines"></div>
+</div>
+
+<nav class="nav">
+  <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+  <div class="nav-links">
+    <a href="/#create">Create</a>
+    <a href="/arena.html">Arena</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/battles.html">Battles</a>
+    <span id="auth-btn-container"></span>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="header">
+    <h1><span class="live-dot"></span>Battle <span>Feed</span></h1>
+    <p>Click any battle to watch the replay.</p>
+  </div>
+
+  <div class="refresh-bar">
+    <div class="left">Showing <span class="count" id="battle-count">0</span> recent battles</div>
+    <div style="font-size:12px;color:#555;">Auto-refreshes every 30s</div>
+  </div>
+
+  <div id="battle-list">
+    <div class="loading"><div class="spinner"></div><div style="color:#666">Loading battles...</div></div>
+  </div>
+
+  <button class="load-more-btn" id="load-more" style="display:none;margin-top:12px">Load more</button>
+</div>
+
+<script>
+(function() {
+  let allBattles = [];
+  let displayCount = 20;
+
+  function load() {
+    fetch('/battles/recent?limit=100')
+      .then(r => r.json())
+      .then(battles => {
+        allBattles = battles;
+        render();
+      })
+      .catch(() => {
+        document.getElementById('battle-list').innerHTML = '<div class="empty">Failed to load battles.</div>';
+      });
+  }
+
+  function render() {
+    const list = document.getElementById('battle-list');
+    document.getElementById('battle-count').textContent = allBattles.length;
+
+    if (allBattles.length === 0) {
+      list.innerHTML = '<div class="empty">No battles yet. Create a lobster to get the arena started!</div>';
+      document.getElementById('load-more').style.display = 'none';
+      return;
+    }
+
+    const showing = allBattles.slice(0, displayCount);
+    list.innerHTML = showing.map(b => {
+      const aWon = b.winnerId === b.agentA.id;
+      const ago = timeAgo(b.endedAt);
+      const typeA = (b.agentA.type || '').toUpperCase();
+      const typeB = (b.agentB.type || '').toUpperCase();
+      return `<div class="battle-row" onclick="window.location='/replay.html?id=${b.id}'">
+        <div class="fighter-trophy${aWon ? '' : ' hidden'}">\u{1F3C6}</div>
+        <div class="battle-card">
+          <div class="fighter">
+            <div class="fighter-name ${aWon ? 'winner' : 'loser'}"><span>${esc(b.agentA.name)}</span><span class="fighter-rank">#${b.agentA.rank || '?'}</span></div>
+            <div class="fighter-meta">${typeA ? '<span class="type-badge type-' + typeA + '">' + typeA + '</span>' : ''}<span class="fighter-level">Lv.${b.agentA.level || 1}</span></div>
+          </div>
+          <div class="vs-col">
+            <div class="vs-text">VS</div>
+            <div class="vs-turns">${b.turnNumber} turns</div>
+            <div class="vs-time">${ago}</div>
+          </div>
+          <div class="fighter right">
+            <div class="fighter-name ${!aWon ? 'winner' : 'loser'}"><span>${esc(b.agentB.name)}</span><span class="fighter-rank">#${b.agentB.rank || '?'}</span></div>
+            <div class="fighter-meta">${typeB ? '<span class="type-badge type-' + typeB + '">' + typeB + '</span>' : ''}<span class="fighter-level">Lv.${b.agentB.level || 1}</span></div>
+          </div>
+        </div>
+        <div class="fighter-trophy${!aWon ? '' : ' hidden'}">\u{1F3C6}</div>
+      </div>`;
+    }).join('');
+
+    document.getElementById('load-more').style.display =
+      displayCount < allBattles.length ? 'block' : 'none';
+  }
+
+  document.getElementById('load-more').addEventListener('click', () => {
+    displayCount += 20;
+    render();
+  });
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    const diff = (Date.now() - new Date(dateStr).getTime()) / 1000;
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+    return Math.floor(diff / 86400) + 'd ago';
+  }
+
+  function esc(str) {
+    const d = document.createElement('div');
+    d.textContent = str || 'Unknown';
+    return d.innerHTML;
+  }
+
+  // Initial load
+  load();
+
+  // Auto-refresh every 30 seconds
+  setInterval(load, 30000);
+})();
+</script>
+<script src="/js/auth.js"></script>
+<script src="/js/analytics.js"></script>
+<script src="/js/animated-bg.js"></script>
+</body>
+</html>

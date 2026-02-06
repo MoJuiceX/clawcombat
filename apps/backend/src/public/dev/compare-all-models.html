@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat — FLUX vs Qwen vs Ideogram</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 6px; font-size: 1.5rem; color: #fff; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 24px; font-size: 0.85rem; }
+
+  .grid { display: flex; flex-direction: column; gap: 20px; max-width: 1400px; margin: 0 auto; }
+
+  .card { background: #141414; border-radius: 10px; border: 1px solid #2a2a2a; overflow: hidden; }
+  .card .name { text-align: center; padding: 10px; font-weight: 700; font-size: 1.1rem; color: #fff; border-bottom: 1px solid #2a2a2a; }
+  .card .trio { display: flex; gap: 2px; }
+  .card .trio .side { flex: 1; position: relative; }
+  .card .trio img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; cursor: zoom-in; }
+  .card .trio .tag { position: absolute; bottom: 8px; left: 8px; font-size: 0.7rem; padding: 3px 10px; border-radius: 4px; color: #fff; font-weight: 600; }
+  .tag-flux { background: rgba(74, 144, 217, 0.9); }
+  .tag-qwen { background: rgba(175, 80, 175, 0.9); }
+  .tag-ideo { background: rgba(220, 140, 40, 0.9); }
+
+  .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
+  .lightbox.active { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+  .lightbox .lbl { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: #aaa; font-size: 0.9rem; background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<h1>FLUX 2 Pro vs Qwen Image vs Ideogram v3 Turbo</h1>
+<p class="subtitle">Same 8 bases, same prompt, same seed. Compare quality, style, and body shape fidelity across 3 models.</p>
+
+<div class="grid" id="grid"></div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <img id="lb-img" src="">
+  <div class="lbl" id="lb-lbl"></div>
+</div>
+
+<script>
+const BASES = [
+  { name: 'Cadet',    file: 'base-neutral' },
+  { name: 'Crawler',  file: 'base-water' },
+  { name: 'Grunt',    file: 'base-grass' },
+  { name: 'Sentinel', file: 'base-ice' },
+  { name: 'Scout',    file: 'base-venom' },
+  { name: 'Peeper',   file: 'base-earth' },
+  { name: 'Warbot',   file: 'base-metal' },
+  { name: 'Titan',    file: 'base-nature' },
+];
+
+const grid = document.getElementById('grid');
+
+BASES.forEach(b => {
+  const flux = `/references/bases-neutral/${b.file}.webp`;
+  const qwen = `/references/bases-qwen/${b.file}.webp`;
+  const ideo = `/references/bases-ideogram/${b.file}.webp`;
+
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="name">${b.name}</div>
+    <div class="trio">
+      <div class="side">
+        <img src="${flux}" alt="${b.name} FLUX" onclick="openLightbox('${flux}', '${b.name} — FLUX 2 Pro')">
+        <span class="tag tag-flux">FLUX 2 Pro</span>
+      </div>
+      <div class="side">
+        <img src="${qwen}" alt="${b.name} Qwen" onclick="openLightbox('${qwen}', '${b.name} — Qwen Image')">
+        <span class="tag tag-qwen">Qwen Image</span>
+      </div>
+      <div class="side">
+        <img src="${ideo}" alt="${b.name} Ideogram" onclick="openLightbox('${ideo}', '${b.name} — Ideogram v3 Turbo')">
+        <span class="tag tag-ideo">Ideogram v3</span>
+      </div>
+    </div>
+  `;
+  grid.appendChild(card);
+});
+
+function openLightbox(src, label) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-lbl').textContent = label;
+  document.getElementById('lightbox').classList.add('active');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat — Base Body Selection</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 6px; font-size: 1.5rem; color: #fff; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 8px; font-size: 0.85rem; }
+  .instructions { text-align: center; color: #aaa; margin-bottom: 24px; font-size: 0.8rem; max-width: 700px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; max-width: 1400px; margin: 0 auto; }
+
+  .card { background: #141414; border-radius: 10px; border: 2px solid #2a2a2a; overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.15s; position: relative; }
+  .card:hover { transform: scale(1.02); }
+  .card.selected { border-color: #4caf50; box-shadow: 0 0 12px rgba(76, 175, 80, 0.3); }
+  .card.cut { border-color: #c62828; opacity: 0.35; }
+
+  .card img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+
+  .card .info { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; }
+  .card .name { font-weight: 700; font-size: 0.95rem; }
+  .card .badge { display: inline-block; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; color: #fff; }
+  .card .status { position: absolute; top: 10px; right: 10px; font-size: 1.4rem; }
+
+  .card .desc { padding: 0 12px 10px; font-size: 0.75rem; color: #777; line-height: 1.4; }
+
+  .summary { text-align: center; margin-top: 24px; padding: 16px; background: #161616; border-radius: 8px; max-width: 700px; margin-left: auto; margin-right: auto; }
+  .summary h3 { margin-bottom: 8px; color: #4caf50; }
+  .summary .count { font-size: 1.1rem; margin-bottom: 8px; }
+  .summary .list { color: #aaa; font-size: 0.85rem; }
+
+  .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
+  .lightbox.active { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+  .lightbox .lbl { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: #aaa; font-size: 0.9rem; background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<h1>Base Body Selection</h1>
+<p class="subtitle">Pick the best lobster body shapes to use as references for ALL types</p>
+<p class="instructions">Click a card to toggle it ON (green) or OFF (red). These body shapes will become the universal bases — each type (Fire, Water, Ghost, etc.) will be generated using every selected body as a reference image, giving visual diversity within each type.</p>
+
+<div class="grid" id="grid"></div>
+
+<div class="summary" id="summary"></div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <img id="lb-img" src="">
+  <div class="lbl" id="lb-lbl"></div>
+</div>
+
+<script>
+const TYPE_COLORS = {
+  NEUTRAL: '#A8A878', FIRE: '#F08030', WATER: '#6890F0', ELECTRIC: '#F8D030',
+  GRASS: '#78C850', ICE: '#98D8D8', MARTIAL: '#C03028', VENOM: '#A040A0',
+  EARTH: '#E0C068', AIR: '#A890F0', PSYCHE: '#F85888', INSECT: '#A8B820',
+  STONE: '#B8A038', GHOST: '#705898', DRAGON: '#7038F8', SHADOW: '#705848',
+  METAL: '#B8B8D0', MYSTIC: '#EE99AC'
+};
+
+const BASES = [
+  { type: 'NEUTRAL', note: 'Clean symmetrical design, balanced proportions' },
+  { type: 'FIRE', note: 'Strong lobster form, warm tones' },
+  { type: 'WATER', note: 'Aquatic feel, fluid body lines' },
+  { type: 'GRASS', note: 'Organic-tech fusion, natural elements' },
+  { type: 'ICE', note: 'Crystalline structure, angular shapes' },
+  { type: 'MARTIAL', note: 'Aggressive pose, combat-ready stance' },
+  { type: 'VENOM', note: 'Textured shell, organic detail' },
+  { type: 'EARTH', note: 'Bulky build, heavy grounded feel' },
+  { type: 'PSYCHE', note: 'Sleek design, expressive features' },
+  { type: 'INSECT', note: 'Chitinous detail, compound eye feel' },
+  { type: 'STONE', note: 'Mineral textures, rugged form' },
+  { type: 'GHOST', note: 'Ethereal translucent sections' },
+  { type: 'SHADOW', note: 'Dark matte finish, stealthy build' },
+  { type: 'METAL', note: 'Chrome mechanical, industrial look' },
+  { type: 'MYSTIC', note: 'Ornate details, magical accents' },
+];
+
+// State: all start as selected
+const state = {};
+BASES.forEach(b => state[b.type] = true);
+
+function render() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  BASES.forEach(b => {
+    const tl = b.type.toLowerCase();
+    const sel = state[b.type];
+    const card = document.createElement('div');
+    card.className = `card ${sel ? 'selected' : 'cut'}`;
+    card.innerHTML = `
+      <img src="/references/${tl}-type-young.webp" alt="${b.type}" ondblclick="openLightbox('/references/${tl}-type-young.webp', '${b.type}')">
+      <div class="status">${sel ? '\u2705' : '\u274C'}</div>
+      <div class="info">
+        <span class="name">${b.type}</span>
+        <span class="badge" style="background:${TYPE_COLORS[b.type]}">${b.type}</span>
+      </div>
+      <div class="desc">${b.note}</div>
+    `;
+    card.addEventListener('click', (e) => {
+      if (e.target.tagName === 'IMG' && e.detail === 2) return;
+      state[b.type] = !state[b.type];
+      render();
+    });
+    grid.appendChild(card);
+  });
+
+  updateSummary();
+}
+
+function updateSummary() {
+  const selected = BASES.filter(b => state[b.type]);
+  const cut = BASES.filter(b => !state[b.type]);
+  const el = document.getElementById('summary');
+  el.innerHTML = `
+    <h3>${selected.length} Base Bodies Selected</h3>
+    <div class="count">${selected.length} bodies x 18 types = ${selected.length * 18} total variants</div>
+    <div class="list">
+      <strong>Selected:</strong> ${selected.map(b => b.type).join(', ') || 'None'}<br>
+      ${cut.length ? '<strong>Cut:</strong> ' + cut.map(b => b.type).join(', ') : ''}
+    </div>
+  `;
+}
+
+function openLightbox(src, label) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-lbl').textContent = label;
+  document.getElementById('lightbox').classList.add('active');
+}
+
+function closeLightbox(e) {
+  document.getElementById('lightbox').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+render();
+</script>
+</body>
+</html>

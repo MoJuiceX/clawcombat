@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat - Demo Battle</title>
+<link rel="stylesheet" href="/css/arena.css">
+<style>
+  /* ============================================ */
+  /* DEMO-SPECIFIC STYLES                        */
+  /* Shared styles loaded from /css/arena.css     */
+  /* ============================================ */
+
+  /* Demo section wrapper */
+  #battle-section { padding: 15px; }
+
+  /* Demo data-streams use nth-child(4-7) due to HTML ordering */
+  .data-stream:nth-child(4) { left: 15%; height: 60px; top: 10%; animation-delay: 0s; }
+  .data-stream:nth-child(5) { left: 30%; height: 80px; top: 5%; animation-delay: 0.5s; }
+  .data-stream:nth-child(6) { right: 20%; height: 70px; top: 8%; animation-delay: 1s; }
+  .data-stream:nth-child(7) { right: 35%; height: 50px; top: 15%; animation-delay: 1.5s; }
+
+  /* Demo move buttons use .m-name/.m-info/.m-type/.m-pp classes */
+  .move-btn .m-name { display: block; font-size: 1rem; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.5); margin-bottom: 4px; }
+  .move-btn .m-info { display: flex; gap: 8px; font-size: 0.75rem; color: rgba(255,255,255,0.8); }
+  .move-btn .m-type { background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 3px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.5px; }
+  .move-btn .m-pp { margin-left: auto; font-family: 'Courier New', monospace; }
+  .move-btn { background: transparent; color: #fff; }
+
+  /* AI Decide button */
+  .btn-ai-decide { grid-column: 1 / -1; padding: 12px; background: linear-gradient(135deg, #6366f1, #4f46e5); border: none; border-radius: 8px; color: #fff; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+  .btn-ai-decide:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(99,102,241,0.4); }
+  .btn-ai-decide:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Demo move waiting overlay */
+  .move-waiting { position: absolute; inset: 0; background: rgba(15,23,42,0.85); display: flex; align-items: center; justify-content: center; border-radius: 12px; z-index: 10; }
+  .move-waiting span { font-size: 1.1rem; font-weight: 700; color: #a5b4fc; letter-spacing: 2px; animation: waitPulse 1.5s ease-in-out infinite; }
+  @keyframes waitPulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+  /* Move panel needs to sit outside the battle-layout flex */
+  .move-panel { max-width: 900px; margin: 0 auto 15px; }
+
+  /* Turn indicator - absolute in arena */
+  .turn-indicator { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 1px; z-index: 15; }
+
+  /* Turn timer - hidden by default, shown via .show class */
+  .turn-timer { display: none; }
+  .turn-timer.show { display: flex; }
+
+  /* Demo battle end overlay with .active toggle */
+  .battle-end-overlay { display: none; }
+  .battle-end-overlay.active { display: flex; animation: fadeIn 0.5s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* Demo-specific end overlay elements */
+  .end-actions { display: flex; flex-direction: column; gap: 12px; align-items: center; width: 340px; }
+  .end-actions-row { display: flex; gap: 10px; width: 100%; }
+  .end-actions-row .btn-end { flex: 1; }
+  .btn-end { display: block; width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; text-decoration: none; }
+  .btn-end:hover { transform: translateY(-2px); text-decoration: none; }
+  .btn-end.primary { background: linear-gradient(135deg,#6366f1,#4f46e5); color: #fff; }
+  .btn-end.primary:hover { box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+  .btn-end.primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-end.play-again { background: linear-gradient(135deg,#22c55e,#16a34a); color: #fff; }
+  .btn-end.play-again:hover { box-shadow: 0 4px 20px rgba(34,197,94,0.4); }
+  .btn-end.secondary { background: #1e1e2e; border: 1px solid #3a3a5e; color: #888; }
+  .btn-end.secondary:hover { color: #fff; border-color: #6366f1; }
+  .btn-end.tertiary { background: transparent; color: #6366f1; font-size: 13px; }
+
+  /* Auto-play toggle */
+  .auto-toggle {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #94a3b8;
+  }
+  .auto-toggle-switch {
+    position: relative;
+    width: 44px;
+    height: 24px;
+    background: #374151;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .auto-toggle-switch.active {
+    background: #6366f1;
+  }
+  .auto-toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  .auto-toggle-switch.active::after {
+    transform: translateX(20px);
+  }
+  .auto-toggle-label {
+    font-weight: 600;
+    min-width: 80px;
+  }
+  .auto-toggle-label.auto { color: #a5b4fc; }
+  .auto-toggle-label.manual { color: #fbbf24; }
+
+  /* Demo-specific responsive overrides */
+  @media (max-width: 768px) {
+    .move-btn .m-name { font-size: 0.9rem; }
+    .result-title { font-size: 2rem; }
+    .mode-buttons { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .move-btn .m-name { font-size: 0.85rem; margin-bottom: 2px; }
+    .move-btn .m-info { font-size: 0.65rem; }
+    .end-actions { width: 260px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand" style="text-decoration:none">Claw<span>Combat</span></a>
+  <div class="nav-links">
+    <a href="/arena.html">Arena</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/battles.html">Battles</a>
+    <span id="auth-btn-container"></span>
+  </div>
+</nav>
+<div class="nav-audio">
+  <button id="muteBtn" onclick="Audio.toggleMute()" style="background:none;border:none;cursor:pointer;font-size:18px;padding:2px 6px;color:#888;" title="Toggle sound">&#128266;</button>
+  <button id="audioSettingsBtn" onclick="Audio.toggleSettings()" style="background:none;border:none;cursor:pointer;font-size:18px;padding:2px 6px;color:#888;" title="Audio settings">⚙️</button>
+</div>
+
+<!-- Audio Settings Panel -->
+<div id="audioSettingsPanel" style="display:none;position:fixed;top:50px;right:12px;background:#1a1a2e;border:1px solid #333;border-radius:8px;padding:14px 16px;z-index:1000;min-width:200px;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+  <div style="margin-bottom:10px;font-size:13px;color:#aaa;">SFX Volume</div>
+  <input type="range" id="sfxSlider" min="0" max="100" value="55" oninput="Audio.setSfxVolume(this.value)" style="width:100%;accent-color:#e74c3c;">
+  <div style="margin:10px 0 6px;font-size:13px;color:#aaa;">Music Volume</div>
+  <input type="range" id="musicSlider" min="0" max="100" value="13" oninput="Audio.setMusicVolume(this.value)" style="width:100%;accent-color:#3498db;">
+  <div style="margin-top:10px;display:flex;gap:6px;" id="musicBtns">
+    <button class="music-btn" onclick="Audio.toggleMusic(1)" style="flex:1;padding:5px 4px;background:#374151;border:1px solid #4b5563;border-radius:5px;color:#ccc;cursor:pointer;font-size:11px;">Battle</button>
+    <button class="music-btn" onclick="Audio.toggleMusic(2)" style="flex:1;padding:5px 4px;background:#374151;border:1px solid #4b5563;border-radius:5px;color:#ccc;cursor:pointer;font-size:11px;">Intense</button>
+    <button class="music-btn" onclick="Audio.toggleMusic(3)" style="flex:1;padding:5px 4px;background:#374151;border:1px solid #4b5563;border-radius:5px;color:#ccc;cursor:pointer;font-size:11px;">Epic</button>
+  </div>
+  <div style="margin-top:8px;font-size:11px;color:#555;text-align:center;">Screen shake: <label><input type="checkbox" id="shakeToggle" checked onchange="Audio.setShake(this.checked)" style="vertical-align:middle;"> On</label></div>
+</div>
+
+<!-- Loading -->
+<div class="loading-screen" id="loading-screen">
+  <div class="spinner"></div>
+  <div class="loading-text">Preparing your battle...</div>
+</div>
+
+<!-- Battle Section -->
+<section id="battle-section" style="display:none">
+  <div class="battle-layout">
+  <div class="battle-arena" id="arena">
+    <div class="arena-circuits"></div>
+    <div class="arena-scanlines"></div>
+    <div class="data-stream"></div>
+    <div class="data-stream"></div>
+    <div class="data-stream"></div>
+    <div class="data-stream"></div>
+    <div class="hud-bracket tl"></div>
+    <div class="hud-bracket tr"></div>
+    <div class="hud-bracket bl"></div>
+    <div class="hud-bracket br"></div>
+    <div class="vs-emblem">VS</div>
+    <div class="player-platform"></div>
+    <div class="opponent-platform"></div>
+    <canvas id="effectCanvas"></canvas>
+    <div class="turn-indicator" id="turn-indicator">TURN 1</div>
+    <div class="turn-timer" id="turnTimer"><span class="timer-icon">&#x23F1;</span><span class="timer-value" id="turnTimerValue">30s</span></div>
+
+    <!-- Lobster Cards (frame + HP unified) -->
+    <div class="lobster player-lobster" id="playerLobster">
+      <div class="frame-glow"></div>
+      <div class="frame-border-outer"></div>
+      <div class="frame-border-inner"></div>
+      <div class="frame-node tl"></div><div class="frame-node tr"></div>
+      <div class="frame-node bl"></div><div class="frame-node br"></div>
+      <div class="frame-accent top"></div><div class="frame-accent bottom"></div>
+      <div class="frame-accent left"></div><div class="frame-accent right"></div>
+      <div class="lobster-frame">
+        <div class="frame-scanlines"></div>
+        <img id="playerImg" alt="Your Lobster">
+      </div>
+      <div class="hp-container" id="playerHpContainer">
+        <div class="hp-label">
+          <span class="hp-name" id="playerName">You</span>
+          <span class="hp-type" id="playerType">FIRE</span>
+        </div>
+        <div class="hp-bar-bg"><div class="hp-ghost" id="playerHpGhost" style="width:100%"></div><div class="hp-bar" id="playerHp" style="width:100%"></div></div>
+        <div class="hp-text"><span id="playerHpText">100</span>/<span id="playerMaxHp">100</span></div>
+      </div>
+      <!-- Action info anchored to this card -->
+      <div class="action-info player-action" id="playerAction"></div>
+    </div>
+
+    <div class="lobster opponent-lobster" id="opponentLobster">
+      <div class="frame-glow"></div>
+      <div class="frame-border-outer"></div>
+      <div class="frame-border-inner"></div>
+      <div class="frame-node tl"></div><div class="frame-node tr"></div>
+      <div class="frame-node bl"></div><div class="frame-node br"></div>
+      <div class="frame-accent top"></div><div class="frame-accent bottom"></div>
+      <div class="frame-accent left"></div><div class="frame-accent right"></div>
+      <div class="lobster-frame">
+        <div class="frame-scanlines"></div>
+        <img id="opponentImg" alt="Opponent">
+      </div>
+      <div class="hp-container" id="opponentHpContainer">
+        <div class="hp-label">
+          <span class="hp-name" id="opponentName">Opponent</span>
+          <span class="hp-type" id="opponentType">WATER</span>
+        </div>
+        <div class="hp-bar-bg"><div class="hp-ghost" id="opponentHpGhost" style="width:100%"></div><div class="hp-bar" id="opponentHp" style="width:100%"></div></div>
+        <div class="hp-text"><span id="opponentHpText">100</span>/<span id="opponentMaxHp">100</span></div>
+      </div>
+      <!-- Action info anchored to this card -->
+      <div class="action-info opponent-action" id="opponentAction"></div>
+    </div>
+  </div>
+
+  <!-- Battle History (right side on desktop) -->
+  <div class="battle-history-panel" id="historyPanel">
+    <div class="history-header">
+      <span>Battle Log</span>
+      <span class="history-turn" id="historyTurn">Turn 1</span>
+    </div>
+    <div class="history-content" id="historyContent"></div>
+  </div>
+  </div><!-- /.battle-layout -->
+
+  <!-- Move Panel -->
+  <div class="move-panel" id="movePanel">
+    <div class="move-grid" id="moveGrid"></div>
+    <div class="move-waiting" id="moveWaiting" style="display:none"><span>RESOLVING...</span></div>
+  </div>
+</section>
+
+<!-- Battle end overlay -->
+<div class="battle-end-overlay" id="endOverlay">
+  <div class="result-title" id="resultTitle">VICTORY!</div>
+  <div class="result-subtitle" id="resultSubtitle"></div>
+  <div class="end-actions">
+    <div class="end-actions-row">
+      <button class="btn-end play-again" onclick="playAgain(true)">Same Lobster</button>
+      <button class="btn-end primary" onclick="playAgain(false)">New Lobster</button>
+    </div>
+    <a href="/onboard.html" class="btn-end secondary">Create Your Own</a>
+    <a href="/leaderboard.html" class="btn-end tertiary">View Leaderboard</a>
+  </div>
+</div>
+
+<script src="/js/battle-audio.js"></script>
+<script src="/js/battle-particles.js"></script>
+<script src="/js/battle-ui.js"></script>
+<script>
+// ============================================
+// DEMO STATE
+// ============================================
+var demoId = null;
+var battleState = null;
+var isProcessing = false;
+var turnNumber = 0;
+var lastUsedMoveType = null;
+var lastMoveName = '';
+var lastUseMoveMsg = '';
+var autoPlaying = true; // Start with auto-play enabled
+
+// ============================================
+// MOVE RENDERING
+// ============================================
+function renderMoves(moves) {
+  var grid = document.getElementById('moveGrid'); grid.innerHTML = '';
+  moves.forEach(function(m) {
+    var color = TYPE_COLORS[(m.type||'neutral').toLowerCase()] || TYPE_COLORS.neutral;
+    var btn = document.createElement('button'); btn.className = 'move-btn';
+    btn.style.borderColor = color + '66'; btn.style.background = 'linear-gradient(135deg,' + color + '15,' + color + '08)';
+    btn.innerHTML = '<span class="m-name">' + escapeHtml(m.name) + '</span><span class="m-info"><span class="m-type" style="color:'+color+'">' + (m.type||'').toUpperCase() + '</span><span>PWR '+(m.power||'\u2014')+'</span><span>ACC '+(m.accuracy||'\u2014')+'</span><span class="m-pp">'+(m.currentPP!=null?m.currentPP:m.pp)+'/'+m.pp+'</span></span>';
+    btn.onclick = function() { setAutoPlay(false); submitMove(m.id); };
+    if (m.currentPP != null && m.currentPP <= 0) btn.disabled = true;
+    grid.appendChild(btn);
+  });
+  // Auto-play toggle
+  var toggle = document.createElement('div'); toggle.className = 'auto-toggle';
+  toggle.innerHTML = '<span class="auto-toggle-label ' + (autoPlaying ? 'auto' : 'manual') + '" id="autoLabel">' + (autoPlaying ? 'Auto' : 'Manual') + '</span>' +
+    '<div class="auto-toggle-switch ' + (autoPlaying ? 'active' : '') + '" id="autoSwitch" onclick="toggleAutoPlay()"></div>' +
+    '<span style="color:#64748b;font-size:0.75rem;">' + (autoPlaying ? 'AI picks moves' : 'You pick moves') + '</span>';
+  grid.appendChild(toggle);
+}
+
+function toggleAutoPlay() {
+  setAutoPlay(!autoPlaying);
+}
+
+function setAutoPlay(enabled) {
+  autoPlaying = enabled;
+  var sw = document.getElementById('autoSwitch');
+  var label = document.getElementById('autoLabel');
+  if (sw) sw.className = 'auto-toggle-switch ' + (autoPlaying ? 'active' : '');
+  if (label) {
+    label.textContent = autoPlaying ? 'Auto' : 'Manual';
+    label.className = 'auto-toggle-label ' + (autoPlaying ? 'auto' : 'manual');
+  }
+  // Update description
+  var toggle = document.querySelector('.auto-toggle');
+  if (toggle) {
+    var desc = toggle.querySelector('span:last-child');
+    if (desc) desc.textContent = autoPlaying ? 'AI picks moves' : 'You pick moves';
+  }
+  // If enabling auto and not processing, start the loop
+  if (autoPlaying && !isProcessing && battleState && battleState.status !== 'finished') {
+    autoPlayLoop();
+  }
+  // If disabling, start the turn timer for manual play
+  if (!autoPlaying && !isProcessing) {
+    startTurnTimer();
+  }
+}
+function disableMoves() { document.getElementById('moveWaiting').style.display = ''; }
+function enableMoves() { document.getElementById('moveWaiting').style.display = 'none'; }
+
+// ============================================
+// DEMO API
+// ============================================
+async function startDemo(config) {
+  try {
+    var body = {};
+
+    // Use provided config (for "Same Lobster"), or URL params, or random
+    if (config) {
+      body.type = config.type;
+      body.name = config.name;
+      if (config.moves) body.moves = config.moves;
+    } else {
+      var params = new URLSearchParams(window.location.search);
+      if (params.get('type')) body.type = params.get('type');
+      if (params.get('name')) body.name = params.get('name');
+      if (params.get('moves')) body.moves = params.get('moves').split(',');
+    }
+
+    var resp = await fetch('/demo/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    var data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Failed to start');
+
+    demoId = data.demoId; battleState = data; turnNumber = data.turnNumber || 1;
+    battleAgentNames.player = data.player.name; battleAgentNames.opponent = data.opponent.name;
+    battleAgentTypes.player = (data.player.type || 'neutral').toLowerCase();
+    battleAgentTypes.opponent = (data.opponent.type || 'neutral').toLowerCase();
+
+    // Store player config for "Same Lobster" option
+    lastPlayerConfig = {
+      type: data.player.type,
+      name: data.player.name,
+      moves: (data.player.moves || []).map(function(m) { return m.id; })
+    };
+
+    var pT = (data.player.type||'neutral').toUpperCase(), oT = (data.opponent.type||'neutral').toUpperCase();
+    var pC = TYPE_COLORS[pT.toLowerCase()]||TYPE_COLORS.neutral, oC = TYPE_COLORS[oT.toLowerCase()]||TYPE_COLORS.neutral;
+    var pLvl = data.player.level || 1, oLvl = data.opponent.level || 1;
+    document.getElementById('playerName').innerHTML = '<span style="color:' + pC + '">' + escapeHtml(data.player.name) + '</span> <span class="hp-level">Lv.' + pLvl + '</span>';
+    document.getElementById('opponentName').innerHTML = '<span style="color:' + oC + '">' + escapeHtml(data.opponent.name) + '</span> <span class="hp-level">Lv.' + oLvl + '</span>';
+    document.getElementById('playerType').textContent = pT; document.getElementById('playerType').style.background = pC;
+    document.getElementById('opponentType').textContent = oT; document.getElementById('opponentType').style.background = oC;
+    setFrameColor('player', data.player.type); setFrameColor('opponent', data.opponent.type);
+
+    var TYPE_IMAGES = {
+      neutral: ['/references/neutral/sentinel-balanced.webp', '/references/neutral/crawler-attack.webp'],
+      fire: ['/references/fire/titan-attack.webp', '/references/fire/sentinel-balanced.webp'],
+      water: ['/references/water/titan-balanced.webp', '/references/water/crawler-attack.webp'],
+      electric: ['/references/electric/sentinel-attack.webp', '/references/electric/titan-balanced.webp'],
+      grass: ['/references/grass/titan-balanced.webp', '/references/grass/sentinel-attack.webp'],
+      ice: ['/references/ice/sentinel-balanced.webp', '/references/ice/titan-attack.webp'],
+      martial: ['/references/martial/titan-attack.webp', '/references/martial/sentinel-balanced.webp'],
+      venom: ['/references/venom/titan-balanced.webp', '/references/venom/crawler-attack.webp'],
+      earth: ['/references/earth/titan-balanced.webp', '/references/earth/sentinel-attack.webp'],
+      air: ['/references/air/sentinel-balanced.webp', '/references/air/titan-attack.webp'],
+      psyche: ['/references/psyche/titan-balanced.webp', '/references/psyche/sentinel-attack.webp'],
+      insect: ['/references/insect/titan-attack.webp', '/references/insect/crawler-balanced.webp'],
+      stone: ['/references/stone/titan-balanced.webp', '/references/stone/sentinel-attack.webp'],
+      ghost: ['/references/ghost/titan-balanced.webp', '/references/ghost/sentinel-attack.webp'],
+      dragon: ['/references/dragon/titan-attack.webp', '/references/dragon/sentinel-balanced.webp'],
+      shadow: ['/references/shadow/titan-balanced.webp', '/references/shadow/sentinel-attack.webp'],
+      metal: ['/references/metal/titan-balanced.webp', '/references/metal/sentinel-attack.webp'],
+      mystic: ['/references/mystic/titan-balanced.webp', '/references/mystic/sentinel-attack.webp']
+    };
+    var pImgs = TYPE_IMAGES[battleAgentTypes.player] || TYPE_IMAGES.neutral;
+    var oImgs = TYPE_IMAGES[battleAgentTypes.opponent] || TYPE_IMAGES.neutral;
+    document.getElementById('playerImg').src = pImgs[0];
+    document.getElementById('opponentImg').src = oImgs[1] || oImgs[0];
+
+    updateHPBar('player', data.player.currentHP, data.player.maxHP);
+    updateHPBar('opponent', data.opponent.currentHP, data.opponent.maxHP);
+    renderMoves(data.player.moves);
+
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('battle-section').style.display = '';
+
+    // Delay canvas init to ensure layout is calculated
+    setTimeout(function() {
+      initCanvas();
+      resizeCanvas();
+    }, 50);
+
+    var arenaEl = document.getElementById('arena');
+    arenaEl.classList.add('battle-intro');
+    setTimeout(function() { arenaEl.classList.remove('battle-intro'); }, 1500);
+
+    addToHistory('Demo battle started! ' + data.player.name + ' vs ' + data.opponent.name, null);
+    document.getElementById('turn-indicator').textContent = 'TURN ' + turnNumber;
+    document.getElementById('historyTurn').textContent = 'Turn ' + turnNumber;
+    Audio.play('matchFound');
+
+    // Start with auto-play enabled by default
+    setTimeout(autoPlayLoop, 1500);
+  } catch (err) {
+    document.querySelector('.loading-text').innerHTML = 'Error: ' + escapeHtml(err.message) +
+      '<br><br><a href="/demo.html" style="color:#6366f1;font-weight:700;font-size:15px;">Try Again</a>';
+  }
+}
+
+// ============================================
+// TURN TIMER
+// ============================================
+var TURN_TIMEOUT = 30;
+var timerInterval = null;
+
+function startTurnTimer() {
+  stopTurnTimer();
+  var remaining = TURN_TIMEOUT;
+  var timerEl = document.getElementById('turnTimer');
+  var valueEl = document.getElementById('turnTimerValue');
+  valueEl.textContent = remaining + 's';
+  timerEl.className = 'turn-timer show';
+
+  timerInterval = setInterval(function() {
+    remaining--;
+    valueEl.textContent = remaining + 's';
+    if (remaining <= 5) {
+      timerEl.className = 'turn-timer show critical';
+      if (remaining > 0) Audio.play('timerTick');
+    } else if (remaining <= 10) {
+      timerEl.className = 'turn-timer show warning';
+    } else {
+      timerEl.className = 'turn-timer show';
+    }
+    if (remaining <= 0) {
+      stopTurnTimer();
+      submitMove(null, true);
+    }
+  }, 1000);
+}
+
+function stopTurnTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  var el = document.getElementById('turnTimer');
+  if (el) { el.className = 'turn-timer'; }
+}
+
+async function autoPlayLoop() {
+  if (!autoPlaying || isProcessing) return;
+  while (autoPlaying) {
+    await submitMove(null, true);
+    if (!battleState || battleState.status === 'finished') break; // Don't reset autoPlaying - preserve preference
+    await delay(600);
+  }
+}
+
+async function submitMove(moveId, auto) {
+  if (isProcessing) return;
+  isProcessing = true; stopTurnTimer(); disableMoves(); Audio.play('moveSelect');
+  try {
+    var body = { demoId: demoId };
+    if (auto) body.auto = true; else body.moveId = moveId;
+    var resp = await fetch('/demo/move', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    var data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Move failed');
+    battleState = data;
+
+    if (data.turn) {
+      turnNumber = data.turn.number || (turnNumber + 1);
+      document.getElementById('turn-indicator').textContent = 'TURN ' + turnNumber;
+      document.getElementById('historyTurn').textContent = 'Turn ' + turnNumber;
+      if (turnNumber > 1) addTurnSeparator(turnNumber);
+      await animateTurnEvents(data.turn);
+    }
+
+    updateHPBar('player', data.player.currentHP, data.player.maxHP);
+    updateHPBar('opponent', data.opponent.currentHP, data.opponent.maxHP);
+
+    if (data.status === 'finished') { await delay(500); endBattle(data.winnerId === data.player.id); return; }
+    renderMoves(data.player.moves); enableMoves(); if (!autoPlaying) startTurnTimer();
+  } catch (err) {
+    if (err.message && err.message.match(/not found|expired/i)) {
+      addToHistory('Session expired. Starting a new battle...', null);
+      setTimeout(function() { window.location.href = '/demo.html'; }, 1500);
+      return;
+    }
+    addToHistory('Error: ' + err.message, null); enableMoves(); if (!autoPlaying) startTurnTimer();
+  } finally { isProcessing = false; }
+}
+
+// ============================================
+// TURN EVENT ANIMATION
+// ============================================
+async function animateTurnEvents(turn) {
+  if (!turn || !turn.events || !turn.events.length) return;
+  // In demo, player is always side A
+  var myAgentSide = 'A';
+  var currentAttackerSide = null;
+  var lastMovePower = 60;
+  var lastMoveCategory = 'special';
+  var lastMoveDescription = '';
+
+  for (var i = 0; i < turn.events.length; i++) {
+    var ev = turn.events[i];
+
+    // Phase markers set who is currently attacking
+    if (ev.phase === 'first_attack' || ev.phase === 'second_attack') {
+      if (ev.phase === 'second_attack') addAttackGap();
+      currentAttackerSide = ev.side;
+      await delay(500);
+    }
+
+    // Flush buffered use_move if this isn't a damage event
+    if (lastUseMoveMsg && ev.type !== 'use_move' && ev.type !== 'damage') {
+      var flushSide = currentAttackerSide === myAgentSide ? 'player' : 'opponent';
+      addToHistory(lastUseMoveMsg, flushSide);
+      lastUseMoveMsg = '';
+    }
+
+    switch (ev.type) {
+      case 'use_move': {
+        lastMoveName = ev.move || '';
+        lastUsedMoveType = (ev.moveType || '').toUpperCase();
+        lastMovePower = ev.movePower || 60;
+        lastMoveCategory = ev.moveCategory || 'special';
+        lastMoveDescription = ev.moveDescription || '';
+        lastUseMoveMsg = ev.message || '';
+        var ms = currentAttackerSide === myAgentSide ? 'player' : 'opponent';
+        showActionInfoSimple(ms, ev.move || ev.message);
+        // Brief attacker telegraph (log entry deferred to damage)
+        var ae = document.getElementById(ms === 'player' ? 'playerLobster' : 'opponentLobster');
+        ae.classList.add('attacking');
+        await delay(400);
+        break;
+      }
+      case 'damage': {
+        var isPlayerAttacking = currentAttackerSide === myAgentSide;
+        var ts = isPlayerAttacking ? 'opponent' : 'player';
+        var attackerSide = isPlayerAttacking ? 'player' : 'opponent';
+
+        // Play attack animation with move details for pattern selection
+        var animResult = null;
+        if (lastUsedMoveType) {
+          animResult = playAttackAnimation(lastUsedMoveType, isPlayerAttacking, {
+            category: lastMoveCategory,
+            power: lastMovePower,
+            moveName: lastMoveName,
+            moveDescription: lastMoveDescription
+          });
+        }
+
+        // Trigger attacker movement based on pattern
+        if (animResult && animResult.pattern) {
+          triggerAttackerMovement(attackerSide, animResult.pattern);
+        }
+
+        var ae2 = document.getElementById(attackerSide === 'player' ? 'playerLobster' : 'opponentLobster');
+        ae2.classList.remove('attacking');
+
+        // Calculate travel time based on pattern (standardized across all pages)
+        var travelTime = 300;
+        if (animResult && animResult.pattern) {
+          if (animResult.pattern === 'beam') travelTime = 200;
+          else if (animResult.pattern === 'slash') travelTime = 150;
+          else if (animResult.pattern === 'arc') travelTime = 450;
+          else if (animResult.pattern === 'charge') travelTime = 250;
+          else if (animResult.pattern === 'wave') travelTime = 300;
+        }
+        await delay(travelTime);
+
+        // Critical hit handling - freeze frame + critical text + zoom
+        if (ev.crit) {
+          await delay(100); // Freeze frame
+          showCriticalText(ts);
+          triggerCritZoom(isPlayerAttacking ? 'player' : 'opponent'); // Zoom the attacker
+          flashScreen('rgba(255, 255, 255, 0.3)', 150);
+        }
+
+        // Audio + damage number + hit effect simultaneously
+        Audio.play(ev.typeEffectiveness >= 2 ? 'hitSuper' : ev.crit ? 'hitCrit' : 'hit', lastUsedMoveType);
+        showDamageNumber(ts, ev.damage, ev.crit, false, ev.typeEffectiveness);
+        var de = document.getElementById(ts === 'player' ? 'playerLobster' : 'opponentLobster');
+        de.classList.add('hit');
+
+        // Dynamic screen shake based on power + damage percent scaling
+        var shakeAmp = 0, shakeDur = 0;
+        if (animResult && animResult.scale && animResult.scale.shakeAmplitude > 0) {
+          shakeAmp = animResult.scale.shakeAmplitude;
+          shakeDur = animResult.scale.shakeDuration;
+        }
+        // Enhance shake based on damage as % of max HP (higher % = bigger shake)
+        if (ev.damage > 0) {
+          var maxHp = parseInt(document.getElementById(ts === 'player' ? 'playerMaxHp' : 'opponentMaxHp').textContent) || 100;
+          var dmgPercent = ev.damage / maxHp;
+          // Scale shake by damage: 10% HP = base, 50%+ HP = dramatic
+          var dmgMultiplier = 1 + Math.min(dmgPercent * 2, 1.5); // 1x to 2.5x
+          shakeAmp = Math.max(shakeAmp, 2) * dmgMultiplier;
+          shakeDur = Math.max(shakeDur, 100) * (1 + dmgPercent * 0.5);
+        }
+        if (shakeAmp > 0 || lastMovePower >= 80 || ev.crit) {
+          screenShake(shakeAmp > 0 ? shakeAmp : undefined, shakeDur > 0 ? shakeDur : undefined);
+        }
+
+        // Type-colored screen flash for powerful attacks
+        if (animResult && animResult.scale && animResult.scale.flashOpacity > 0 && animResult.flashColor) {
+          flashScreen(animResult.flashColor, 200);
+        }
+
+        // Update HP bar immediately from remainingHP
+        if (ev.remainingHP !== undefined) {
+          var mx = parseInt(document.getElementById(ts === 'player' ? 'playerMaxHp' : 'opponentMaxHp').textContent) || 100;
+          updateHPBar(ts, ev.remainingHP, mx);
+        }
+        // Combined use_move + damage in one log entry
+        if (lastUseMoveMsg) {
+          addCombinedToHistory(lastUseMoveMsg, ev.message, isPlayerAttacking ? 'player' : 'opponent');
+          lastUseMoveMsg = '';
+        } else {
+          addToHistory(ev.message, isPlayerAttacking ? 'player' : 'opponent');
+        }
+        // Effectiveness callout
+        if (ev.typeEffectiveness && ev.typeEffectiveness !== 1) {
+          if (ev.typeEffectiveness > 1) showEffectivenessCallout('super');
+          else if (ev.typeEffectiveness === 0) showEffectivenessCallout('immune');
+          else showEffectivenessCallout('not-very');
+        }
+        await delay(400);
+        de.classList.remove('hit');
+        await delay(300);
+        break;
+      }
+      case 'recoil': {
+        var recoilSide = currentAttackerSide === myAgentSide ? 'player' : 'opponent';
+        showDamageNumber(recoilSide, ev.damage, false);
+        if (ev.remainingHP !== undefined) {
+          var mx2 = parseInt(document.getElementById(recoilSide === 'player' ? 'playerMaxHp' : 'opponentMaxHp').textContent) || 100;
+          updateHPBar(recoilSide, ev.remainingHP, mx2);
+        }
+        addToHistory(ev.message, recoilSide);
+        await delay(500);
+        break;
+      }
+      case 'status_inflict': {
+        Audio.play('statusInflict');
+        var statusTarget = currentAttackerSide === myAgentSide ? 'opponent' : 'player';
+        addToHistory(ev.message, currentAttackerSide === myAgentSide ? 'player' : 'opponent');
+        // Add persistent status icon
+        var stName = ev.status || ev.effect || '';
+        if (stName) addStatusIcon(statusTarget, stName);
+        await delay(600);
+        break;
+      }
+      case 'heal': case 'drain': case 'wish_heal': {
+        Audio.play('heal'); var hs = currentAttackerSide === myAgentSide ? 'player' : 'opponent';
+        showDamageNumber(hs, ev.heal || ev.amount, false, true);
+        if (ev.remainingHP !== undefined) {
+          var mx3 = parseInt(document.getElementById(hs === 'player' ? 'playerMaxHp' : 'opponentMaxHp').textContent) || 100;
+          updateHPBar(hs, ev.remainingHP, mx3);
+        }
+        addToHistory(ev.message, hs); await delay(600); break;
+      }
+      case 'burn_damage': case 'poison_damage': case 'curse_damage': case 'leech_seed': {
+        addToHistory(ev.message);
+        if (ev.remainingHP !== undefined && ev.side) {
+          var dotSide = ev.side === myAgentSide ? 'player' : 'opponent';
+          var mx4 = parseInt(document.getElementById(dotSide === 'player' ? 'playerMaxHp' : 'opponentMaxHp').textContent) || 100;
+          updateHPBar(dotSide, ev.remainingHP, mx4);
+        }
+        await delay(600); break;
+      }
+      case 'miss': case 'dodge': case 'immune': case 'flinch': Audio.play('miss'); addToHistory(ev.message); await delay(600); break;
+      case 'stat_boost': Audio.play('statBoost'); addToHistory(ev.message); await delay(500); break;
+      case 'stat_drop': Audio.play('statDrop'); addToHistory(ev.message); await delay(500); break;
+      case 'ability': addToHistory(ev.message); await delay(600); break;
+      case 'faint': {
+        Audio.play('faint'); var fs = ev.side === myAgentSide ? 'player' : 'opponent';
+        var fe = document.getElementById(fs === 'player' ? 'playerLobster' : 'opponentLobster');
+        fe.classList.add('fainted'); addToHistory(ev.message, fs); await delay(1000); break;
+      }
+      case 'timeout': addToHistory(ev.message || 'Turn timed out!'); await delay(800); break;
+      case 'battle_end': await delay(700); break;
+      default: if (ev.message) addToHistory(ev.message); await delay(500); break;
+    }
+  }
+}
+
+// ============================================
+// BATTLE END
+// ============================================
+var lastPlayerConfig = null; // Store player config for "Same Lobster" option
+
+function endBattle(weWon) {
+  stopTurnTimer();
+  // Don't reset autoPlaying - keep the user's preference
+  Audio.stopMusic(); Audio.play(weWon ? 'victory' : 'defeat');
+  var ov = document.getElementById('endOverlay');
+  var ti = document.getElementById('resultTitle');
+  var su = document.getElementById('resultSubtitle');
+  ti.textContent = weWon ? 'VICTORY!' : 'DEFEAT';
+  ti.className = 'result-title ' + (weWon ? 'victory' : 'defeat');
+  su.textContent = weWon
+    ? 'Your lobster ' + battleAgentNames.player + ' emerged victorious!'
+    : 'Your lobster ' + battleAgentNames.player + ' was defeated by ' + battleAgentNames.opponent + '.';
+  ov.classList.add('active');
+}
+
+// ============================================
+// PLAY AGAIN
+// ============================================
+async function playAgain(sameLobster) {
+  // Hide end overlay
+  document.getElementById('endOverlay').classList.remove('active');
+
+  // Reset UI
+  document.getElementById('battle-section').style.display = 'none';
+  document.getElementById('loading-screen').style.display = '';
+  document.querySelector('.loading-text').textContent = 'Preparing your battle...';
+
+  // Clear fainted state
+  document.getElementById('playerLobster').classList.remove('fainted');
+  document.getElementById('opponentLobster').classList.remove('fainted');
+
+  // Clear history
+  clearHistory();
+
+  // Reset state
+  demoId = null;
+  battleState = null;
+  isProcessing = false;
+  turnNumber = 0;
+
+  // Start new demo
+  if (sameLobster && lastPlayerConfig) {
+    await startDemo(lastPlayerConfig);
+  } else {
+    lastPlayerConfig = null;
+    await startDemo(null);
+  }
+}
+
+// ============================================
+// SAVE DEMO LOBSTER
+// ============================================
+window.saveDemoLobster = async function() {
+  var btn = document.getElementById('saveLobsterBtn');
+  if (!battleState || !battleState.player) return;
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try {
+    // Register the demo lobster as a real agent
+    var moveIds = (battleState.player.moves || []).map(function(m) { return m.id; });
+    var regBody = {
+      name: battleState.player.name,
+      type: (battleState.player.type || 'NEUTRAL').toUpperCase(),
+      move_ids: moveIds,
+      auto: false
+    };
+    var regResp = await fetch('/agents/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(regBody)
+    });
+    var regData = await regResp.json();
+    // If name taken, retry with random suffix
+    if (regResp.status === 409) {
+      regBody.name = regBody.name + '-' + Math.random().toString(36).slice(2, 6);
+      regResp = await fetch('/agents/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(regBody)
+      });
+      regData = await regResp.json();
+    }
+    if (!regResp.ok) throw new Error(regData.error || 'Registration failed');
+
+    var agentId = regData.agent_id || regData.id;
+    var apiKey = regData.api_key;
+
+    // Store claim data securely in sessionStorage (not in URL to avoid leaking API key)
+    try { sessionStorage.setItem('pendingClaim', JSON.stringify({ agentId: agentId, apiKey: apiKey })); } catch(e) {}
+    window.location.href = '/portfolio.html?claim=' + encodeURIComponent(agentId);
+  } catch (err) {
+    btn.disabled = false; btn.textContent = 'Save This Lobster';
+    alert('Could not save: ' + err.message);
+  }
+};
+
+// ============================================
+// INIT
+// ============================================
+window.addEventListener('resize', resizeCanvas);
+Audio.unlock();
+// Start immediately with auto-play enabled
+startDemo();
+</script>
+<script src="/js/auth.js"></script>
+<script src="/js/analytics.js"></script>
+</body>
+</html>

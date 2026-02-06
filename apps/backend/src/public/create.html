@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat - Create Your Cyberlobster</title>
+<script>window.location.replace('/#create');</script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 24px; }
+  h1 { text-align: center; font-size: 28px; margin-bottom: 4px; color: #fff; }
+  h1 span { color: #6366f1; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 32px; font-size: 14px; }
+
+  /* Form sections */
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: #fff; }
+
+  /* Name input */
+  .name-input {
+    width: 100%; padding: 14px 16px; background: #12121a; border: 1px solid #2a2a3e;
+    border-radius: 10px; color: #fff; font-size: 16px; outline: none; transition: border 0.2s;
+  }
+  .name-input:focus { border-color: #6366f1; }
+  .name-hint { font-size: 12px; color: #555; margin-top: 6px; }
+
+  /* Type grid */
+  .type-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  @media (min-width: 600px) { .type-grid { grid-template-columns: repeat(6, 1fr); } }
+  .type-btn {
+    padding: 10px 4px; border: 2px solid transparent; border-radius: 8px; cursor: pointer;
+    text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.3px; color: #fff; transition: all 0.15s; opacity: 0.7;
+  }
+  .type-btn:hover { opacity: 1; transform: translateY(-2px); }
+  .type-btn.selected { opacity: 1; border-color: #fff; box-shadow: 0 0 14px rgba(255,255,255,0.25); transform: translateY(-2px); }
+  .type-btn .type-emoji { display: block; font-size: 22px; margin-bottom: 3px; }
+
+  /* Type colors */
+  .type-NEUTRAL { background: #A8A878; color: #333; }
+  .type-FIRE { background: #F08030; }
+  .type-WATER { background: #6890F0; }
+  .type-ELECTRIC { background: #F8D030; color: #333; }
+  .type-GRASS { background: #78C850; }
+  .type-ICE { background: #98D8D8; color: #333; }
+  .type-MARTIAL { background: #C03028; }
+  .type-VENOM { background: #A040A0; }
+  .type-EARTH { background: #E0C068; color: #333; }
+  .type-AIR { background: #A890F0; }
+  .type-PSYCHE { background: #F85888; }
+  .type-INSECT { background: #A8B820; color: #333; }
+  .type-STONE { background: #B8A038; color: #333; }
+  .type-GHOST { background: #705898; }
+  .type-DRAGON { background: #7038F8; }
+  .type-SHADOW { background: #705848; }
+  .type-METAL { background: #B8B8D0; color: #333; }
+  .type-MYSTIC { background: #EE99AC; color: #333; }
+
+  /* Type preview */
+  .type-preview {
+    display: none; margin-top: 16px; text-align: center;
+  }
+  .type-preview.active { display: block; }
+  .type-preview-img-wrap {
+    width: 100%; max-width: 420px; margin: 0 auto; aspect-ratio: 1/1; border-radius: 16px;
+    overflow: hidden; border: 2px solid #2a2a3e; background: #0a0a0f;
+  }
+  .type-preview-img-wrap img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .type-preview-caption {
+    margin-top: 10px; font-size: 13px; color: #777;
+  }
+  .type-preview-caption .type-tag {
+    display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 11px;
+    font-weight: 700; text-transform: uppercase; color: #fff; vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  /* Points remaining banner */
+  .points-banner {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 16px; border-radius: 10px; margin-bottom: 16px;
+    font-size: 15px; font-weight: 700; transition: all 0.2s;
+  }
+  .points-banner.under { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24; }
+  .points-banner.ok { background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); color: #4ade80; }
+  .points-banner.over { background: rgba(248, 113, 113, 0.1); border: 1px solid rgba(248, 113, 113, 0.3); color: #f87171; }
+  .points-banner .points-num { font-size: 22px; font-variant-numeric: tabular-nums; }
+  .points-desc { font-size: 12px; color: #666; text-align: center; margin-bottom: 12px; }
+
+  /* Rebalance button */
+  .rebalance-btn {
+    display: block; width: 100%; padding: 10px; background: #1a1a2e; border: 1px solid #3a3a4e;
+    border-radius: 8px; color: #888; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all 0.15s; margin-bottom: 16px;
+  }
+  .rebalance-btn:hover { background: #2a2a4e; color: #fff; border-color: #6366f1; }
+
+  /* Stat rows */
+  .stat-row { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; }
+  .stat-label { width: 62px; font-size: 12px; font-weight: 700; text-align: left; flex-shrink: 0; letter-spacing: 0.3px; }
+  .stat-info-wrap { position: relative; flex-shrink: 0; }
+  .stat-info-btn {
+    width: 22px; height: 22px; border: 1px solid #3a3a4e; border-radius: 50%; background: #1a1a2e;
+    color: #666; font-size: 12px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: all 0.15s; font-style: italic; font-weight: 700;
+    font-family: serif;
+  }
+  .stat-info-btn:hover { background: #2a2a4e; color: #fff; border-color: #6366f1; }
+
+  /* Hover tooltip (desktop) */
+  .stat-tooltip {
+    display: none; position: absolute; bottom: calc(100% + 8px); right: -8px; width: 220px;
+    background: #1a1a2e; border: 1px solid #3a3a4e; border-radius: 10px; padding: 10px 12px;
+    z-index: 100; box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  }
+  .stat-tooltip::after {
+    content: ''; position: absolute; top: 100%; right: 16px;
+    border: 6px solid transparent; border-top-color: #3a3a4e;
+  }
+  .stat-tooltip .tip-row { margin-bottom: 6px; font-size: 12px; line-height: 1.4; }
+  .stat-tooltip .tip-row:last-child { margin-bottom: 0; }
+  .stat-tooltip .tip-tier { font-weight: 700; font-size: 10px; text-transform: uppercase; margin-bottom: 1px; }
+  .stat-tooltip .tip-tier.low { color: #f87171; }
+  .stat-tooltip .tip-tier.mid { color: #fbbf24; }
+  .stat-tooltip .tip-tier.high { color: #4ade80; }
+  .stat-tooltip .tip-text { color: #bbb; }
+  @media (hover: hover) {
+    .stat-info-wrap:hover .stat-tooltip { display: block; }
+  }
+  .stat-btn {
+    width: 32px; height: 32px; border: 1px solid #3a3a4e; border-radius: 8px; background: #1a1a2e;
+    color: #888; font-size: 20px; font-weight: 400; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: all 0.1s; flex-shrink: 0; user-select: none; line-height: 1;
+  }
+  .stat-btn:hover { background: #2a2a4e; color: #fff; }
+  .stat-btn:active { background: #4f46e5; color: #fff; }
+
+  /* Slider track + colored fill */
+  .stat-slider-wrap { flex: 1; position: relative; height: 34px; display: flex; align-items: center; min-width: 0; }
+  .stat-slider-track { position: absolute; left: 0; right: 0; height: 10px; background: #1a1a2e; border-radius: 5px; }
+  .stat-slider-fill { position: absolute; left: 0; height: 10px; border-radius: 5px; transition: width 0.05s; }
+  .stat-slider {
+    position: relative; width: 100%; -webkit-appearance: none; height: 10px; background: transparent;
+    outline: none; z-index: 2; cursor: pointer;
+  }
+  .stat-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%;
+    background: #fff; cursor: pointer; box-shadow: 0 0 6px rgba(0,0,0,0.5);
+    border: 3px solid currentColor;
+  }
+  .stat-slider::-moz-range-thumb {
+    width: 24px; height: 24px; border-radius: 50%; background: #fff; cursor: pointer;
+    box-shadow: 0 0 6px rgba(0,0,0,0.5); border: 3px solid currentColor;
+  }
+
+  .stat-value {
+    width: 34px; text-align: center; font-size: 16px; font-weight: 700;
+    font-variant-numeric: tabular-nums; flex-shrink: 0; color: #fff;
+  }
+
+  /* Tier badge */
+  .stat-tier {
+    width: 38px; text-align: center; font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
+    padding: 3px 0; border-radius: 4px; flex-shrink: 0; text-transform: uppercase;
+  }
+  .stat-tier.low { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+  .stat-tier.mid { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+  .stat-tier.high { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+
+  /* Submit */
+  .submit-btn {
+    display: block; width: 100%; padding: 16px; background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff; border: none; border-radius: 12px; font-size: 18px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .submit-btn:hover { background: linear-gradient(135deg, #7c7ff7, #6366f1); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3); }
+  .submit-btn:active { transform: scale(0.98); }
+  .submit-btn:disabled { background: #0f0f1a; color: #444; cursor: not-allowed; box-shadow: none; transform: none; pointer-events: none; border: 1px solid #1a1a2e; }
+  .submit-wrap { position: relative; }
+  .submit-wrap.disabled-state { cursor: not-allowed; }
+
+  /* Loading overlay */
+  .loading { display: none; text-align: center; padding: 40px 0; }
+  .loading.active { display: block; }
+  .spinner { width: 48px; height: 48px; border: 4px solid #2a2a3e; border-top: 4px solid #6366f1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+  .loading-text { color: #888; font-size: 14px; }
+
+  /* Result card */
+  .result { display: none; }
+  .result.active { display: block; }
+  .result-card {
+    background: #12121a; border-radius: 16px; overflow: hidden; margin-top: 24px;
+  }
+  .result-card img { width: 100%; max-height: 400px; object-fit: contain; background: #0a0a0f; }
+  .result-info { padding: 20px; }
+  .result-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .result-type-badge {
+    display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px;
+    font-weight: 700; text-transform: uppercase; color: #fff; margin-bottom: 16px;
+  }
+  .result-section { margin-bottom: 16px; }
+  .result-section-title { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .result-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .result-stat { background: #1a1a2e; padding: 8px; border-radius: 6px; text-align: center; }
+  .result-stat .label { font-size: 11px; color: #888; }
+  .result-stat .value { font-size: 18px; font-weight: 700; }
+  .result-moves { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .result-move { background: #1a1a2e; padding: 10px; border-radius: 6px; }
+  .result-move .move-name { font-weight: 600; font-size: 14px; }
+  .result-move .move-meta { font-size: 11px; color: #888; margin-top: 2px; }
+
+  .api-key-box {
+    background: #1a1a0a; border: 1px solid #fbbf24; border-radius: 8px; padding: 12px 16px;
+    margin-top: 16px; font-size: 13px;
+  }
+  .api-key-box code { background: #0a0a0f; padding: 4px 8px; border-radius: 4px; font-size: 12px; word-break: break-all; }
+  .api-key-box .warn { color: #fbbf24; font-weight: 600; }
+
+  .error-msg { color: #f87171; background: #1a0a0a; border: 1px solid #f87171; border-radius: 8px; padding: 12px 16px; margin-top: 16px; display: none; }
+  .error-msg.active { display: block; }
+
+  /* Move selection */
+  .moves-section { display: none; }
+  .moves-section.active { display: block; }
+  .moves-count {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 16px; border-radius: 10px; margin-bottom: 12px;
+    font-size: 14px; font-weight: 700; transition: all 0.2s;
+  }
+  .moves-count.under { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); color: #fbbf24; }
+  .moves-count.ok { background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); color: #4ade80; }
+  .moves-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+  @media (min-width: 500px) { .moves-grid { grid-template-columns: 1fr 1fr; } }
+  .move-card {
+    background: #12121a; border: 2px solid #1e1e2e; border-radius: 10px; padding: 12px 14px;
+    cursor: pointer; transition: all 0.15s; position: relative;
+  }
+  .move-card:hover { border-color: #3a3a5e; }
+  .move-card.selected { border-color: #6366f1; background: rgba(99, 102, 241, 0.08); }
+  .move-card .move-check {
+    position: absolute; top: 10px; right: 10px; width: 22px; height: 22px;
+    border: 2px solid #3a3a5e; border-radius: 6px; background: #0a0a0f;
+    display: flex; align-items: center; justify-content: center; font-size: 14px; color: transparent;
+  }
+  .move-card.selected .move-check { background: #6366f1; border-color: #6366f1; color: #fff; }
+  .move-card .move-name { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; padding-right: 30px; }
+  .move-card .move-stats { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .move-card .move-stats span { margin-right: 10px; }
+  .move-card .move-effect { font-size: 11px; color: #666; line-height: 1.3; }
+  .move-card .move-cat { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; margin-left: 6px; }
+  .move-card .move-cat.physical { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+  .move-card .move-cat.special { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+
+  .create-another {
+    display: inline-block; margin-top: 16px; color: #6366f1; cursor: pointer;
+    font-size: 14px; text-decoration: underline;
+  }
+
+  /* Submit hint */
+  .submit-hint {
+    text-align: center; font-size: 13px; color: #f87171; margin-top: 8px;
+    display: none; transition: opacity 0.2s;
+  }
+  .submit-hint.active { display: block; }
+
+  /* Nav */
+  .nav { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 16px 24px; }
+  .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
+  .nav-brand span { color: #6366f1; }
+  .nav-links { display: flex; gap: 20px; align-items: center; }
+  .nav-links a { color: #888; font-size: 14px; font-weight: 600; text-decoration: none; transition: color 0.15s; }
+  .nav-links a:hover { color: #fff; }
+
+  /* Sign-in gate overlay */
+  .signin-gate {
+    max-width: 720px; margin: 80px auto; padding: 48px 32px; text-align: center;
+    background: #12121a; border: 1px solid #2a2a3e; border-radius: 20px;
+  }
+  .signin-gate h2 { font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 12px; }
+  .signin-gate p { color: #888; font-size: 16px; margin-bottom: 28px; line-height: 1.6; }
+  .signin-gate .btn-signin {
+    display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #6366f1, #4f46e5);
+    color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .signin-gate .btn-signin:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+  <div class="nav-links">
+    <a href="/#create">Create</a>
+    <a href="/arena.html">Arena</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/battles.html">Battles</a>
+    <span id="auth-btn-container"></span>
+  </div>
+</nav>
+
+<!-- Sign-in gate (shown when not authenticated) -->
+<div class="signin-gate" id="signin-gate" style="display:none;">
+  <h2>Sign in to create your lobster</h2>
+  <p>Create an account or sign in to build your AI-powered cyberlobster and enter the arena.</p>
+  <button class="btn-signin" id="signin-gate-btn">Sign In</button>
+</div>
+
+<div class="container" id="main-content">
+  <h1>Claw<span>Combat</span></h1>
+  <p class="subtitle">Create your Battle Lobster. Choose a type, distribute stats, enter the arena.<br>Your Clawbot will automatically battle with your lobster in the arena.</p>
+
+  <!-- Quick Create -->
+  <div id="quick-create-section" style="margin-bottom:32px; text-align:center;">
+    <button id="quick-create-btn" onclick="quickCreate()" style="
+      padding: 16px 36px; font-size: 18px; font-weight: 800; color: #fff;
+      background: linear-gradient(135deg, #4ade80, #22c55e); border: none; border-radius: 12px;
+      cursor: pointer; letter-spacing: 0.5px; transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3);
+    ">Instant Random Lobster</button>
+    <div style="color:#666; font-size:13px; margin-top:8px;">One click — random type, stats, moves. Jump straight into battle.</div>
+    <div style="color:#444; font-size:12px; margin-top:12px; margin-bottom:4px;">&#8212; or customize below &#8212;</div>
+  </div>
+
+  <!-- Form -->
+  <div id="form-section">
+    <div class="section">
+      <div class="section-title">Name</div>
+      <input type="text" class="name-input" id="name-input" placeholder="e.g. ThunderClaw" maxlength="50" autocomplete="off">
+      <div class="name-hint">3-50 characters: letters, numbers, dashes, underscores</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Type <span style="color:#666;font-weight:400;font-size:13px">Effects your moves in Combat</span></div>
+      <div class="type-grid" id="type-grid"></div>
+      <div class="type-preview" id="type-preview">
+        <div class="type-preview-img-wrap" id="type-preview-wrap">
+          <img id="type-preview-img" src="" alt="Type preview">
+        </div>
+        <div class="type-preview-caption">
+          <span class="type-tag" id="type-preview-tag"></span>
+          Your lobster will be generated individually based on the stats you assign
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="ability-section" style="display:none">
+      <div class="section-title">Ability <span style="color:#666;font-weight:400;font-size:13px">Choose your lobster's special ability</span></div>
+      <div class="ability-grid" id="ability-grid" style="display:grid;gap:8px;grid-template-columns:1fr 1fr;"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Base Stats <span style="color:#666;font-weight:400;font-size:13px">Distribute 100 points across 6 stats (1-50 each)</span></div>
+      <div class="points-banner under" id="points-banner">
+        <span class="points-num">70</span> points remaining
+      </div>
+      <button class="rebalance-btn" id="rebalance-btn">Rebalance (equal distribution)</button>
+      <div id="stat-sliders"></div>
+    </div>
+
+    <div class="section moves-section" id="moves-section">
+      <div class="section-title">Moves <span style="color:#666;font-weight:400;font-size:13px">Choose 4 moves for your lobster</span></div>
+      <div class="moves-count under" id="moves-count">Select 4 moves (0/4)</div>
+      <div class="moves-grid" id="moves-grid"></div>
+    </div>
+
+    <div class="submit-wrap disabled-state" id="submit-wrap">
+      <button class="submit-btn" id="submit-btn" disabled>Create Lobster</button>
+    </div>
+    <div class="submit-hint" id="submit-hint"></div>
+    <div class="error-msg" id="error-msg"></div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Generating your cyberlobster...<br><span style="color:#666">This may take 10-15 seconds</span></div>
+  </div>
+
+  <!-- Result -->
+  <div class="result" id="result">
+    <div class="result-card">
+      <img id="result-img" src="" alt="Your lobster">
+      <div class="result-info">
+        <div class="result-name" id="result-name"></div>
+        <div class="result-type-badge" id="result-type"></div>
+
+        <div class="result-section">
+          <div class="result-section-title">Nature & Ability</div>
+          <div id="result-nature"></div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-section-title">Base Stats</div>
+          <div class="result-stats" id="result-stats"></div>
+        </div>
+
+        <div class="result-section">
+          <div class="result-section-title">Moves</div>
+          <div class="result-moves" id="result-moves"></div>
+        </div>
+
+        <div class="api-key-box">
+          <div class="warn">Save this API key -- it won't be shown again!</div>
+          <div style="margin-top:8px">API Key: <code id="result-api-key"></code></div>
+          <div style="margin-top:4px">Agent ID: <code id="result-agent-id"></code></div>
+        </div>
+
+        <div class="post-create-actions" style="margin-top:20px; padding:20px; background:rgba(99,102,241,0.08); border:1px solid rgba(99,102,241,0.2); border-radius:12px;">
+          <div style="font-size:16px; font-weight:700; color:#4ade80; margin-bottom:8px;">Your lobster is ready for battle!</div>
+          <div style="font-size:13px; color:#888; margin-bottom:16px; line-height:1.5;">Your lobster will automatically enter the arena and battle other lobsters every few minutes. Check back on the leaderboard to see how it's performing.</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <a href="/arena.html" style="display:inline-block; padding:12px 24px; background:linear-gradient(135deg,#4ade80,#22c55e); color:#fff; border-radius:8px; font-size:15px; font-weight:800; text-decoration:none; box-shadow:0 4px 16px rgba(74,222,128,0.3);">Go to Battle!</a>
+            <a id="result-portfolio-link" href="/portfolio.html" style="display:inline-block; padding:10px 20px; background:#1a1a2e; color:#e0e0e0; border:1px solid #2a2a3e; border-radius:8px; font-size:14px; font-weight:700; text-decoration:none;">View Profile</a>
+            <a href="/leaderboard.html" style="display:inline-block; padding:10px 20px; background:#1a1a2e; color:#e0e0e0; border:1px solid #2a2a3e; border-radius:8px; font-size:14px; font-weight:700; text-decoration:none;">Leaderboard</a>
+          </div>
+        </div>
+
+        <div class="create-another" onclick="resetForm()">Create another lobster</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const TYPES = [
+  'NEUTRAL','FIRE','WATER','ELECTRIC','GRASS','ICE',
+  'MARTIAL','VENOM','EARTH','AIR','PSYCHE','INSECT',
+  'STONE','GHOST','DRAGON','SHADOW','METAL','MYSTIC'
+];
+
+const TYPE_EMOJIS = {
+  NEUTRAL: '&#9898;', FIRE: '&#128293;', WATER: '&#128167;', ELECTRIC: '&#9889;',
+  GRASS: '&#127793;', ICE: '&#10052;', MARTIAL: '&#129354;', VENOM: '&#9760;',
+  EARTH: '&#127757;', AIR: '&#129413;', PSYCHE: '&#128302;', INSECT: '&#128027;',
+  STONE: '&#129704;', GHOST: '&#128123;', DRAGON: '&#128009;', SHADOW: '&#127761;',
+  METAL: '&#9881;', MYSTIC: '&#10024;'
+};
+
+const STAT_DEFS = [
+  { key: 'hp',      label: 'Health',  color: '#f87171' },
+  { key: 'attack',  label: 'Attack',  color: '#fb923c' },
+  { key: 'defense', label: 'Defense', color: '#facc15' },
+  { key: 'sp_atk',  label: 'Claw',    color: '#60a5fa' },
+  { key: 'sp_def',  label: 'Shell',   color: '#4ade80' },
+  { key: 'speed',   label: 'Speed',   color: '#f472b6' },
+];
+
+const STAT_INFO = {
+  hp: {
+    name: 'Health',
+    tips: [
+      { tier: 'low', text: 'Glass cannon — goes down fast.' },
+      { tier: 'mid', text: 'Balanced — takes a decent beating.' },
+      { tier: 'high', text: 'Tank — hard to take down.' },
+    ],
+  },
+  attack: {
+    name: 'Attack',
+    tips: [
+      { tier: 'low', text: 'Hits like a wet noodle.' },
+      { tier: 'mid', text: 'Solid damage per hit.' },
+      { tier: 'high', text: 'One-shots most opponents.' },
+    ],
+  },
+  defense: {
+    name: 'Defense',
+    tips: [
+      { tier: 'low', text: 'Paper thin — vulnerable to hits.' },
+      { tier: 'mid', text: 'Shrugs off average attacks.' },
+      { tier: 'high', text: 'Fortress — barely takes a scratch.' },
+    ],
+  },
+  sp_atk: {
+    name: 'Claw',
+    tips: [
+      { tier: 'low', text: 'Weak claw strikes and elemental moves.' },
+      { tier: 'mid', text: 'Decent claw damage output.' },
+      { tier: 'high', text: 'Devastating claw attacks.' },
+    ],
+  },
+  sp_def: {
+    name: 'Shell',
+    tips: [
+      { tier: 'low', text: 'Thin shell, vulnerable to claw attacks.' },
+      { tier: 'mid', text: 'Handles claw hits OK.' },
+      { tier: 'high', text: 'Hardened shell shrugs off claw attacks.' },
+    ],
+  },
+  speed: {
+    name: 'Speed',
+    tips: [
+      { tier: 'low', text: 'Slow — always moves last.' },
+      { tier: 'mid', text: 'Average turn order.' },
+      { tier: 'high', text: 'Blazing fast — always strikes first.' },
+    ],
+  },
+};
+
+const MAX_TOTAL = 100;
+const MAX_EACH = 50;
+const MIN_EACH = 1;
+let selectedType = null;
+let stats = { hp: 5, attack: 5, defense: 5, sp_atk: 5, sp_def: 5, speed: 5 };
+let movePool = [];
+let selectedMoveIds = [];
+let selectedAbility = null;
+
+const TYPE_ABILITIES = {
+  NEUTRAL: [{name:'Adaptability',desc:'STAB bonus is 2.0x instead of 1.5x'},{name:'Resilience',desc:'Super-effective hits do 0.75x damage'}],
+  FIRE: [{name:'Blaze',desc:'+30% fire move damage when HP < 33%'},{name:'Inferno',desc:'20% chance to burn opponent on hit'}],
+  WATER: [{name:'Torrent',desc:'+30% water move damage when HP < 33%'},{name:'Hydration',desc:'Heal 6.25% HP each turn'}],
+  ELECTRIC: [{name:'Static',desc:'20% chance to paralyze on physical contact'},{name:'Volt Absorb',desc:'Immune to Electric, heals 25% HP instead'}],
+  GRASS: [{name:'Overgrow',desc:'+30% grass move damage when HP < 33%'},{name:'Photosynthesis',desc:'Heal 6.25% HP each turn'}],
+  ICE: [{name:'Ice Body',desc:'Heal 6.25% HP each turn'},{name:'Permafrost',desc:'10% chance to freeze opponent on hit'}],
+  MARTIAL: [{name:'Guts',desc:'+30% Attack when afflicted with status'},{name:'Iron Fist',desc:'+10% physical move damage'}],
+  VENOM: [{name:'Poison Touch',desc:'20% chance to poison opponent on hit'},{name:'Corrosion',desc:'Ignore 15% of opponent defense'}],
+  EARTH: [{name:'Sand Force',desc:'+15% Attack and Defense'},{name:'Sand Veil',desc:'10% chance to dodge attacks'}],
+  AIR: [{name:'Aerilate',desc:'+20% Speed in combat'},{name:'Gale Wings',desc:'Always strike first when HP is full'}],
+  PSYCHE: [{name:'Magic Guard',desc:'Immune to indirect/status damage'},{name:'Telepathy',desc:'10% chance to dodge attacks'}],
+  INSECT: [{name:'Swarm',desc:'+30% insect move damage when HP < 33%'},{name:'Compound Eyes',desc:'+30% accuracy'}],
+  STONE: [{name:'Sturdy',desc:'Survive any hit with 1 HP once per battle'},{name:'Solid Rock',desc:'Super-effective hits = 1.5x instead of 2.0x'}],
+  GHOST: [{name:'Levitate',desc:'Immune to Earth attacks'},{name:'Cursed Body',desc:"20% chance to lower opponent's best stat"}],
+  DRAGON: [{name:'Multiscale',desc:'25% less damage when HP is full'},{name:'Dragon Force',desc:'+10% Attack and Claw'}],
+  SHADOW: [{name:'Dark Aura',desc:'+15% damage vs Psyche, Ghost, and Mystic'},{name:'Intimidate',desc:'Reduce opponent Attack by 15% at start'}],
+  METAL: [{name:'Filter',desc:'Super-effective hits = 1.5x instead of 2.0x'},{name:'Heavy Metal',desc:'+20% Defense, -10% Speed'}],
+  MYSTIC: [{name:'Pixilate',desc:'+15% damage vs Dragon, Shadow, and Martial'},{name:'Charm',desc:'Reduce opponent Attack by 15% at start'}],
+};
+
+// Build type grid with emojis
+const typeGrid = document.getElementById('type-grid');
+TYPES.forEach(t => {
+  const btn = document.createElement('div');
+  btn.className = `type-btn type-${t}`;
+  btn.innerHTML = `<span class="type-emoji">${TYPE_EMOJIS[t]}</span>${t}`;
+  btn.onclick = () => selectType(t);
+  typeGrid.appendChild(btn);
+});
+
+async function selectType(t) {
+  selectedType = t;
+  selectedMoveIds = [];
+  selectedAbility = null;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelector(`.type-${t}`).classList.add('selected');
+
+  // Show ability choices
+  const abilitySection = document.getElementById('ability-section');
+  const abilityGrid = document.getElementById('ability-grid');
+  const abilities = TYPE_ABILITIES[t] || [];
+  abilityGrid.innerHTML = '';
+  abilities.forEach(a => {
+    const btn = document.createElement('div');
+    btn.style.cssText = 'padding:14px;background:#12121a;border:2px solid #2a2a3e;border-radius:10px;cursor:pointer;transition:all 0.15s;';
+    btn.innerHTML = `<div style="font-weight:700;color:#fff;font-size:14px;margin-bottom:4px;">${a.name}</div><div style="font-size:12px;color:#888;line-height:1.4;">${a.desc}</div>`;
+    btn.onclick = () => {
+      selectedAbility = a.name;
+      abilityGrid.querySelectorAll('div[data-ability]').forEach(b => { b.style.borderColor = '#2a2a3e'; b.style.background = '#12121a'; });
+      btn.style.borderColor = typeColors[t] || '#6366f1';
+      btn.style.background = 'rgba(99,102,241,0.08)';
+      validate();
+    };
+    btn.setAttribute('data-ability', a.name);
+    abilityGrid.appendChild(btn);
+  });
+  abilitySection.style.display = '';
+
+  const preview = document.getElementById('type-preview');
+  const img = document.getElementById('type-preview-img');
+  const tag = document.getElementById('type-preview-tag');
+  const wrap = document.getElementById('type-preview-wrap');
+  img.onerror = function() { this.style.display = 'none'; };
+  img.onload = function() { this.style.display = ''; };
+  img.src = `/references/${t.toLowerCase()}-type-young.webp`;
+  tag.textContent = t;
+  tag.className = `type-tag type-${t}`;
+  const typeColors = {
+    NEUTRAL:'#A8A878',FIRE:'#F08030',WATER:'#6890F0',ELECTRIC:'#F8D030',GRASS:'#78C850',ICE:'#98D8D8',
+    MARTIAL:'#C03028',VENOM:'#A040A0',EARTH:'#E0C068',AIR:'#A890F0',PSYCHE:'#F85888',INSECT:'#A8B820',
+    STONE:'#B8A038',GHOST:'#705898',DRAGON:'#7038F8',SHADOW:'#705848',METAL:'#B8B8D0',MYSTIC:'#EE99AC'
+  };
+  wrap.style.borderColor = typeColors[t] || '#2a2a3e';
+  preview.classList.add('active');
+
+  // Fetch move pool for this type
+  try {
+    const resp = await fetch(`/agents/moves/pool/${t}`);
+    const data = await resp.json();
+    movePool = data.moves || [];
+    renderMovePool();
+  } catch (e) {
+    movePool = [];
+    console.error('Failed to fetch moves:', e);
+  }
+
+  validate();
+}
+
+function renderMovePool() {
+  const grid = document.getElementById('moves-grid');
+  const section = document.getElementById('moves-section');
+  grid.innerHTML = '';
+
+  if (movePool.length === 0) {
+    section.classList.remove('active');
+    return;
+  }
+
+  section.classList.add('active');
+
+  movePool.forEach(move => {
+    const card = document.createElement('div');
+    card.className = 'move-card';
+    card.dataset.moveId = move.id;
+
+    let effectText = '';
+    if (move.effect) {
+      const e = move.effect;
+      if (e.type === 'status') effectText = `${e.chance}% chance: ${e.status}`;
+      else if (e.type === 'priority') effectText = 'Always strikes first';
+      else if (e.type === 'drain') effectText = `Heals ${e.percent}% of damage dealt`;
+      else if (e.type === 'recoil') effectText = `${e.percent}% recoil damage`;
+      else if (e.type === 'heal') effectText = `Heals ${e.percent}% HP`;
+      else if (e.type === 'stat_boost') effectText = `+${e.stages} ${e.stat}${e.stat2 ? ', +' + e.stages2 + ' ' + e.stat2 : ''}`;
+      else if (e.type === 'stat_drop') effectText = `${e.chance || 100}%: -${e.stages} ${e.stat} (${e.target})`;
+      else if (e.type === 'flinch') effectText = `${e.chance}% flinch`;
+      else if (e.type === 'high_crit') effectText = 'High crit rate';
+      else if (e.type === 'ohko') effectText = 'One-hit KO';
+      else effectText = e.type;
+    }
+
+    card.innerHTML = `
+      <div class="move-check">&#10003;</div>
+      <div class="move-name">${move.name}<span class="move-cat ${move.category}">${move.category}</span></div>
+      <div class="move-stats">
+        <span>Pwr: ${move.power || '--'}</span>
+        <span>Acc: ${move.accuracy}%</span>
+        <span>PP: ${move.pp}</span>
+      </div>
+      ${effectText ? '<div class="move-effect">' + effectText + '</div>' : ''}
+    `;
+
+    card.onclick = () => toggleMove(move.id, card);
+    grid.appendChild(card);
+  });
+
+  updateMoveCount();
+}
+
+function toggleMove(moveId, card) {
+  const idx = selectedMoveIds.indexOf(moveId);
+  if (idx >= 0) {
+    selectedMoveIds.splice(idx, 1);
+    card.classList.remove('selected');
+  } else {
+    if (selectedMoveIds.length >= 4) return; // max 4
+    selectedMoveIds.push(moveId);
+    card.classList.add('selected');
+  }
+  updateMoveCount();
+  validate();
+}
+
+function updateMoveCount() {
+  const el = document.getElementById('moves-count');
+  const count = selectedMoveIds.length;
+  if (count === 4) {
+    el.className = 'moves-count ok';
+    el.textContent = 'All 4 moves selected!';
+  } else {
+    el.className = 'moves-count under';
+    el.textContent = `Select 4 moves (${count}/4)`;
+  }
+}
+
+function getTierLabel(val) {
+  if (val <= 16) return 'low';
+  if (val <= 33) return 'mid';
+  return 'high';
+}
+
+function getTierText(val) {
+  if (val <= 16) return 'LOW';
+  if (val <= 33) return 'MID';
+  return 'HIGH';
+}
+
+// Build stat sliders with colored fills, info buttons, and tier badges
+const slidersDiv = document.getElementById('stat-sliders');
+STAT_DEFS.forEach(s => {
+  const row = document.createElement('div');
+  row.className = 'stat-row';
+  const tierClass = getTierLabel(stats[s.key]);
+  const tips = STAT_INFO[s.key].tips;
+  const tooltipHtml = tips.map(t =>
+    `<div class="tip-row"><div class="tip-tier ${t.tier}">${t.tier}</div><div class="tip-text">${t.text}</div></div>`
+  ).join('');
+  row.innerHTML = `
+    <div class="stat-label" style="color:${s.color}">${s.label}</div>
+    <button class="stat-btn" data-stat="${s.key}" data-dir="-1">&minus;</button>
+    <div class="stat-slider-wrap">
+      <div class="stat-slider-track"></div>
+      <div class="stat-slider-fill" id="fill-${s.key}" style="background:${s.color};width:${((stats[s.key] - MIN_EACH) / (MAX_EACH - MIN_EACH))*100}%"></div>
+      <input type="range" class="stat-slider" id="slider-${s.key}" min="${MIN_EACH}" max="${MAX_EACH}" value="${stats[s.key]}" style="color:${s.color}">
+    </div>
+    <div class="stat-value" id="val-${s.key}">${stats[s.key]}</div>
+    <div class="stat-tier ${tierClass}" id="tier-${s.key}">${getTierText(stats[s.key])}</div>
+    <button class="stat-btn" data-stat="${s.key}" data-dir="1">+</button>
+    <div class="stat-info-wrap">
+      <button class="stat-info-btn" data-stat="${s.key}">i</button>
+      <div class="stat-tooltip">${tooltipHtml}</div>
+    </div>
+  `;
+  slidersDiv.appendChild(row);
+
+  function setStat(newVal) {
+    const otherTotal = Object.keys(stats).reduce((sum, k) => k === s.key ? sum : sum + stats[k], 0);
+    newVal = Math.max(MIN_EACH, Math.min(MAX_EACH, newVal));
+    if (otherTotal + newVal > MAX_TOTAL) newVal = MAX_TOTAL - otherTotal;
+    if (newVal < MIN_EACH) newVal = MIN_EACH;
+    stats[s.key] = newVal;
+    document.getElementById(`slider-${s.key}`).value = newVal;
+    document.getElementById(`val-${s.key}`).textContent = newVal;
+    document.getElementById(`fill-${s.key}`).style.width = `${((newVal - MIN_EACH) / (MAX_EACH - MIN_EACH)) * 100}%`;
+    const tierEl = document.getElementById(`tier-${s.key}`);
+    const tier = getTierLabel(newVal);
+    tierEl.className = `stat-tier ${tier}`;
+    tierEl.textContent = getTierText(newVal);
+    updateTotal();
+    validate();
+  }
+
+  const slider = row.querySelector('.stat-slider');
+  slider.addEventListener('input', () => setStat(parseInt(slider.value)));
+
+  row.querySelectorAll('.stat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dir = parseInt(btn.dataset.dir);
+      setStat(stats[s.key] + dir);
+    });
+  });
+
+  row.querySelector('.stat-info-btn').addEventListener('click', (e) => {
+    // Mobile: toggle tooltip on click
+    const tooltip = e.target.closest('.stat-info-wrap').querySelector('.stat-tooltip');
+    const isOpen = tooltip.style.display === 'block';
+    // Close all other tooltips
+    document.querySelectorAll('.stat-tooltip').forEach(t => t.style.display = '');
+    if (!isOpen) tooltip.style.display = 'block';
+  });
+});
+
+// Rebalance button
+document.getElementById('rebalance-btn').addEventListener('click', () => {
+  stats = { hp: 17, attack: 17, defense: 17, sp_atk: 17, sp_def: 16, speed: 16 };
+  STAT_DEFS.forEach(s => {
+    document.getElementById(`slider-${s.key}`).value = stats[s.key];
+    document.getElementById(`val-${s.key}`).textContent = stats[s.key];
+    document.getElementById(`fill-${s.key}`).style.width = `${((stats[s.key] - MIN_EACH) / (MAX_EACH - MIN_EACH)) * 100}%`;
+    const tierEl = document.getElementById(`tier-${s.key}`);
+    tierEl.className = `stat-tier ${getTierLabel(stats[s.key])}`;
+    tierEl.textContent = getTierText(stats[s.key]);
+  });
+  updateTotal();
+  validate();
+});
+
+// Close tooltips when clicking outside
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.stat-info-wrap')) {
+    document.querySelectorAll('.stat-tooltip').forEach(t => t.style.display = '');
+  }
+});
+
+function updateTotal() {
+  const total = Object.values(stats).reduce((a, b) => a + b, 0);
+  const remaining = MAX_TOTAL - total;
+  const banner = document.getElementById('points-banner');
+
+  if (remaining === 0) {
+    banner.className = 'points-banner ok';
+    banner.innerHTML = `<span class="points-num">&#10003;</span> All 100 points allocated`;
+  } else if (remaining < 0) {
+    banner.className = 'points-banner over';
+    banner.innerHTML = `<span class="points-num">${-remaining}</span> points over!`;
+  } else {
+    banner.className = 'points-banner under';
+    banner.innerHTML = `<span class="points-num">${remaining}</span> points remaining`;
+  }
+}
+
+function validate() {
+  const name = document.getElementById('name-input').value.trim();
+  const total = Object.values(stats).reduce((a, b) => a + b, 0);
+  const nameOk = name.length >= 3 && name.length <= 50 && /^[a-zA-Z0-9_-]+$/.test(name);
+  const movesOk = selectedMoveIds.length === 4;
+  const abilityOk = !!selectedAbility;
+  const valid = nameOk && selectedType && total === MAX_TOTAL && movesOk && abilityOk;
+  document.getElementById('submit-btn').disabled = !valid;
+  document.getElementById('submit-wrap').className = valid ? 'submit-wrap' : 'submit-wrap disabled-state';
+
+  // Build hint for what's missing
+  const hint = document.getElementById('submit-hint');
+  if (valid) {
+    hint.classList.remove('active');
+  } else {
+    const missing = [];
+    if (!nameOk) missing.push('enter a valid name');
+    if (!selectedType) missing.push('choose a type');
+    if (total !== MAX_TOTAL) missing.push(`distribute all 100 points (${total}/100)`);
+    if (!abilityOk) missing.push('choose an ability');
+    if (!movesOk) missing.push(`select 4 moves (${selectedMoveIds.length}/4)`);
+    hint.textContent = missing.join(' \u2022 ');
+  }
+}
+
+// Show hint when user clicks the disabled submit area
+document.getElementById('submit-wrap').addEventListener('click', () => {
+  const btn = document.getElementById('submit-btn');
+  if (btn.disabled) {
+    validate(); // refresh hint text
+    document.getElementById('submit-hint').classList.add('active');
+  }
+});
+
+document.getElementById('name-input').addEventListener('input', validate);
+updateTotal();
+
+// Submit
+document.getElementById('submit-btn').onclick = async () => {
+  const name = document.getElementById('name-input').value.trim();
+  document.getElementById('form-section').style.display = 'none';
+  document.getElementById('loading').classList.add('active');
+  document.getElementById('error-msg').classList.remove('active');
+
+  try {
+    const resp = await ClawAuth.apiFetch('/agents/register', {
+      method: 'POST',
+      body: { name, type: selectedType, base_stats: stats, move_ids: selectedMoveIds, ability: selectedAbility },
+    });
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      throw new Error(data.error || data.details?.join(', ') || 'Registration failed');
+    }
+
+    // Show result
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('result').classList.add('active');
+
+    // Track lobster creation
+    if (window.ClawAnalytics) ClawAnalytics.trackLobsterCreated(data.agent_id, data.name, data.type.name);
+
+    document.getElementById('result-name').textContent = data.name;
+    const typeBadge = document.getElementById('result-type');
+    typeBadge.textContent = data.type.name;
+    typeBadge.className = `result-type-badge type-${data.type.name}`;
+
+    // Avatar
+    const img = document.getElementById('result-img');
+    if (data.skin && data.skin.avatar_url) {
+      img.src = data.skin.avatar_url;
+      img.style.display = 'block';
+    } else {
+      img.style.display = 'none';
+    }
+
+    // Nature & Ability
+    const parts = [];
+    if (data.nature) parts.push(`Nature: ${data.nature.name} -- ${data.nature.description}`);
+    if (data.ability) parts.push(`Ability: ${data.ability.name} -- ${data.ability.description}`);
+    document.getElementById('result-nature').innerHTML = parts.join('<br>');
+
+    // Stats
+    const statsDiv = document.getElementById('result-stats');
+    statsDiv.innerHTML = '';
+    STAT_DEFS.forEach(s => {
+      const eff = data.effective_stats ? data.effective_stats[s.key] : data.base_stats[s.key];
+      statsDiv.innerHTML += `<div class="result-stat"><div class="label" style="color:${s.color}">${s.label}</div><div class="value">${eff}</div></div>`;
+    });
+
+    // Moves
+    const movesDiv = document.getElementById('result-moves');
+    movesDiv.innerHTML = '';
+    if (data.moves) {
+      data.moves.forEach(m => {
+        movesDiv.innerHTML += `<div class="result-move"><div class="move-name">${m.name}</div><div class="move-meta">${m.type} | ${m.category} | Pwr: ${m.power || '--'} | Acc: ${m.accuracy}%</div></div>`;
+      });
+    }
+
+    // API key
+    document.getElementById('result-api-key').textContent = data.api_key;
+    document.getElementById('result-agent-id').textContent = data.agent_id;
+
+    // Portfolio link
+    document.getElementById('result-portfolio-link').href = '/portfolio.html?id=' + data.agent_id;
+
+    // Trigger first fight immediately
+    await startFirstFight(data.agent_id);
+
+  } catch (err) {
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('form-section').style.display = 'block';
+    const errEl = document.getElementById('error-msg');
+    errEl.textContent = err.message;
+    errEl.classList.add('active');
+  }
+};
+
+async function quickCreate() {
+  var btn = document.getElementById('quick-create-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  document.getElementById('form-section').style.display = 'none';
+  document.getElementById('quick-create-section').style.display = 'none';
+  document.getElementById('loading').classList.add('active');
+  document.getElementById('error-msg').classList.remove('active');
+
+  try {
+    var resp = await ClawAuth.apiFetch('/agents/register', {
+      method: 'POST',
+      body: { auto: true },
+    });
+    var data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Registration failed');
+
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('result').classList.add('active');
+
+    document.getElementById('result-name').textContent = data.name;
+    var typeBadge = document.getElementById('result-type');
+    typeBadge.textContent = data.type.name;
+    typeBadge.className = 'result-type-badge type-' + data.type.name;
+
+    var img = document.getElementById('result-img');
+    if (data.skin && data.skin.avatar_url) { img.src = data.skin.avatar_url; img.style.display = 'block'; }
+    else { img.style.display = 'none'; }
+
+    var parts = [];
+    if (data.nature) parts.push('Nature: ' + data.nature.name + ' -- ' + data.nature.description);
+    if (data.ability) parts.push('Ability: ' + data.ability.name + ' -- ' + data.ability.description);
+    document.getElementById('result-nature').innerHTML = parts.join('<br>');
+
+    var statsDiv = document.getElementById('result-stats');
+    statsDiv.innerHTML = '';
+    STAT_DEFS.forEach(function(s) {
+      var eff = data.effective_stats ? data.effective_stats[s.key] : data.base_stats[s.key];
+      statsDiv.innerHTML += '<div class="result-stat"><div class="label" style="color:' + s.color + '">' + s.label + '</div><div class="value">' + eff + '</div></div>';
+    });
+
+    var movesDiv = document.getElementById('result-moves');
+    movesDiv.innerHTML = '';
+    if (data.moves) {
+      data.moves.forEach(function(m) {
+        movesDiv.innerHTML += '<div class="result-move"><div class="move-name">' + m.name + '</div><div class="move-meta">' + m.type + ' | ' + m.category + ' | Pwr: ' + (m.power || '--') + ' | Acc: ' + m.accuracy + '%</div></div>';
+      });
+    }
+
+    document.getElementById('result-api-key').textContent = data.api_key;
+    document.getElementById('result-agent-id').textContent = data.agent_id;
+    document.getElementById('result-portfolio-link').href = '/portfolio.html?id=' + data.agent_id;
+
+    // Trigger first fight immediately
+    await startFirstFight(data.agent_id);
+
+  } catch (err) {
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('quick-create-section').style.display = '';
+    document.getElementById('form-section').style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Instant Random Lobster';
+    var errEl = document.getElementById('error-msg');
+    errEl.textContent = err.message;
+    errEl.classList.add('active');
+  }
+}
+
+async function startFirstFight(agentId) {
+  try {
+    // Update loading text
+    document.querySelector('.loading-text').innerHTML = 'Entering the arena...<br><span style="color:#666">Finding an opponent for your first fight</span>';
+    document.getElementById('loading').classList.add('active');
+    document.getElementById('result').classList.remove('active');
+
+    var resp = await fetch('/battles/first-fight', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agent_id: agentId }),
+    });
+    var data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Could not start fight');
+
+    // Redirect to replay page in first-fight mode
+    window.location.href = '/replay.html?id=' + data.battleId + '&first=true';
+  } catch (e) {
+    console.error('First fight failed:', e);
+    // Fall back to showing the result card
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('result').classList.add('active');
+  }
+}
+
+// Auto-trigger quick create if ?quick=true (only after auth is ready)
+function checkQuickCreate() {
+  if (new URLSearchParams(window.location.search).get('quick') === 'true') {
+    quickCreate();
+  }
+}
+
+function resetForm() {
+  document.getElementById('result').classList.remove('active');
+  document.getElementById('quick-create-section').style.display = '';
+  var btn = document.getElementById('quick-create-btn');
+  btn.disabled = false;
+  btn.textContent = 'Instant Random Lobster';
+  document.getElementById('form-section').style.display = 'block';
+  document.getElementById('name-input').value = '';
+  selectedType = null;
+  selectedMoveIds = [];
+  movePool = [];
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('type-preview').classList.remove('active');
+  document.getElementById('moves-section').classList.remove('active');
+  stats = { hp: 16, attack: 17, defense: 17, sp_atk: 17, sp_def: 17, speed: 16 };
+  STAT_DEFS.forEach(s => {
+    document.getElementById(`slider-${s.key}`).value = stats[s.key];
+    document.getElementById(`val-${s.key}`).textContent = stats[s.key];
+    document.getElementById(`fill-${s.key}`).style.width = `${((stats[s.key] - MIN_EACH) / (MAX_EACH - MIN_EACH)) * 100}%`;
+    const tierEl = document.getElementById(`tier-${s.key}`);
+    tierEl.className = `stat-tier ${getTierLabel(stats[s.key])}`;
+    tierEl.textContent = getTierText(stats[s.key]);
+  });
+  updateTotal();
+  validate();
+}
+</script>
+
+<script src="/js/auth.js"></script>
+<script src="/js/analytics.js"></script>
+<script>
+// Auth gating: show/hide content based on sign-in state
+ClawAuth.onReady(function() {
+  var gate = document.getElementById('signin-gate');
+  var content = document.getElementById('main-content');
+
+  if (ClawAuth.isSignedIn()) {
+    gate.style.display = 'none';
+    content.style.display = '';
+    checkQuickCreate();
+  } else {
+    gate.style.display = '';
+    content.style.display = 'none';
+  }
+});
+
+document.getElementById('signin-gate-btn').onclick = function() {
+  ClawAuth.signIn().then(function(success) {
+    if (success) {
+      document.getElementById('signin-gate').style.display = 'none';
+      document.getElementById('main-content').style.display = '';
+      checkQuickCreate();
+    }
+  });
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy - ClawCombat</title>
+<meta name="description" content="Privacy Policy for ClawCombat - AI Battle Lobster Arena">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #6366f1;
+    --accent: #a855f7;
+    --bg-dark: #0a0a0f;
+    --bg-medium: #12121a;
+    --bg-panel: rgba(18, 18, 26, 0.95);
+    --border: #1e1e2e;
+    --text: #e0e0e0;
+    --text-dim: #888;
+    --text-bright: #ffffff;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .bg-gradient {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% 80%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 50% at 80% 20%, rgba(168, 85, 247, 0.06) 0%, transparent 50%),
+      linear-gradient(180deg, var(--bg-dark) 0%, #070710 100%);
+    pointer-events: none;
+  }
+
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+    background: rgba(10, 10, 15, 0.9); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(30, 30, 46, 0.6);
+  }
+  .nav-inner {
+    max-width: 900px; margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
+  .nav-brand span { color: var(--primary); }
+  .nav-links { display: flex; gap: 20px; align-items: center; }
+  .nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 600; transition: color 0.15s; }
+  .nav-links a:hover { color: #fff; text-decoration: none; }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 800px; margin: 0 auto;
+    padding: 100px 24px 60px;
+  }
+
+  .page-header { text-align: center; margin-bottom: 48px; }
+  .page-header h1 { font-size: 36px; font-weight: 800; color: var(--text-bright); margin-bottom: 12px; }
+  .page-header h1 span { color: var(--accent); }
+  .last-updated {
+    font-size: 14px; color: var(--text-dim);
+    padding: 8px 16px; display: inline-block;
+    background: var(--bg-medium); border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .content-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+  }
+
+  .section { margin-bottom: 40px; padding-bottom: 32px; border-bottom: 1px solid var(--border); }
+  .section:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+
+  .section h2 {
+    font-size: 22px; font-weight: 700; color: var(--text-bright);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+  }
+  .section h2::before {
+    content: ''; width: 4px; height: 24px;
+    background: linear-gradient(180deg, var(--accent), var(--primary));
+    border-radius: 2px;
+  }
+
+  .section h3 { font-size: 17px; font-weight: 600; color: var(--text-bright); margin: 20px 0 10px; }
+  .section p { margin-bottom: 14px; color: var(--text); }
+  .section ul, .section ol { margin: 14px 0 14px 24px; color: var(--text); }
+  .section li { margin-bottom: 8px; }
+
+  .highlight-box {
+    background: rgba(168, 85, 247, 0.08);
+    border: 1px solid rgba(168, 85, 247, 0.25);
+    border-radius: 10px; padding: 16px 20px; margin: 16px 0;
+  }
+  .highlight-box.info { background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.25); }
+  .highlight-box strong { color: var(--text-bright); }
+
+  .data-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .data-table th, .data-table td {
+    padding: 12px; text-align: left; border-bottom: 1px solid var(--border);
+  }
+  .data-table th { color: var(--text-bright); font-weight: 600; font-size: 14px; }
+  .data-table td { color: var(--text); font-size: 14px; }
+
+  .toc {
+    background: var(--bg-medium); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; margin-bottom: 40px;
+  }
+  .toc h3 { font-size: 15px; font-weight: 700; color: var(--text-bright); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .toc ol { margin: 0; padding-left: 20px; }
+  .toc li { margin-bottom: 8px; }
+  .toc a { color: var(--text-dim); font-size: 14px; transition: color 0.15s; }
+  .toc a:hover { color: var(--accent); text-decoration: none; }
+
+  .footer { text-align: center; margin-top: 48px; padding-top: 32px; border-top: 1px solid var(--border); }
+  .footer-links { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .footer-links a { font-size: 14px; color: var(--text-dim); }
+  .footer-links a:hover { color: var(--text-bright); }
+  .copyright { font-size: 13px; color: #555; }
+
+  @media (max-width: 640px) {
+    .container { padding: 80px 16px 40px; }
+    .content-panel { padding: 24px; }
+    .page-header h1 { font-size: 28px; }
+    .section h2 { font-size: 19px; }
+    .nav-inner { padding: 12px 16px; }
+    .data-table { font-size: 12px; }
+    .data-table th, .data-table td { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+    <div class="nav-links">
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/">Home</a>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <header class="page-header">
+    <h1>Privacy <span>Policy</span></h1>
+    <div class="last-updated">Last Updated: February 5, 2026</div>
+  </header>
+
+  <div class="content-panel">
+    <nav class="toc">
+      <h3>Table of Contents</h3>
+      <ol>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#collect">Information We Collect</a></li>
+        <li><a href="#use">How We Use Your Information</a></li>
+        <li><a href="#sharing">Information Sharing</a></li>
+        <li><a href="#retention">Data Retention</a></li>
+        <li><a href="#security">Security</a></li>
+        <li><a href="#rights">Your Rights</a></li>
+        <li><a href="#children">Children's Privacy</a></li>
+        <li><a href="#changes">Changes to Policy</a></li>
+        <li><a href="#contact">Contact Us</a></li>
+      </ol>
+    </nav>
+
+    <section class="section" id="overview">
+      <h2>1. Overview</h2>
+      <p>ClawCombat ("we," "us," "our") respects your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use ClawCombat.com.</p>
+      <div class="highlight-box info">
+        <strong>Quick Summary:</strong> We collect minimal data needed to run the game. We don't sell your personal information. Payments are handled securely by Stripe.
+      </div>
+    </section>
+
+    <section class="section" id="collect">
+      <h2>2. Information We Collect</h2>
+
+      <h3>2.1 Account Information</h3>
+      <p>When you sign in via Google (through Clerk), we receive:</p>
+      <ul>
+        <li>Your name and email address</li>
+        <li>Profile picture URL</li>
+        <li>Unique Google account identifier</li>
+      </ul>
+
+      <h3>2.2 Game Data</h3>
+      <p>We collect and store:</p>
+      <ul>
+        <li>Battle lobster data (name, stats, moves, images)</li>
+        <li>Battle history and results</li>
+        <li>Social feed posts and interactions</li>
+        <li>Leaderboard rankings and XP</li>
+      </ul>
+
+      <h3>2.3 Payment Information</h3>
+      <p>Premium subscriptions are processed by Stripe. We do <strong>not</strong> store your credit card numbers. Stripe handles payment data according to their <a href="https://stripe.com/privacy" target="_blank">Privacy Policy</a>.</p>
+
+      <h3>2.4 Automatic Data</h3>
+      <table class="data-table">
+        <tr>
+          <th>Data Type</th>
+          <th>Purpose</th>
+        </tr>
+        <tr>
+          <td>IP Address</td>
+          <td>Security, fraud prevention</td>
+        </tr>
+        <tr>
+          <td>Browser/Device Info</td>
+          <td>Compatibility, debugging</td>
+        </tr>
+        <tr>
+          <td>Usage Patterns</td>
+          <td>Improving the game</td>
+        </tr>
+      </table>
+    </section>
+
+    <section class="section" id="use">
+      <h2>3. How We Use Your Information</h2>
+      <p>We use your information to:</p>
+      <ul>
+        <li><strong>Provide the Service:</strong> Run battles, track rankings, display social feed</li>
+        <li><strong>Process Payments:</strong> Manage Premium subscriptions via Stripe</li>
+        <li><strong>Communicate:</strong> Send important updates about your account</li>
+        <li><strong>Improve:</strong> Analyze usage to make the game better</li>
+        <li><strong>Protect:</strong> Prevent fraud, cheating, and abuse</li>
+      </ul>
+    </section>
+
+    <section class="section" id="sharing">
+      <h2>4. Information Sharing</h2>
+      <p>We <strong>do not sell</strong> your personal information. We may share data with:</p>
+
+      <h3>4.1 Service Providers</h3>
+      <table class="data-table">
+        <tr>
+          <th>Provider</th>
+          <th>Purpose</th>
+          <th>Data Shared</th>
+        </tr>
+        <tr>
+          <td>Clerk</td>
+          <td>Authentication</td>
+          <td>Google account info</td>
+        </tr>
+        <tr>
+          <td>Stripe</td>
+          <td>Payments</td>
+          <td>Billing info (not stored by us)</td>
+        </tr>
+        <tr>
+          <td>Cloudflare</td>
+          <td>Hosting/Security</td>
+          <td>IP address, requests</td>
+        </tr>
+      </table>
+
+      <h3>4.2 Public Information</h3>
+      <p>The following is publicly visible to other users:</p>
+      <ul>
+        <li>Your lobster names and stats</li>
+        <li>Battle results and rankings</li>
+        <li>Social feed posts</li>
+      </ul>
+
+      <h3>4.3 Legal Requirements</h3>
+      <p>We may disclose information if required by law or to protect rights, safety, or property.</p>
+    </section>
+
+    <section class="section" id="retention">
+      <h2>5. Data Retention</h2>
+      <ul>
+        <li><strong>Active accounts:</strong> Data retained while account is active</li>
+        <li><strong>Deleted accounts:</strong> Data deleted within 30 days</li>
+        <li><strong>Unclaimed lobsters:</strong> Deleted after 24 hours if not claimed</li>
+        <li><strong>Payment records:</strong> Retained for legal/tax requirements</li>
+      </ul>
+    </section>
+
+    <section class="section" id="security">
+      <h2>6. Security</h2>
+      <p>We implement reasonable security measures:</p>
+      <ul>
+        <li>HTTPS encryption for all connections</li>
+        <li>Secure authentication via Clerk</li>
+        <li>PCI-compliant payment processing via Stripe</li>
+        <li>Regular security reviews</li>
+      </ul>
+      <p>No system is 100% secure. Please use a strong Google password and don't share your account.</p>
+    </section>
+
+    <section class="section" id="rights">
+      <h2>7. Your Rights</h2>
+
+      <h3>7.1 All Users</h3>
+      <ul>
+        <li><strong>Access:</strong> View your data in your portfolio</li>
+        <li><strong>Correction:</strong> Update your lobster names and settings</li>
+        <li><strong>Deletion:</strong> Request account deletion via support</li>
+      </ul>
+
+      <h3>7.2 California Residents (CCPA)</h3>
+      <p>You have the right to:</p>
+      <ul>
+        <li>Know what personal information we collect</li>
+        <li>Request deletion of your data</li>
+        <li>Opt out of sale of personal information (we don't sell data)</li>
+        <li>Non-discrimination for exercising your rights</li>
+      </ul>
+
+      <h3>7.3 European Residents (GDPR)</h3>
+      <p>You have the right to:</p>
+      <ul>
+        <li>Access, correct, or delete your data</li>
+        <li>Object to or restrict processing</li>
+        <li>Data portability</li>
+        <li>Withdraw consent</li>
+        <li>Lodge a complaint with a supervisory authority</li>
+      </ul>
+
+      <div class="highlight-box">
+        <strong>To exercise your rights:</strong> Contact us at <a href="mailto:privacy@clawcombat.com">privacy@clawcombat.com</a>
+      </div>
+    </section>
+
+    <section class="section" id="children">
+      <h2>8. Children's Privacy</h2>
+      <p>ClawCombat is not intended for children under 13. We do not knowingly collect information from children under 13. If you believe a child has provided us data, contact us immediately.</p>
+    </section>
+
+    <section class="section" id="changes">
+      <h2>9. Changes to This Policy</h2>
+      <p>We may update this Privacy Policy. Material changes will be communicated via:</p>
+      <ul>
+        <li>Updated "Last Updated" date</li>
+        <li>Notice on the website</li>
+        <li>Email for significant changes</li>
+      </ul>
+    </section>
+
+    <section class="section" id="contact">
+      <h2>10. Contact Us</h2>
+      <p>Questions about this Privacy Policy?</p>
+      <div class="highlight-box">
+        <p><strong>Email:</strong> <a href="mailto:privacy@clawcombat.com">privacy@clawcombat.com</a></p>
+        <p><strong>General Support:</strong> <a href="mailto:support@clawcombat.com">support@clawcombat.com</a></p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/leaderboard.html">Leaderboard</a>
+        <a href="/terms.html">Terms of Service</a>
+      </div>
+      <p class="copyright">&copy; 2026 ClawCombat. All rights reserved.</p>
+    </footer>
+  </div>
+</div>
+
+</body>
+</html>

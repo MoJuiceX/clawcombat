@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat - Lobster Variant Picker</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; }
+
+  h1 { text-align: center; font-size: 28px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  h1 span { color: #6366f1; }
+  .subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 8px; }
+  .instructions { text-align: center; color: #4ade80; font-size: 13px; margin-bottom: 24px; font-weight: 600; }
+
+  /* Sticky controls */
+  .controls {
+    position: sticky; top: 0; z-index: 100; background: rgba(10,10,15,0.95);
+    backdrop-filter: blur(12px); border-bottom: 1px solid #1e1e2e;
+    padding: 12px 0 12px; margin-bottom: 24px;
+  }
+  .control-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; margin-bottom: 8px; }
+  .control-label { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .view-tabs { display: flex; gap: 4px; background: #12121a; border-radius: 8px; padding: 3px; }
+  .view-tab {
+    padding: 8px 16px; border: none; background: none; color: #888; font-size: 13px;
+    font-weight: 700; cursor: pointer; border-radius: 6px; transition: all 0.15s;
+  }
+  .view-tab:hover { color: #fff; }
+  .view-tab.active { background: #6366f1; color: #fff; }
+
+  .filter-pills { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .pill {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    cursor: pointer; border: 1px solid #2a2a3e; background: #12121a; color: #888;
+    transition: all 0.15s; text-transform: capitalize;
+  }
+  .pill:hover { border-color: #6366f1; color: #fff; }
+  .pill.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+
+  .type-color { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+  /* Progress bar */
+  .progress-bar { display: flex; align-items: center; gap: 12px; justify-content: center; }
+  .progress-text { font-size: 13px; font-weight: 700; }
+  .progress-track { width: 200px; height: 8px; background: #1e1e2e; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #4ade80; border-radius: 4px; transition: width 0.3s; }
+
+  .export-btn {
+    padding: 8px 20px; background: #4ade80; color: #000; border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 800; cursor: pointer; transition: all 0.15s;
+  }
+  .export-btn:hover { background: #22c55e; }
+  .export-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* === Picker sections === */
+  .type-section { margin-bottom: 48px; }
+  .type-header {
+    font-size: 22px; font-weight: 800; color: #fff; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 4px; padding: 8px 16px; border-radius: 8px;
+    display: inline-block;
+  }
+  .type-subheader { font-size: 13px; color: #555; margin-bottom: 16px; }
+
+  .pick-group { margin-bottom: 24px; padding: 16px; background: #0d0d14; border: 1px solid #1e1e2e; border-radius: 12px; }
+  .pick-group.resolved { border-color: #4ade80; }
+  .pick-label {
+    font-size: 14px; font-weight: 700; color: #a5b4fc; margin-bottom: 10px; text-transform: capitalize;
+  }
+  .pick-label .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px;
+    font-weight: 800; text-transform: uppercase; margin-left: 8px;
+  }
+  .badge-needs-pick { background: rgba(251,191,36,0.15); color: #fbbf24; }
+  .badge-picked { background: rgba(74,222,128,0.15); color: #4ade80; }
+
+  .pick-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .pick-card {
+    position: relative; width: 160px; border-radius: 10px; overflow: hidden;
+    border: 3px solid #1e1e2e; background: #080810; cursor: pointer; transition: all 0.2s;
+  }
+  .pick-card:hover { border-color: #6366f1; transform: scale(1.03); }
+  .pick-card.selected { border-color: #4ade80; box-shadow: 0 0 20px rgba(74,222,128,0.25); }
+  .pick-card.current { border-color: #6366f1; }
+
+  .pick-card img { width: 100%; height: 160px; object-fit: contain; background: #080810; }
+  .pick-card .card-label {
+    padding: 6px 8px; font-size: 11px; font-weight: 700; color: #888;
+    text-align: center; background: #0d0d14;
+  }
+  .pick-card .card-tag {
+    position: absolute; top: 6px; right: 6px; padding: 2px 8px; border-radius: 4px;
+    font-size: 9px; font-weight: 800; text-transform: uppercase;
+  }
+  .tag-current { background: rgba(99,102,241,0.8); color: #fff; }
+  .tag-alt { background: rgba(251,191,36,0.8); color: #000; }
+  .tag-selected { background: rgba(74,222,128,0.9); color: #000; }
+
+  /* === Overview grid === */
+  .overview-grid {
+    display: grid; gap: 2px; background: #1e1e2e; border-radius: 12px; overflow: hidden; margin-bottom: 40px;
+  }
+  .overview-header {
+    background: #12121a; padding: 10px; font-size: 12px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px; text-align: center; color: #888;
+  }
+  .overview-cell { background: #0a0a0f; padding: 4px; text-align: center; cursor: pointer; }
+  .overview-cell img { width: 100%; height: 110px; object-fit: contain; }
+  .overview-cell.has-alts { outline: 2px solid #fbbf24; outline-offset: -2px; }
+  .overview-cell.resolved { outline: 2px solid #4ade80; outline-offset: -2px; }
+
+  /* Lightbox */
+  .lightbox {
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 500;
+    align-items: center; justify-content: center; cursor: pointer;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 85vh; object-fit: contain; border-radius: 12px; }
+  .lightbox-info {
+    position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+    background: #12121a; border: 1px solid #2a2a3e; border-radius: 8px;
+    padding: 10px 20px; font-size: 14px; font-weight: 700; color: #fff; text-transform: capitalize;
+  }
+</style>
+</head>
+<body>
+
+<h1>Lobster <span>Variant Picker</span></h1>
+<p class="subtitle">Manually fixed alternatives for Mystic, Dragon, Ghost. Click to select which one to use.</p>
+<p class="instructions">Yellow border = has alternatives. Click the image you want to keep. Green = selected.</p>
+
+<div class="controls">
+  <div class="control-row">
+    <span class="control-label">View:</span>
+    <div class="view-tabs">
+      <button class="view-tab active" data-view="picker" onclick="setView('picker')">Picker</button>
+      <button class="view-tab" data-view="overview" onclick="setView('overview')">Full Overview</button>
+    </div>
+  </div>
+  <div class="control-row">
+    <span class="control-label">Type:</span>
+    <div class="filter-pills" id="typeFilter"></div>
+  </div>
+  <div class="control-row">
+    <div class="progress-bar">
+      <span class="progress-text" id="progressText">0 / 0 picked</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+      <button class="export-btn" id="exportBtn" onclick="exportSelections()" disabled>Export Selections</button>
+    </div>
+  </div>
+</div>
+
+<div id="gallery"></div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <img id="lightboxImg" src="">
+  <div class="lightbox-info" id="lightboxInfo"></div>
+</div>
+
+<script>
+var TYPES = ['mystic','dragon','ghost','neutral','fire','water','electric','grass','ice','martial','venom','earth','air','psyche','insect','stone','shadow','metal'];
+var BODIES = ['cadet','crawler','peeper','scout','sentinel','titan'];
+var VARIANTS = ['attack','balanced','claw','defense','hp','shell','speed'];
+
+var TYPE_COLORS = {
+  neutral:'#A8A878', fire:'#F08030', water:'#6890F0', electric:'#F8D030',
+  grass:'#78C850', ice:'#98D8D8', martial:'#C03028', venom:'#A040A0',
+  earth:'#E0C068', air:'#A890F0', psyche:'#F85888', insect:'#A8B820',
+  stone:'#B8A038', ghost:'#705898', dragon:'#7038F8', shadow:'#705848',
+  metal:'#B8B8D0', mystic:'#EE99AC'
+};
+
+// Manually fixed alternatives: { "type/body/variant": ["alt-1.png", "alt-2.png", ...] }
+var ALTS = {};
+var selections = {}; // "type/body/variant" -> selected src path
+var currentView = 'picker';
+var activeTypes = new Set(['mystic','dragon','ghost']); // Start with the 3 that have alts
+
+// Discover alternatives from the copied files
+var ALT_FILES = {
+  mystic: [
+    "Mystic-cadet-attack-1.png","Mystic-cadet-balanced-1.png",
+    "Mystic-cadet-defense-1.png","Mystic-cadet-defense-2.png",
+    "Mystic-crawler-attack-1.png","Mystic-crawler-attack-2.png",
+    "Mystic-crawler-balanced-1.png",
+    "Mystic-crawler-defense-1.png","Mystic-crawler-defense-2.png","Mystic-crawler-defense-3.png","Mystic-crawler-defense-4.png","Mystic-crawler-defense-5.png",
+    "Mystic-crawler-shell-1.png",
+    "Mystic-peeper-attack-1.png","Mystic-peeper-attack-2.png",
+    "Mystic-peeper-balanced-1.png","Mystic-peeper-balanced-2.png","Mystic-peeper-balanced-3.png",
+    "Mystic-scout-balanced-1.png","Mystic-scout-balanced-2.png","Mystic-scout-balanced-3.png",
+    "Mystic-scout-defense-1.png","Mystic-scout-defense-2.png","Mystic-scout-defense-3.png"
+  ],
+  dragon: [
+    "Dragon-cadet-attack-1.png","Dragon-cadet-attack-2.png",
+    "Dragon-cadet-defense-1.png",
+    "Dragon-crawler-attack-1.png",
+    "Dragon-peeper-defense-1.png",
+    "Dragon-scout-shell-1.png","Dragon-scout-shell-2.png","Dragon-scout-shell-3.png","Dragon-scout-shell-4.png",
+    "Dragon-titan-defense-1.png","Dragon-titan-defense-2.png","Dragon-titan-defense-3.png"
+  ],
+  ghost: [
+    "Ghost-cadet-speed-1.png","Ghost-cadet-speed-2.png",
+    "Ghost-crawler-attack-1.png","Ghost-crawler-attack-2.png",
+    "Ghost-crawler-balanced-1.png",
+    "Ghost-crawler-defense-1.png","Ghost-crawler-defense-2.png","Ghost-crawler-defense-3.png",
+    "Ghost-crawler-speed-1.png","Ghost-crawler-speed-2.png","Ghost-crawler-speed-3.png",
+    "Ghost-peeper-attack-1.png","Ghost-peeper-attack-2.png",
+    "Ghost-peeper-claw-1.png","Ghost-peeper-claw-2.png",
+    "Ghost-peeper-shell-1.png","Ghost-peeper-shell-2.png",
+    "Ghost-scout-attack-1.png","Ghost-scout-attack-2.png","Ghost-scout-attack-3.png","Ghost-scout-attack-4.png",
+    "Ghost-scout-defense-1.png","Ghost-scout-defense-2.png",
+    "Ghost-sentinel-attack-1.png","Ghost-sentinel-attack-2.png","Ghost-sentinel-attack-3.png",
+    "Ghost-sentinel-claw-1.png","Ghost-sentinel-claw-2.png","Ghost-sentinel-claw-3.png",
+    "Ghost-sentinel-shell-1.png","Ghost-sentinel-shell-2.png","Ghost-sentinel-shell-3.png",
+    "Ghost-sentinel-speed-1.png","Ghost-sentinel-speed-2.png","Ghost-sentinel-speed-3.png",
+    "Ghost-titan-attack-1.png",
+    "Ghost-titan-balanced-1.png",
+    "Ghost-titan-claw-1.png","Ghost-titan-claw-2.png"
+  ]
+};
+
+// Parse alt files into ALTS map
+Object.keys(ALT_FILES).forEach(function(type) {
+  ALT_FILES[type].forEach(function(filename) {
+    // Parse: "Type-body-variant-N.png"
+    var parts = filename.replace('.png','').split('-');
+    var typeName = parts[0].toLowerCase();
+    var body = parts[1];
+    var variant = parts[2];
+    var key = typeName + '/' + body + '/' + variant;
+    if (!ALTS[key]) ALTS[key] = [];
+    ALTS[key].push('/references/reve-fixes/' + type + '/' + filename);
+  });
+});
+
+function currentPath(type, body, variant) {
+  return '/references/' + type + '/' + body + '-' + variant + '.webp';
+}
+
+function selKey(type, body, variant) {
+  return type + '/' + body + '/' + variant;
+}
+
+function hasAlts(type, body, variant) {
+  return !!ALTS[selKey(type, body, variant)];
+}
+
+function totalAltsCount() {
+  return Object.keys(ALTS).length;
+}
+
+function pickedCount() {
+  return Object.keys(selections).length;
+}
+
+function updateProgress() {
+  var total = totalAltsCount();
+  var picked = pickedCount();
+  document.getElementById('progressText').textContent = picked + ' / ' + total + ' picked';
+  document.getElementById('progressFill').style.width = (total > 0 ? (picked / total * 100) : 0) + '%';
+  document.getElementById('exportBtn').disabled = picked < total;
+}
+
+function selectImage(key, src) {
+  selections[key] = src;
+  updateProgress();
+  render();
+}
+
+// ── Controls ──
+function initControls() {
+  var tf = document.getElementById('typeFilter');
+  TYPES.forEach(function(t) {
+    var btn = document.createElement('button');
+    btn.className = 'pill' + (activeTypes.has(t) ? ' active' : '');
+    btn.innerHTML = '<span class="type-color" style="background:' + TYPE_COLORS[t] + '"></span>' + t;
+    btn.dataset.type = t;
+    btn.onclick = function() {
+      if (activeTypes.has(t)) { activeTypes.delete(t); btn.classList.remove('active'); }
+      else { activeTypes.add(t); btn.classList.add('active'); }
+      render();
+    };
+    tf.appendChild(btn);
+  });
+}
+
+function setView(view) {
+  currentView = view;
+  document.querySelectorAll('.view-tab').forEach(function(t) {
+    t.classList.toggle('active', t.dataset.view === view);
+  });
+  render();
+}
+
+// ── Lightbox ──
+function openLightbox(src, info, e) {
+  if (e) e.stopPropagation();
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightboxInfo').textContent = info;
+  document.getElementById('lightbox').classList.add('active');
+}
+function closeLightbox(e) {
+  if (e && e.target.tagName === 'IMG') return; // don't close when clicking image
+  document.getElementById('lightbox').classList.remove('active');
+}
+
+// ── Render ──
+function render() {
+  var gallery = document.getElementById('gallery');
+  gallery.innerHTML = '';
+  var types = TYPES.filter(function(t) { return activeTypes.has(t); });
+
+  if (currentView === 'picker') renderPicker(gallery, types);
+  else renderOverview(gallery, types);
+}
+
+function renderPicker(gallery, types) {
+  types.forEach(function(type) {
+    // Only show groups that have alternatives
+    var groups = [];
+    BODIES.forEach(function(body) {
+      VARIANTS.forEach(function(variant) {
+        if (hasAlts(type, body, variant)) {
+          groups.push({ body: body, variant: variant });
+        }
+      });
+    });
+
+    if (groups.length === 0) return;
+
+    var section = document.createElement('div');
+    section.className = 'type-section';
+
+    var header = document.createElement('div');
+    header.className = 'type-header';
+    header.style.background = TYPE_COLORS[type];
+    header.style.color = ['electric','ice','insect','stone','metal','mystic','earth','neutral'].indexOf(type) >= 0 ? '#333' : '#fff';
+    header.textContent = type;
+    section.appendChild(header);
+
+    var sub = document.createElement('div');
+    sub.className = 'type-subheader';
+    sub.textContent = groups.length + ' images need picking';
+    section.appendChild(sub);
+
+    groups.forEach(function(g) {
+      var key = selKey(type, g.body, g.variant);
+      var alts = ALTS[key] || [];
+      var cur = currentPath(type, g.body, g.variant);
+      var picked = selections[key];
+
+      var group = document.createElement('div');
+      group.className = 'pick-group' + (picked ? ' resolved' : '');
+
+      var label = document.createElement('div');
+      label.className = 'pick-label';
+      label.innerHTML = g.body + ' - ' + g.variant;
+      if (picked) label.innerHTML += '<span class="badge badge-picked">Picked</span>';
+      else label.innerHTML += '<span class="badge badge-needs-pick">Pick one</span>';
+      group.appendChild(label);
+
+      var row = document.createElement('div');
+      row.className = 'pick-row';
+
+      // Current webp
+      var curCard = document.createElement('div');
+      curCard.className = 'pick-card current' + (picked === cur ? ' selected' : '');
+      curCard.innerHTML = '<img src="' + cur + '" loading="lazy"><div class="card-label">Current (webp)</div>' +
+        '<div class="card-tag ' + (picked === cur ? 'tag-selected' : 'tag-current') + '">' + (picked === cur ? 'Selected' : 'Current') + '</div>';
+      curCard.onclick = function() { selectImage(key, cur); };
+      curCard.ondblclick = function(e) { openLightbox(cur, type + ' / ' + g.body + ' / ' + g.variant + ' (current)', e); };
+      row.appendChild(curCard);
+
+      // Alternatives
+      alts.forEach(function(altSrc, idx) {
+        var altCard = document.createElement('div');
+        altCard.className = 'pick-card' + (picked === altSrc ? ' selected' : '');
+        var altName = altSrc.split('/').pop().replace('.png','');
+        altCard.innerHTML = '<img src="' + altSrc + '" loading="lazy"><div class="card-label">Alt ' + (idx + 1) + '</div>' +
+          '<div class="card-tag ' + (picked === altSrc ? 'tag-selected' : 'tag-alt') + '">' + (picked === altSrc ? 'Selected' : 'Alt ' + (idx + 1)) + '</div>';
+        altCard.onclick = function() { selectImage(key, altSrc); };
+        altCard.ondblclick = function(e) { openLightbox(altSrc, type + ' / ' + g.body + ' / ' + g.variant + ' (alt ' + (idx + 1) + ')', e); };
+        row.appendChild(altCard);
+      });
+
+      group.appendChild(row);
+      section.appendChild(group);
+    });
+
+    gallery.appendChild(section);
+  });
+}
+
+function renderOverview(gallery, types) {
+  types.forEach(function(type) {
+    var title = document.createElement('div');
+    title.className = 'type-header';
+    title.style.background = TYPE_COLORS[type];
+    title.style.color = ['electric','ice','insect','stone','metal','mystic','earth','neutral'].indexOf(type) >= 0 ? '#333' : '#fff';
+    title.textContent = type;
+    title.style.marginBottom = '12px';
+    gallery.appendChild(title);
+
+    var grid = document.createElement('div');
+    grid.className = 'overview-grid';
+    grid.style.gridTemplateColumns = '80px repeat(' + VARIANTS.length + ', 1fr)';
+
+    // Header
+    var corner = document.createElement('div');
+    corner.className = 'overview-header';
+    corner.textContent = '';
+    grid.appendChild(corner);
+    VARIANTS.forEach(function(v) {
+      var h = document.createElement('div');
+      h.className = 'overview-header';
+      h.textContent = v;
+      grid.appendChild(h);
+    });
+
+    BODIES.forEach(function(body) {
+      var label = document.createElement('div');
+      label.className = 'overview-header';
+      label.textContent = body;
+      grid.appendChild(label);
+
+      VARIANTS.forEach(function(variant) {
+        var key = selKey(type, body, variant);
+        var cell = document.createElement('div');
+        cell.className = 'overview-cell';
+        if (hasAlts(type, body, variant)) {
+          cell.classList.add(selections[key] ? 'resolved' : 'has-alts');
+        }
+        var src = selections[key] || currentPath(type, body, variant);
+        cell.innerHTML = '<img src="' + src + '" loading="lazy">';
+        cell.onclick = function() { openLightbox(src, type + ' / ' + body + ' / ' + variant); };
+        grid.appendChild(cell);
+      });
+    });
+
+    gallery.appendChild(grid);
+    var spacer = document.createElement('div');
+    spacer.style.height = '32px';
+    gallery.appendChild(spacer);
+  });
+}
+
+function exportSelections() {
+  var lines = ['# Lobster Variant Selections\n'];
+  Object.keys(ALTS).sort().forEach(function(key) {
+    var selected = selections[key];
+    if (selected) {
+      var isAlt = selected.indexOf('reve-fixes') >= 0;
+      lines.push('- **' + key + '**: ' + (isAlt ? selected.split('/').pop() : 'Keep current webp'));
+    } else {
+      lines.push('- **' + key + '**: NOT PICKED');
+    }
+  });
+  lines.push('\n## Summary');
+  var altCount = 0, keepCount = 0;
+  Object.keys(selections).forEach(function(k) {
+    if (selections[k].indexOf('reve-fixes') >= 0) altCount++; else keepCount++;
+  });
+  lines.push('- Replace with alt: ' + altCount);
+  lines.push('- Keep current: ' + keepCount);
+  lines.push('- Total decisions: ' + Object.keys(selections).length + '/' + totalAltsCount());
+
+  var blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'lobster-variant-selections.md';
+  a.click();
+}
+
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+
+initControls();
+updateProgress();
+render();
+</script>
+</body>
+</html>

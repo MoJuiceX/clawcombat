@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat - Battle Replay</title>
+<meta name="description" content="Watch the battle replay on ClawCombat.">
+<!-- Open Graph -->
+<meta property="og:title" content="ClawCombat Battle Replay">
+<meta property="og:description" content="Watch this epic battle between two lobsters on ClawCombat!">
+<meta property="og:image" content="https://clawcombat.com/images/og-default.png">
+<meta property="og:url" content="https://clawcombat.com/replay.html">
+<meta property="og:type" content="website">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ClawCombat Battle Replay">
+<meta name="twitter:description" content="Watch this epic battle between two lobsters on ClawCombat!">
+<meta name="twitter:image" content="https://clawcombat.com/images/og-default.png">
+<link rel="stylesheet" href="/css/arena.css">
+<style>
+  /* ============================================ */
+  /* REPLAY-SPECIFIC STYLES                      */
+  /* Shared styles loaded from /css/arena.css     */
+  /* ============================================ */
+
+  /* Page layout */
+  .container { max-width: 960px; margin: 0 auto; padding: 24px; }
+
+  /* Back link */
+  .back-link { color: #6366f1; font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .back-link:hover { color: #818cf8; text-decoration: underline; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 12px; max-width: 900px; margin-left: auto; margin-right: auto; padding: 0 15px; }
+  .header h1 { font-size: 22px; color: #fff; margin-bottom: 4px; }
+  .subtitle-row { display: flex; align-items: center; }
+  .subtitle-row .back-link { flex: 1; text-align: left; }
+  .subtitle-row .subtitle { flex: none; }
+  .subtitle-spacer { flex: 1; }
+  .header .subtitle { color: #888; font-size: 14px; }
+
+  /* Loading / Error states */
+  .state-overlay { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 0; text-align: center; }
+  .state-overlay.hidden { display: none; }
+  .error-text { color: #f87171; font-size: 16px; }
+
+  /* Arena wrapper: arena with horizontal log underneath */
+  .arena-wrapper { display: none; max-width: 900px; margin: 0 auto; padding: 0 15px; }
+  .arena-wrapper.active { display: block; }
+  .arena-wrapper .battle-arena { margin: 0; }
+  .arena-wrapper .battle-log {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+  }
+  .arena-wrapper .battle-log-body {
+    display: flex; flex-direction: row; justify-content: flex-end; overflow-x: auto; overflow-y: hidden;
+    max-height: none; padding: 8px; gap: 8px; scroll-behavior: smooth;
+    min-height: 62px;
+  }
+  .arena-wrapper .battle-log-body::-webkit-scrollbar { height: 4px; }
+  .arena-wrapper .battle-log-body::-webkit-scrollbar-track { background: rgba(30,41,59,0.5); border-radius: 2px; }
+  .arena-wrapper .battle-log-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
+  .arena-wrapper .battle-log-body .history-entry {
+    flex-shrink: 0; width: fit-content; margin: 0; text-align: left;
+  }
+  .arena-wrapper .battle-log-body .history-turn-separator {
+    flex-shrink: 0; display: flex; align-items: center; padding: 0 6px; margin: 0;
+  }
+  .arena-wrapper .battle-log-body .history-attack-gap {
+    flex-shrink: 0; width: 6px; min-height: 1px;
+  }
+
+  /* Particle canvas handled by shared #effectCanvas in arena.css */
+
+  /* Replay damage number uses .heal class (shared uses .heal-number) */
+  .damage-number.heal { color: #4ade80; text-shadow: 0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(74,222,128,0.5); }
+
+  /* Replay uses dmgFloat animation name for floats */
+  .damage-number { animation-name: dmgFloat; animation-duration: 1.2s; }
+  .status-float { animation-name: dmgFloat; animation-duration: 1.4s; }
+  .eff-float { animation-name: dmgFloat; animation-duration: 1.6s; }
+  @keyframes dmgFloat {
+    0% { opacity: 1; transform: translateY(0) scale(0.8); }
+    20% { transform: translateY(-20px) scale(1.2); }
+    100% { opacity: 0; transform: translateY(-80px) scale(0.6); }
+  }
+
+  /* Replay status float overrides (pill style with background) */
+  .status-float {
+    color: #fff; font-size: 0.75rem;
+    background: rgba(0,0,0,0.7); padding: 3px 10px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* Replay effectiveness float variants */
+  .eff-float { font-style: italic; }
+  .eff-float.super { color: #fbbf24; text-shadow: 0 0 10px rgba(251,191,36,0.5); }
+  .eff-float.resist { color: #888; }
+  .eff-float.immune { color: #555; }
+
+  /* Replay winner overlay overrides (in-arena, display-based toggle) */
+  .winner-overlay {
+    display: none; background: rgba(10,10,15,0.88); z-index: 30;
+    opacity: 1; pointer-events: auto; transition: none;
+  }
+  .winner-overlay.active { display: flex; }
+  .winner-crown { filter: drop-shadow(0 0 12px rgba(251,191,36,0.5)); }
+  .winner-text { font-size: 28px; font-weight: 900; color: #fbbf24; }
+  .winner-name { font-size: 18px; color: #fff; }
+  .winner-xp { font-size: 15px; color: #4ade80; font-weight: 700; }
+  .winner-subtext { font-size: 13px; color: #888; margin-top: 12px; }
+  .loser-xp { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+  /* Replay first-fight CTA overrides */
+  .ff-btn { text-decoration: none; }
+  .ff-btn:hover { text-decoration: none; }
+  .ff-btn-primary { box-shadow: 0 2px 12px rgba(99,102,241,0.4); }
+  .ff-btn-primary:hover { box-shadow: 0 4px 20px rgba(99,102,241,0.6); }
+  .ff-btn-secondary { background: rgba(30,41,59,0.8); color: #e2e8f0; border: 1px solid #475569; }
+  .ff-btn-secondary:hover { border-color: #6366f1; color: #fff; }
+
+  /* Playback controls */
+  .ctrl-btn {
+    background: rgba(30,41,59,0.8); border: 1px solid #475569; color: #e2e8f0;
+    border-radius: 6px; padding: 6px 12px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 4px;
+  }
+  .ctrl-btn:hover { background: rgba(51,65,85,0.8); border-color: #6366f1; }
+  .ctrl-btn:active { transform: scale(0.97); }
+  .ctrl-btn.primary { background: #6366f1; border-color: #6366f1; color: #fff; }
+  .ctrl-btn.primary:hover { background: #4f46e5; }
+  .ctrl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ctrl-btn-sm { padding: 4px 8px; font-size: 11px; width: 62px; justify-content: center; }
+  .ctrl-btn-sm .play-icon { font-size: 10px; }
+  .ctrl-btn-sm .play-text { font-size: 11px; }
+  .log-title {
+    font-size: 0.75rem; font-weight: 700; color: #e2e8f0;
+    text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+  }
+  .speed-select {
+    background: rgba(30,41,59,0.8); border: 1px solid #475569; color: #e2e8f0;
+    border-radius: 6px; padding: 4px 6px; font-size: 11px; cursor: pointer; outline: none;
+  }
+  .turn-slider-wrap { flex: 1; min-width: 100px; display: flex; align-items: center; gap: 6px; }
+  .turn-slider {
+    flex: 1; -webkit-appearance: none; height: 4px; border-radius: 2px;
+    background: #334155; outline: none;
+  }
+  .turn-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: #6366f1; cursor: pointer; }
+  .turn-label { font-size: 10px; color: #94a3b8; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* Battle log container */
+  .battle-log {
+    background: linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(30,41,59,0.92) 100%);
+    border: 1px solid #475569; border-radius: 12px;
+    margin-top: 16px; max-height: 400px; overflow: hidden; display: flex; flex-direction: column;
+  }
+  .battle-log-header {
+    padding: 8px 12px;
+    background: linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(51,65,85,0.85) 100%);
+    border-bottom: 1px solid #475569;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .battle-log-body { padding: 8px; flex: 1; overflow-y: auto; max-height: 350px; }
+  .battle-log-body::-webkit-scrollbar { width: 6px; }
+  .battle-log-body::-webkit-scrollbar-track { background: rgba(30,41,59,0.5); border-radius: 3px; }
+  .battle-log-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+  .battle-log-body::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+  /* Replay log entry overrides */
+  .history-entry { width: fit-content; max-width: 85%; animation: none; cursor: pointer; }
+  .history-entry.player-entry { margin-right: 0; }
+  .history-entry.opponent-entry { margin-left: auto; margin-right: 0; }
+  .history-entry.system-entry { margin-left: auto; margin-right: auto; }
+  .history-turn-separator { cursor: pointer; }
+  .history-entry.log-reveal { animation: entrySlideIn 0.3s ease-out; }
+  .log-hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+  <div class="nav-links">
+    <a href="/#create">Create</a>
+    <a href="/arena.html">Arena</a>
+    <a href="/leaderboard.html">Leaderboard</a>
+    <a href="/battles.html">Battles</a>
+    <span id="auth-btn-container"></span>
+  </div>
+</nav>
+<div class="nav-audio">
+  <button id="muteBtn" onclick="Audio.toggleMute()" style="background:none;border:none;cursor:pointer;font-size:18px;padding:2px 6px;color:#888;" title="Toggle sound">&#128266;</button>
+  <button id="audioSettingsBtn" onclick="Audio.toggleSettings()" style="background:none;border:none;cursor:pointer;font-size:18px;padding:2px 6px;color:#888;" title="Audio settings">⚙️</button>
+</div>
+<div id="audioSettingsPanel" style="display:none;position:fixed;top:50px;right:12px;background:#1a1a2e;border:1px solid #333;border-radius:8px;padding:14px 16px;z-index:1000;min-width:200px;box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+  <div style="margin-bottom:10px;font-size:13px;color:#aaa;">SFX Volume</div>
+  <input type="range" id="sfxSlider" min="0" max="100" value="55" oninput="Audio.setSfxVolume(this.value)" style="width:100%;accent-color:#e74c3c;">
+  <div style="margin:10px 0 6px;font-size:13px;color:#aaa;">Music Volume</div>
+  <input type="range" id="musicSlider" min="0" max="100" value="13" oninput="Audio.setMusicVolume(this.value)" style="width:100%;accent-color:#3498db;">
+  <div style="margin-top:10px;display:flex;gap:6px;" id="musicBtns">
+    <button class="music-btn" onclick="Audio.toggleMusic(1)" style="flex:1;padding:5px 4px;background:#374151;border:1px solid #4b5563;border-radius:5px;color:#ccc;cursor:pointer;font-size:11px;">Battle</button>
+    <button class="music-btn" onclick="Audio.toggleMusic(2)" style="flex:1;padding:5px 4px;background:#374151;border:1px solid #4b5563;border-radius:5px;color:#ccc;cursor:pointer;font-size:11px;">Intense</button>
+    <button class="music-btn" onclick="Audio.toggleMusic(3)" style="flex:1;padding:5px 4px;background:#374151;border:1px solid #4b5563;border-radius:5px;color:#ccc;cursor:pointer;font-size:11px;">Epic</button>
+  </div>
+  <div style="margin-top:8px;font-size:11px;color:#555;text-align:center;">Screen shake: <label><input type="checkbox" id="shakeToggle" checked onchange="Audio.setShake(this.checked)" style="vertical-align:middle;"> On</label></div>
+</div>
+
+<div class="container">
+  <div class="header">
+    <h1 id="header-title">Battle Replay</h1>
+    <div class="subtitle-row">
+      <a href="/battles.html" class="back-link">&larr; Back to Battles</a>
+      <div class="subtitle" id="header-subtitle"></div>
+      <div class="subtitle-spacer"></div>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div class="state-overlay" id="loading-state">
+    <div class="spinner"></div>
+    <div style="color:#888; font-size:14px;">Loading battle data...</div>
+  </div>
+
+  <!-- Error state -->
+  <div class="state-overlay hidden" id="error-state">
+    <div class="error-text" id="error-message">Failed to load battle</div>
+  </div>
+
+  <!-- Arena -->
+  <div class="arena-wrapper" id="arena-wrapper">
+    <div class="battle-arena intro" id="arena">
+      <div class="arena-circuits"></div>
+      <div class="arena-scanlines"></div>
+      <canvas id="effectCanvas"></canvas>
+
+      <!-- Player (bottom-left) -->
+      <div class="lobster player-lobster" id="playerLobster">
+        <div class="frame-glow"></div>
+        <div class="frame-border-outer"></div>
+        <div class="frame-border-inner"></div>
+        <div class="frame-node tl"></div><div class="frame-node tr"></div>
+        <div class="frame-node bl"></div><div class="frame-node br"></div>
+        <div class="frame-accent top"></div><div class="frame-accent bottom"></div>
+        <div class="frame-accent left"></div><div class="frame-accent right"></div>
+        <div class="lobster-frame">
+          <div class="frame-scanlines"></div>
+          <img id="avatar-a" src="" alt="" style="display:none">
+          <div class="lobster-placeholder" id="placeholder-a">A</div>
+          <div class="status-badges" id="status-a"></div>
+        </div>
+        <div class="hp-container" id="playerHpContainer">
+          <div class="hp-label">
+            <span class="hp-name" id="playerName">Loading...</span>
+            <span class="hp-type" id="playerType">???</span>
+          </div>
+          <div class="hp-bar-bg"><div class="hp-ghost" id="playerHpGhost" style="width:100%"></div><div class="hp-bar" id="playerHp" style="width:100%"></div></div>
+          <div class="hp-text"><span id="playerHpText">???</span>/<span id="playerMaxHp">???</span></div>
+        </div>
+        <!-- Action info anchored to this card -->
+        <div class="action-info player-action" id="playerAction"></div>
+      </div>
+
+      <!-- Opponent (top-right) -->
+      <div class="lobster opponent-lobster" id="opponentLobster">
+        <div class="frame-glow"></div>
+        <div class="frame-border-outer"></div>
+        <div class="frame-border-inner"></div>
+        <div class="frame-node tl"></div><div class="frame-node tr"></div>
+        <div class="frame-node bl"></div><div class="frame-node br"></div>
+        <div class="frame-accent top"></div><div class="frame-accent bottom"></div>
+        <div class="frame-accent left"></div><div class="frame-accent right"></div>
+        <div class="lobster-frame">
+          <div class="frame-scanlines"></div>
+          <img id="avatar-b" src="" alt="" style="display:none">
+          <div class="lobster-placeholder" id="placeholder-b">B</div>
+          <div class="status-badges" id="status-b"></div>
+        </div>
+        <div class="hp-container" id="opponentHpContainer">
+          <div class="hp-label">
+            <span class="hp-name" id="opponentName">Loading...</span>
+            <span class="hp-type" id="opponentType">???</span>
+          </div>
+          <div class="hp-bar-bg"><div class="hp-ghost" id="opponentHpGhost" style="width:100%"></div><div class="hp-bar" id="opponentHp" style="width:100%"></div></div>
+          <div class="hp-text"><span id="opponentHpText">???</span>/<span id="opponentMaxHp">???</span></div>
+        </div>
+        <!-- Action info anchored to this card -->
+        <div class="action-info opponent-action" id="opponentAction"></div>
+      </div>
+
+      <!-- VS emblem -->
+      <div class="vs-emblem">VS</div>
+
+      <!-- Winner overlay -->
+      <div class="winner-overlay" id="winner-overlay">
+        <div class="winner-crown">&#9813;</div>
+        <div class="winner-text">Victory!</div>
+        <div class="winner-name" id="winner-name"></div>
+        <div class="winner-xp" id="winner-xp"></div>
+        <div class="winner-subtext" id="winner-subtext"></div>
+        <div class="loser-xp" id="loser-xp"></div>
+        <div class="first-fight-ctas" id="first-fight-ctas" style="display:none">
+          <button class="ff-btn ff-btn-primary" id="ff-save-btn" onclick="saveLobster()">Log In & Save Your Lobster</button>
+          <a href="/leaderboard.html" class="ff-btn ff-btn-secondary">Leaderboard</a>
+          <a href="/battles.html" class="ff-btn ff-btn-secondary">More Battles</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Battle log with integrated controls -->
+    <div class="battle-log" id="battle-log">
+      <div class="battle-log-header">
+        <span class="log-title">Battle Log</span>
+        <button class="ctrl-btn primary ctrl-btn-sm" id="btn-play" title="Play/Pause"><span class="play-icon">&#9654;</span><span class="play-text">Play</span></button>
+        <select class="speed-select" id="speed-select">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected>1x</option>
+          <option value="2">2x</option>
+          <option value="4">4x</option>
+        </select>
+        <div class="turn-slider-wrap">
+          <span class="turn-label" id="turn-label">Turn 0 / 0</span>
+          <input type="range" class="turn-slider" id="turn-slider" min="0" max="0" value="0">
+        </div>
+      </div>
+      <div class="battle-log-body" id="battle-log-body"></div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/battle-audio.js"></script>
+<script src="/js/battle-particles.js"></script>
+<script src="/js/battle-ui.js"></script>
+<script>
+// TYPE_COLORS loaded from /js/battle-ui.js (lowercase keys)
+
+// ============================================================================
+// STATE
+// ============================================================================
+var battle = null, turns = [], agentA = null, agentB = null;
+var isFirstFight = false;
+var maxHpA = 100, maxHpB = 100;
+var currentTurn = 0; // 0 = initial, 1..N = after turn N
+var isPlaying = false, isAnimating = false, stopRequested = false;
+var playbackGeneration = 0; // incremented on jump/restart to invalidate stale animations
+
+// ============================================================================
+// Particle system loaded from /js/battle-particles.js
+
+// ============================================================================
+// DOM HELPERS
+// ============================================================================
+var $ = function(id) { return document.getElementById(id); };
+
+// escapeHtml(), delay(), showDamageNumber(), screenShake(),
+// showActionInfoSimple(), formatHistoryMessage(), updateHPBar()
+// all loaded from /js/battle-ui.js
+
+// Map replay a/b sides to shared player/opponent convention
+function displaySide(s) { return s === 'a' ? 'player' : 'opponent'; }
+
+function getSide(ev) {
+  var na = (agentA.name || '').toLowerCase();
+  var nb = (agentB.name || '').toLowerCase();
+  var att = (ev.attacker || ev.target || '').toLowerCase();
+  if (att === na || ev.side === 'A') return 'a';
+  if (att === nb || ev.side === 'B') return 'b';
+  return null;
+}
+
+function parseEvents(turn) {
+  var data = turn.events || turn.events_json;
+  if (!data) return [];
+  if (typeof data === 'string') { try { data = JSON.parse(data); } catch(e) { return []; } }
+  return Array.isArray(data) ? data : [];
+}
+
+// ============================================================================
+// INIT
+// ============================================================================
+(async function init() {
+  var params = new URLSearchParams(window.location.search);
+  var battleId = params.get('id');
+  if (!battleId) {
+    $('loading-state').classList.add('hidden');
+    $('error-state').classList.remove('hidden');
+    $('error-state').innerHTML = '<div style="font-size:48px;margin-bottom:16px;opacity:0.3">&#9876;</div><div style="font-size:20px;font-weight:700;color:#fff;margin-bottom:8px">No Battle Selected</div><div style="color:#888;font-size:14px;margin-bottom:24px">Pick a battle from the feed to watch the replay.</div><a href="/battles.html" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none">Browse Battles</a>';
+    return;
+  }
+  try {
+    var responses = await Promise.all([
+      fetch('/battles/' + battleId),
+      fetch('/battles/' + battleId + '/history')
+    ]);
+    if (!responses[0].ok) throw new Error('Battle not found');
+    if (!responses[1].ok) throw new Error('Could not load history');
+
+    battle = await responses[0].json();
+    turns = await responses[1].json();
+    turns.sort(function(a, b) { return (a.turnNumber || 0) - (b.turnNumber || 0); });
+
+    agentA = battle.agentA || {};
+    agentB = battle.agentB || {};
+    maxHpA = agentA.maxHP || agentA.maxHp || 100;
+    maxHpB = agentB.maxHP || agentB.maxHp || 100;
+    battle.agent_a_id = agentA.id || '';
+    battle.agent_b_id = agentB.id || '';
+    battle.winner_id = battle.winnerId || '';
+
+    // Set header with battle number
+    var num = battle.battleNumber;
+    var nameA = agentA.name || 'Agent A';
+    var nameB = agentB.name || 'Agent B';
+    if (num) {
+      $('header-title').textContent = 'Battle #' + num;
+      document.title = 'Battle #' + num + ' - ClawCombat';
+    } else {
+      $('header-title').textContent = 'Battle Replay';
+    }
+    $('header-subtitle').textContent = nameA + ' vs ' + nameB;
+
+    initCanvas();
+    setupArena();
+    setupControls();
+    buildLog();
+    hideAllLogEntries();
+    renderHPInstant(maxHpA, maxHpB);
+
+    $('loading-state').classList.add('hidden');
+    $('arena-wrapper').classList.add('active');
+
+    // Remove intro class after animation
+    setTimeout(function() { $('arena').classList.remove('intro'); }, 1500);
+
+    // First-fight mode: auto-play after a brief delay
+    isFirstFight = params.get('first') === 'true';
+    if (isFirstFight) {
+      // Hide back link for cleaner first-time experience
+      var backLink = document.querySelector('.back-link');
+      if (backLink) backLink.style.visibility = 'hidden';
+      // Update title
+      $('header-title').textContent = 'Your First Battle!';
+      // Auto-start playback
+      setTimeout(function() { playFromCurrent(); }, 2000);
+    }
+  } catch (err) {
+    $('loading-state').classList.add('hidden');
+    $('error-state').classList.remove('hidden');
+    $('error-message').textContent = err.message;
+  }
+})();
+
+// ============================================================================
+// SETUP (battleAgentNames/battleAgentTypes loaded from /js/battle-ui.js)
+// ============================================================================
+function setupArena() {
+  var nameA = agentA.name || 'Agent A';
+  var nameB = agentB.name || 'Agent B';
+  var typeLowerA = (agentA.type || '').toLowerCase();
+  var typeLowerB = (agentB.type || '').toLowerCase();
+  var typeDisplayA = typeLowerA.toUpperCase();
+  var typeDisplayB = typeLowerB.toUpperCase();
+
+  battleAgentNames.player = nameA;
+  battleAgentNames.opponent = nameB;
+  battleAgentTypes.player = typeLowerA;
+  battleAgentTypes.opponent = typeLowerB;
+
+  // Set frame colors via type class
+  if (typeLowerA) $('playerLobster').classList.add('type-' + typeDisplayA);
+  if (typeLowerB) $('opponentLobster').classList.add('type-' + typeDisplayB);
+
+  // Set frame + HP container type colors via CSS var
+  if (typeLowerA) {
+    $('playerLobster').style.setProperty('--frame-color', TYPE_COLORS[typeLowerA] || '#6366f1');
+    $('playerHpContainer').style.setProperty('--frame-color', TYPE_COLORS[typeLowerA] || '#6366f1');
+  }
+  if (typeLowerB) {
+    $('opponentLobster').style.setProperty('--frame-color', TYPE_COLORS[typeLowerB] || '#6366f1');
+    $('opponentHpContainer').style.setProperty('--frame-color', TYPE_COLORS[typeLowerB] || '#6366f1');
+  }
+
+  // HP panel names: colored by type, with level
+  var colorA = TYPE_COLORS[typeLowerA] || TYPE_COLORS.neutral;
+  var colorB = TYPE_COLORS[typeLowerB] || TYPE_COLORS.neutral;
+  var lvlA = agentA.level || 1, lvlB = agentB.level || 1;
+  $('playerName').innerHTML = '<a href="/portfolio.html?id=' + encodeURIComponent(agentA.id || '') + '" style="color:' + colorA + '">' + escapeHtml(nameA) + '</a> <span class="hp-level">Lv.' + lvlA + '</span>';
+  $('opponentName').innerHTML = '<a href="/portfolio.html?id=' + encodeURIComponent(agentB.id || '') + '" style="color:' + colorB + '">' + escapeHtml(nameB) + '</a> <span class="hp-level">Lv.' + lvlB + '</span>';
+
+  // Light types need dark text for readability
+  var LIGHT_TYPES = ['ice', 'electric', 'earth', 'grass', 'insect', 'stone', 'metal', 'mystic', 'neutral'];
+
+  // Type badges in HP label (arena uses hp-type span with clip-path)
+  if (typeLowerA) {
+    var tA = $('playerType');
+    tA.textContent = typeDisplayA;
+    tA.style.background = TYPE_COLORS[typeLowerA] || '#666';
+    tA.style.color = LIGHT_TYPES.indexOf(typeLowerA) >= 0 ? '#1a1a2e' : '#fff';
+  }
+  if (typeLowerB) {
+    var tB = $('opponentType');
+    tB.textContent = typeDisplayB;
+    tB.style.background = TYPE_COLORS[typeLowerB] || '#666';
+    tB.style.color = LIGHT_TYPES.indexOf(typeLowerB) >= 0 ? '#1a1a2e' : '#fff';
+  }
+
+  // Avatars
+  var avatarA = agentA.avatar_url || '';
+  var avatarB = agentB.avatar_url || '';
+  var typeRefA = '/references/' + (typeLowerA || 'neutral') + '-type-young.webp';
+  var typeRefB = '/references/' + (typeLowerB || 'neutral') + '-type-young.webp';
+
+  if (avatarA) {
+    $('avatar-a').src = avatarA;
+    $('avatar-a').style.display = 'block';
+    $('placeholder-a').style.display = 'none';
+    $('avatar-a').onerror = function() { this.src = typeRefA; this.onerror = function() { this.style.display = 'none'; $('placeholder-a').style.display = 'flex'; }; };
+  } else {
+    $('avatar-a').src = typeRefA;
+    $('avatar-a').style.display = 'block';
+    $('placeholder-a').style.display = 'none';
+    $('avatar-a').onerror = function() { this.style.display = 'none'; $('placeholder-a').style.display = 'flex'; $('placeholder-a').textContent = nameA.charAt(0).toUpperCase(); };
+  }
+  if (avatarB) {
+    $('avatar-b').src = avatarB;
+    $('avatar-b').style.display = 'block';
+    $('placeholder-b').style.display = 'none';
+    $('avatar-b').onerror = function() { this.src = typeRefB; this.onerror = function() { this.style.display = 'none'; $('placeholder-b').style.display = 'flex'; }; };
+  } else {
+    $('avatar-b').src = typeRefB;
+    $('avatar-b').style.display = 'block';
+    $('placeholder-b').style.display = 'none';
+    $('avatar-b').onerror = function() { this.style.display = 'none'; $('placeholder-b').style.display = 'flex'; $('placeholder-b').textContent = nameB.charAt(0).toUpperCase(); };
+  }
+}
+
+function setupControls() {
+  $('turn-slider').max = turns.length;
+  $('turn-slider').value = 0;
+  updateTurnLabel();
+
+  $('turn-slider').addEventListener('input', function() {
+    jumpToTurn(parseInt(this.value));
+  });
+  $('btn-play').addEventListener('click', togglePlay);
+  $('speed-select').addEventListener('change', function() {
+    setSpeedMultiplier(parseFloat(this.value));
+  });
+}
+
+// HP rendering uses shared updateHPBar() from /js/battle-ui.js
+function renderHPInstant(hpA, hpB) {
+  updateHPBar('player', hpA, maxHpA);
+  updateHPBar('opponent', hpB, maxHpB);
+}
+
+// ============================================================================
+// STATUS BADGES
+// ============================================================================
+function updateStatusBadges(turnIndex) {
+  var statusA = {}, statusB = {};
+  for (var i = 0; i < turnIndex && i < turns.length; i++) {
+    var events = parseEvents(turns[i]);
+    var curSide = null;
+    for (var j = 0; j < events.length; j++) {
+      var ev = events[j];
+      if (ev.phase) { curSide = ev.side === 'A' ? 'a' : 'b'; continue; }
+      if (ev.type === 'status_inflict' || ev.type === 'status') {
+        var side = getSide(ev) || (curSide === 'a' ? 'b' : 'a');
+        var sn = (ev.status || ev.effect || '').toLowerCase();
+        if (side === 'a') statusA[sn] = true; else statusB[sn] = true;
+      }
+      if (ev.type === 'cure' || ev.type === 'status_cure') {
+        var side2 = getSide(ev) || curSide;
+        var sn2 = (ev.status || ev.effect || '').toLowerCase();
+        if (side2 === 'a') delete statusA[sn2]; else delete statusB[sn2];
+      }
+    }
+  }
+  renderBadges('status-a', statusA);
+  renderBadges('status-b', statusB);
+
+  // Also update the new status icons
+  clearStatusIcons('player');
+  clearStatusIcons('opponent');
+  Object.keys(statusA).forEach(function(s) { if (s) addStatusIcon('player', s); });
+  Object.keys(statusB).forEach(function(s) { if (s) addStatusIcon('opponent', s); });
+}
+
+function renderBadges(id, obj) {
+  var el = $(id);
+  el.innerHTML = '';
+  Object.keys(obj).forEach(function(s) {
+    if (!s) return;
+    var badge = document.createElement('span');
+    var statusClass = s.toLowerCase().replace(/[^a-z]/g, '');
+    badge.className = 'status-badge ' + statusClass;
+    badge.textContent = s.toUpperCase();
+    el.appendChild(badge);
+  });
+}
+
+// showActionInfoSimple() loaded from /js/battle-ui.js
+
+// showDamageNumber() loaded from /js/battle-ui.js
+
+// ============================================================================
+// EFFECT FLOAT TEXT
+// ============================================================================
+function showEffectFloat(text, cssClass) {
+  var el = document.createElement('div');
+  el.className = 'eff-float ' + (cssClass || '');
+  el.textContent = text;
+  el.style.left = '50%'; el.style.top = '50%';
+  el.style.transform = 'translate(-50%, -50%)';
+  $('arena').appendChild(el);
+  setTimeout(function() { el.remove(); }, 1600);
+}
+
+function showStatusFloat(targetSide, text) {
+  var lobEl = $(targetSide === 'a' ? 'playerLobster' : 'opponentLobster');
+  var rect = lobEl.getBoundingClientRect();
+  var arenaRect = $('arena').getBoundingClientRect();
+  var el = document.createElement('div');
+  el.className = 'status-float';
+  el.textContent = text;
+  el.style.left = (rect.left - arenaRect.left + rect.width / 2 - 30) + 'px';
+  el.style.top = (rect.top - arenaRect.top + 10) + 'px';
+  $('arena').appendChild(el);
+  setTimeout(function() { el.remove(); }, 1400);
+}
+
+// ============================================================================
+// SEQUENTIAL EVENT PLAYBACK (the core change)
+// ============================================================================
+async function playTurnEvents(turnIndex) {
+  if (turnIndex < 1 || turnIndex > turns.length) return;
+  var turn = turns[turnIndex - 1];
+  var events = parseEvents(turn);
+  var currentAttackerSide = null;
+  var lastMoveType = null;
+  var lastMoveName = '';
+  var lastMovePower = 60;
+  var lastMoveCategory = 'special';
+
+  // Track HP from the previous turn to animate transitions
+  var prevHpA = turnIndex <= 1 ? maxHpA : Math.max(0, turns[turnIndex - 2].agentAHP != null ? turns[turnIndex - 2].agentAHP : maxHpA);
+  var prevHpB = turnIndex <= 1 ? maxHpB : Math.max(0, turns[turnIndex - 2].agentBHP != null ? turns[turnIndex - 2].agentBHP : maxHpB);
+  var curHpA = prevHpA, curHpB = prevHpB;
+
+  for (var i = 0; i < events.length; i++) {
+    if (stopRequested) return;
+    var ev = events[i];
+
+    // Phase markers
+    if (ev.phase === 'first_attack' || ev.phase === 'second_attack') {
+      currentAttackerSide = ev.side === 'A' ? 'a' : 'b';
+      if (ev.phase === 'second_attack') await delay(1000);
+      continue;
+    }
+
+    // Use move
+    if (ev.type === 'use_move') {
+      var side = getSide(ev) || currentAttackerSide || 'a';
+      // Use moveType from event if available (Fix 2), else fall back to agent move lookup
+      lastMoveName = ev.move || '';
+      lastMoveType = ev.moveType || (agentA.type || 'NEUTRAL');
+      lastMovePower = ev.movePower || 60;
+      lastMoveCategory = ev.moveCategory || 'special';
+      if (!ev.moveType) {
+        var moveSrc = side === 'a' ? agentA : agentB;
+        if (moveSrc && moveSrc.moves) {
+          for (var m = 0; m < moveSrc.moves.length; m++) {
+            if (moveSrc.moves[m].name === ev.move) {
+              lastMoveType = moveSrc.moves[m].type || lastMoveType;
+              lastMovePower = moveSrc.moves[m].power || lastMovePower;
+              lastMoveCategory = moveSrc.moves[m].category || lastMoveCategory;
+              break;
+            }
+          }
+        }
+      }
+
+      showActionInfoSimple(displaySide(side), ev.move || 'Attack');
+      revealNextEntry(turnIndex - 1, 'use_move');
+
+      // Attacker scales up briefly
+      var atkEl = $(side === 'a' ? 'playerLobster' : 'opponentLobster');
+      atkEl.classList.add('attacking');
+      await delay(600);
+      continue;
+    }
+
+    // Damage
+    if (ev.type === 'damage') {
+      var targetSide = currentAttackerSide === 'a' ? 'b' : 'a';
+      var isAAttacking = currentAttackerSide === 'a';
+      var attackerDisplaySide = isAAttacking ? 'player' : 'opponent';
+
+      // Remove attacker animation + launch particles with pattern selection
+      var atkEl2 = $(isAAttacking ? 'playerLobster' : 'opponentLobster');
+      atkEl2.classList.remove('attacking');
+      var animResult = playAttackAnimation(lastMoveType, isAAttacking, {
+        category: lastMoveCategory,
+        power: lastMovePower,
+        moveName: lastMoveName,
+        moveDescription: ev.moveDescription || ''
+      });
+
+      // Trigger attacker movement based on pattern
+      if (animResult && animResult.pattern) {
+        triggerAttackerMovement(attackerDisplaySide, animResult.pattern);
+      }
+
+      // Calculate travel time based on pattern (standardized across all pages)
+      var travelTime = 300;
+      if (animResult && animResult.pattern) {
+        if (animResult.pattern === 'beam') travelTime = 200;
+        else if (animResult.pattern === 'slash') travelTime = 150;
+        else if (animResult.pattern === 'arc') travelTime = 450;
+        else if (animResult.pattern === 'charge') travelTime = 250;
+        else if (animResult.pattern === 'wave') travelTime = 300;
+      }
+      await delay(travelTime);
+
+      // Critical hit handling - freeze frame + critical text + zoom
+      if (ev.crit) {
+        await delay(100);
+        showCriticalText(displaySide(targetSide));
+        triggerCritZoom(displaySide(currentAttackerSide)); // Zoom the attacker
+        flashScreen('rgba(255, 255, 255, 0.3)', 150);
+      }
+
+      Audio.play(ev.typeEffectiveness >= 2 ? 'hitSuper' : ev.crit ? 'hitCrit' : 'hit', lastMoveType);
+      revealNextEntry(turnIndex - 1, 'damage');
+
+      // Damage number
+      if (ev.damage > 0) {
+        showDamageNumber(displaySide(targetSide), ev.damage, ev.crit, false, ev.typeEffectiveness);
+
+        // Hit animation
+        var hitEl = $(targetSide === 'a' ? 'playerLobster' : 'opponentLobster');
+        hitEl.classList.add('hit');
+        setTimeout(function() { hitEl.classList.remove('hit'); }, 300);
+
+        // Dynamic screen shake based on power + damage percent scaling
+        var shakeAmp = 0, shakeDur = 0;
+        if (animResult && animResult.scale && animResult.scale.shakeAmplitude > 0) {
+          shakeAmp = animResult.scale.shakeAmplitude;
+          shakeDur = animResult.scale.shakeDuration;
+        }
+        // Enhance shake based on damage as % of max HP (higher % = bigger shake)
+        if (ev.damage > 0) {
+          var targetMaxHp = targetSide === 'a' ? maxHpA : maxHpB;
+          var dmgPercent = ev.damage / targetMaxHp;
+          // Scale shake by damage: 10% HP = base, 50%+ HP = dramatic
+          var dmgMultiplier = 1 + Math.min(dmgPercent * 2, 1.5); // 1x to 2.5x
+          shakeAmp = Math.max(shakeAmp, 2) * dmgMultiplier;
+          shakeDur = Math.max(shakeDur, 100) * (1 + dmgPercent * 0.5);
+        }
+        if (shakeAmp > 0 || lastMovePower >= 80 || ev.crit) {
+          screenShake(shakeAmp > 0 ? shakeAmp : undefined, shakeDur > 0 ? shakeDur : undefined);
+        }
+
+        // Type-colored screen flash for powerful attacks
+        if (animResult && animResult.scale && animResult.scale.flashOpacity > 0 && animResult.flashColor) {
+          flashScreen(animResult.flashColor, 200);
+        }
+
+        // Animate HP bar
+        if (targetSide === 'a') { curHpA = Math.max(0, curHpA - ev.damage); updateHPBar('player', curHpA, maxHpA); }
+        else { curHpB = Math.max(0, curHpB - ev.damage); updateHPBar('opponent', curHpB, maxHpB); }
+      }
+
+      // Effectiveness text + dramatic callout
+      if (ev.typeEffectiveness && ev.typeEffectiveness !== 1) {
+        await delay(300);
+        if (ev.typeEffectiveness > 1) {
+          showEffectivenessCallout('super'); // Big dramatic callout
+          showEffectFloat('Super effective!', 'super');
+        } else if (ev.typeEffectiveness === 0) {
+          showEffectivenessCallout('immune');
+          showEffectFloat('No effect!', 'immune');
+        } else {
+          showEffectivenessCallout('not-very');
+          showEffectFloat('Not very effective...', 'resist');
+        }
+      }
+
+      await delay(800);
+      continue;
+    }
+
+    // Confusion self-hit
+    if (ev.type === 'confusion_self_hit') {
+      var selfSide = currentAttackerSide || 'a';
+      revealNextEntry(turnIndex - 1, 'confusion_self_hit');
+      Audio.play('hit');
+      showDamageNumber(displaySide(selfSide), ev.damage || 0, false, false);
+      var selfEl = $(selfSide === 'a' ? 'playerLobster' : 'opponentLobster');
+      selfEl.classList.add('hit');
+      setTimeout(function() { selfEl.classList.remove('hit'); }, 300);
+      if (selfSide === 'a') { curHpA = Math.max(0, curHpA - (ev.damage || 0)); updateHPBar('player', curHpA, maxHpA); }
+      else { curHpB = Math.max(0, curHpB - (ev.damage || 0)); updateHPBar('opponent', curHpB, maxHpB); }
+      showStatusFloat(selfSide, 'Confused!');
+      await delay(1000);
+      continue;
+    }
+
+    // Status inflict
+    if (ev.type === 'status_inflict' || ev.type === 'status') {
+      revealNextEntry(turnIndex - 1, ev.type);
+      Audio.play('statusInflict');
+      var stSide = getSide(ev) || (currentAttackerSide === 'a' ? 'b' : 'a');
+      var stName = ev.status || ev.effect || 'affected';
+      showStatusFloat(stSide, stName.charAt(0).toUpperCase() + stName.slice(1) + '!');
+      // Add the persistent status icon
+      addStatusIcon(displaySide(stSide), stName);
+      await delay(900);
+      continue;
+    }
+
+    // Stat changes
+    if (ev.type === 'stat_drop' || ev.type === 'stat_boost') {
+      revealNextEntry(turnIndex - 1, ev.type);
+      Audio.play(ev.type === 'stat_boost' ? 'statBoost' : 'statDrop');
+      var statSide = getSide(ev) || currentAttackerSide || 'a';
+      var statLabel = ev.type === 'stat_drop' ? (ev.stat || 'stat') + ' fell!' : (ev.stat || 'stat') + ' rose!';
+      showStatusFloat(statSide, statLabel);
+      await delay(800);
+      continue;
+    }
+
+    // Heal
+    if (ev.type === 'heal') {
+      revealNextEntry(turnIndex - 1, 'heal');
+      Audio.play('heal');
+      var healSide = getSide(ev) || currentAttackerSide || 'a';
+      var healAmt = ev.amount || ev.heal || 0;
+      showDamageNumber(displaySide(healSide), healAmt, false, true);
+      if (healSide === 'a') { curHpA = Math.min(maxHpA, curHpA + healAmt); updateHPBar('player', curHpA, maxHpA); }
+      else { curHpB = Math.min(maxHpB, curHpB + healAmt); updateHPBar('opponent', curHpB, maxHpB); }
+      await delay(900);
+      continue;
+    }
+
+    // Battle end
+    if (ev.type === 'battle_end') {
+      revealNextEntry(turnIndex - 1, 'battle_end');
+      Audio.play('faint');
+      // Faint animation on loser
+      var winnerId = ev.winnerId || battle.winner_id;
+      var loserSide = winnerId === agentA.id ? 'b' : 'a';
+      var loserEl = $(loserSide === 'a' ? 'playerLobster' : 'opponentLobster');
+      loserEl.classList.add('fainted');
+      await delay(1600);
+      continue;
+    }
+  }
+
+  // Final HP sync from server data
+  var finalHpA = turn.agentAHP != null ? turn.agentAHP : curHpA;
+  var finalHpB = turn.agentBHP != null ? turn.agentBHP : curHpB;
+  updateHPBar('player', Math.max(0, finalHpA), maxHpA);
+  updateHPBar('opponent', Math.max(0, finalHpB), maxHpB);
+
+  // Update status badges
+  updateStatusBadges(turnIndex);
+}
+
+// ============================================================================
+// PLAYBACK CONTROLS
+// ============================================================================
+function updateTurnLabel() {
+  $('turn-label').textContent = 'Turn ' + currentTurn + ' / ' + turns.length;
+}
+
+async function togglePlay() {
+  Audio.unlock();
+  if (isPlaying) {
+    stopRequested = true;
+    isPlaying = false;
+    Audio.pauseMusic();
+    $('btn-play').innerHTML = '<span class="play-icon">&#9654;</span><span class="play-text">Play</span>';
+    return;
+  }
+  Audio.resumeMusic();
+  playFromCurrent();
+}
+
+async function playFromCurrent() {
+  if (isAnimating) return;
+  var gen = ++playbackGeneration;
+  if (currentTurn >= turns.length) {
+    currentTurn = 0;
+    renderHPInstant(maxHpA, maxHpB);
+    $('winner-overlay').classList.remove('active');
+    resetLobsterState();
+  }
+
+  // Always hide all log entries when starting from the beginning
+  if (currentTurn === 0) {
+    hideAllLogEntries();
+  }
+
+  isPlaying = true;
+  isAnimating = true;
+  stopRequested = false;
+  $('btn-play').innerHTML = '<span class="play-icon">&#9646;&#9646;</span><span class="play-text">Pause</span>';
+  $('turn-slider').disabled = true;
+
+  while (currentTurn < turns.length && !stopRequested && gen === playbackGeneration) {
+    currentTurn++;
+    $('turn-slider').value = currentTurn;
+    updateTurnLabel();
+    revealTurn(currentTurn - 1);
+
+    await playTurnEvents(currentTurn);
+
+    if (stopRequested || gen !== playbackGeneration) break;
+
+    // Pause between turns
+    if (currentTurn < turns.length) await delay(1600);
+  }
+
+  if (!stopRequested && gen === playbackGeneration && currentTurn >= turns.length) {
+    // Show winner
+    await delay(1000);
+    showWinner();
+  }
+
+  isPlaying = false;
+  isAnimating = false;
+  stopRequested = false;
+  $('btn-play').innerHTML = '<span class="play-icon">&#9654;</span><span class="play-text">Play</span>';
+  $('turn-slider').disabled = false;
+}
+
+function restart() {
+  playbackGeneration++;
+  stopRequested = true;
+  isPlaying = false;
+  isAnimating = false;
+  currentTurn = 0;
+  $('turn-slider').value = 0;
+  updateTurnLabel();
+  renderHPInstant(maxHpA, maxHpB);
+  updateStatusBadges(0);
+  $('winner-overlay').classList.remove('active');
+  $('btn-play').innerHTML = '<span class="play-icon">&#9654;</span><span class="play-text">Play</span>';
+  $('turn-slider').disabled = false;
+  resetLobsterState();
+  clearFloats();
+  hideAllLogEntries();
+}
+
+function jumpToTurn(t) {
+  if (isAnimating) { stopRequested = true; }
+  playbackGeneration++;
+  setTimeout(function() {
+    isPlaying = false;
+    isAnimating = false;
+    stopRequested = false;
+    currentTurn = t;
+    $('turn-slider').value = t;
+    updateTurnLabel();
+    $('btn-play').innerHTML = '<span class="play-icon">&#9654;</span><span class="play-text">Play</span>';
+    $('turn-slider').disabled = false;
+
+    // Set HP to the state after this turn
+    if (t === 0) {
+      renderHPInstant(maxHpA, maxHpB);
+      hideAllLogEntries();
+    } else {
+      var turn = turns[t - 1];
+      updateHPBar('player', Math.max(0, turn.agentAHP != null ? turn.agentAHP : maxHpA), maxHpA);
+      updateHPBar('opponent', Math.max(0, turn.agentBHP != null ? turn.agentBHP : maxHpB), maxHpB);
+      // Show all turns up to the jumped position
+      hideAllLogEntries();
+      revealTurnsUpTo(t - 1);
+    }
+    updateStatusBadges(t);
+    resetLobsterState();
+    clearFloats();
+    highlightLogEntry(t - 1);
+
+    if (t >= turns.length && turns.length > 0) showWinner();
+    else $('winner-overlay').classList.remove('active');
+  }, 100);
+}
+
+function resetLobsterState() {
+  $('playerLobster').className = 'lobster player-lobster' + (agentA.type ? ' type-' + agentA.type.toUpperCase() : '');
+  $('opponentLobster').className = 'lobster opponent-lobster' + (agentB.type ? ' type-' + agentB.type.toUpperCase() : '');
+}
+
+function clearFloats() {
+  document.querySelectorAll('.damage-number, .eff-float, .status-float').forEach(function(el) { el.remove(); });
+  hideAllActionInfo();
+}
+
+// ============================================================================
+// BATTLE LOG (arena-style)
+// ============================================================================
+
+// formatHistoryMessage() loaded from /js/battle-ui.js
+
+function buildLog() {
+  var body = $('battle-log-body');
+  body.innerHTML = '';
+  var nameA = agentA.name || 'Agent A';
+  var nameB = agentB.name || 'Agent B';
+
+  // Render turns left to right (chronological)
+  for (var i = 0; i < turns.length; i++) {
+    var turn = turns[i];
+    var events = parseEvents(turn);
+    var turnNum = turn.turnNumber || (i + 1);
+
+    // Build a fragment for this turn (separator + events in chronological order)
+    var frag = document.createDocumentFragment();
+
+    // Turn separator
+    var sep = document.createElement('div');
+    sep.className = 'history-turn-separator';
+    sep.setAttribute('data-turn', i);
+    sep.innerHTML = '<span>Turn ' + turnNum + '</span>';
+    sep.style.cursor = 'pointer';
+    sep.addEventListener('click', (function(idx) { return function() { jumpToTurn(idx + 1); }; })(i));
+    frag.appendChild(sep);
+
+    var currentSide = null;
+    var entryIdx = 0;
+    var hadFirstAttack = false;
+    var pendingUseMove = null; // Buffer use_move to merge with damage
+
+    events.forEach(function(ev) {
+      // Track which side is acting
+      if (ev.phase === 'first_attack' || ev.phase === 'second_attack') {
+        // Insert a gap spacer between first and second attacker's moves
+        if (ev.phase === 'second_attack' && hadFirstAttack) {
+          var spacer = document.createElement('div');
+          spacer.className = 'history-attack-gap';
+          spacer.setAttribute('data-turn', i);
+          frag.appendChild(spacer);
+        }
+        if (ev.phase === 'first_attack') hadFirstAttack = true;
+        currentSide = ev.side === 'A' ? 'player' : 'opponent';
+        return;
+      }
+
+      // Buffer use_move — it will be merged into the damage entry
+      if (ev.type === 'use_move') {
+        pendingUseMove = ev;
+        return;
+      }
+
+      if (!ev.message && ev.type !== 'battle_end') return;
+
+      // Flush pending use_move if this isn't a damage event (status-only moves, etc.)
+      if (pendingUseMove && ev.type !== 'damage') {
+        var umEntry = document.createElement('div');
+        umEntry.setAttribute('data-entry-idx', entryIdx++);
+        umEntry.setAttribute('data-event-type', 'use_move');
+        var umSide = currentSide || 'system';
+        umEntry.className = 'history-entry ' + (umSide === 'player' ? 'player-entry' : umSide === 'opponent' ? 'opponent-entry' : 'system-entry');
+        umEntry.innerHTML = formatHistoryMessage(pendingUseMove.message);
+        umEntry.setAttribute('data-turn', i);
+        umEntry.style.cursor = 'pointer';
+        umEntry.addEventListener('click', (function(idx) { return function() { jumpToTurn(idx + 1); }; })(i));
+        frag.appendChild(umEntry);
+        pendingUseMove = null;
+      }
+
+      var entry = document.createElement('div');
+      // If this is a damage event and we have a buffered use_move, merge them
+      var eventType = ev.type || '';
+      if (ev.type === 'damage' && pendingUseMove) {
+        entry.setAttribute('data-event-type', 'use_move_damage');
+        var useMoveHtml = formatHistoryMessage(pendingUseMove.message);
+        var damageHtml = formatHistoryMessage(ev.message);
+        entry._combinedHtml = useMoveHtml + '<br>' + damageHtml;
+        pendingUseMove = null;
+      } else {
+        entry.setAttribute('data-event-type', eventType);
+      }
+      entry.setAttribute('data-entry-idx', entryIdx++);
+
+      // Determine side for styling
+      var side = 'system';
+      if (ev.type === 'damage' || ev.type === 'stat_drop' || ev.type === 'stat_boost') {
+        side = currentSide || 'system';
+      } else if (ev.type === 'status_inflict' || ev.type === 'status') {
+        side = currentSide || 'system';
+      } else if (ev.type === 'confusion_self_hit') {
+        side = currentSide || 'system';
+      } else if (ev.type === 'heal') {
+        side = currentSide || 'system';
+      } else if (ev.type === 'battle_end') {
+        side = 'system';
+      }
+
+      if (side === 'player') entry.className = 'history-entry player-entry';
+      else if (side === 'opponent') entry.className = 'history-entry opponent-entry';
+      else entry.className = 'history-entry system-entry';
+
+      if (ev.type === 'battle_end') {
+        var wName = ev.winnerId === agentA.id ? nameA : nameB;
+        entry.innerHTML = formatHistoryMessage(wName + ' wins!');
+        entry.style.fontWeight = '700';
+        entry.style.color = '#fbbf24';
+      } else if (entry._combinedHtml) {
+        entry.innerHTML = entry._combinedHtml;
+      } else {
+        entry.innerHTML = formatHistoryMessage(ev.message);
+      }
+
+      entry.setAttribute('data-turn', i);
+      entry.style.cursor = 'pointer';
+      entry.addEventListener('click', (function(idx) { return function() { jumpToTurn(idx + 1); }; })(i));
+      frag.appendChild(entry);
+    });
+
+    body.appendChild(frag);
+  }
+}
+
+function hideAllLogEntries() {
+  var body = $('battle-log-body');
+  var entries = body.querySelectorAll('.history-entry, .history-turn-separator, .history-attack-gap');
+  for (var j = 0; j < entries.length; j++) {
+    entries[j].classList.add('log-hidden');
+    entries[j].classList.remove('log-reveal');
+  }
+}
+
+function showAllLogEntries() {
+  var body = $('battle-log-body');
+  var entries = body.querySelectorAll('.log-hidden');
+  for (var j = 0; j < entries.length; j++) {
+    entries[j].classList.remove('log-hidden');
+  }
+}
+
+function revealTurn(turnIndex) {
+  // Only reveal the turn separator — entries revealed one by one during animation
+  var sep = document.querySelector('.history-turn-separator[data-turn="' + turnIndex + '"]');
+  if (sep) {
+    sep.classList.remove('log-hidden');
+    sep.classList.add('log-reveal');
+  }
+  var body = $('battle-log-body');
+  body.scrollLeft = body.scrollWidth;
+}
+
+function revealNextEntry(turnIndex, eventType) {
+  // Also reveal any hidden gap spacers for this turn
+  var gaps = document.querySelectorAll('.history-attack-gap[data-turn="' + turnIndex + '"].log-hidden');
+  for (var g = 0; g < gaps.length; g++) {
+    gaps[g].classList.remove('log-hidden');
+  }
+  // Find the next hidden entry for this turn, optionally matching event type
+  var els = document.querySelectorAll('.history-entry[data-turn="' + turnIndex + '"].log-hidden');
+  for (var j = 0; j < els.length; j++) {
+    var elType = els[j].getAttribute('data-event-type');
+    // Match combined entries: use_move or damage both match use_move_damage
+    var matches = !eventType || elType === eventType ||
+      (elType === 'use_move_damage' && (eventType === 'use_move' || eventType === 'damage'));
+    if (matches) {
+      els[j].classList.remove('log-hidden');
+      els[j].classList.add('log-reveal');
+      var body = $('battle-log-body');
+      body.scrollLeft = body.scrollWidth;
+      return;
+    }
+  }
+  // Fallback: reveal the first hidden entry for this turn
+  if (els.length > 0) {
+    els[0].classList.remove('log-hidden');
+    els[0].classList.add('log-reveal');
+    var body = $('battle-log-body');
+    body.scrollLeft = body.scrollWidth;
+  }
+}
+
+function revealTurnsUpTo(turnIndex) {
+  for (var t = 0; t <= turnIndex; t++) {
+    var els = document.querySelectorAll('[data-turn="' + t + '"]');
+    for (var j = 0; j < els.length; j++) {
+      els[j].classList.remove('log-hidden');
+      els[j].classList.remove('log-reveal');
+    }
+  }
+}
+
+function highlightLogEntry(index) {
+  // Scroll to the correct turn separator
+  var seps = document.querySelectorAll('.history-turn-separator[data-turn="' + index + '"]');
+  if (seps.length > 0) {
+    seps[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+// ============================================================================
+// WINNER
+// ============================================================================
+function showWinner() {
+  var winnerId = battle.winner_id || battle.winnerId;
+  if (!winnerId) return;
+  var isA = winnerId === agentA.id;
+  var winnerName = isA ? (agentA.name || 'Agent A') : (agentB.name || 'Agent B');
+  var loserName = isA ? (agentB.name || 'Agent B') : (agentA.name || 'Agent A');
+  var loserId = isA ? agentB.id : agentA.id;
+  $('winner-name').textContent = winnerName + ' wins!';
+
+  // Show XP earned
+  var xp = battle.xpResults;
+  if (xp && xp[winnerId]) {
+    $('winner-xp').textContent = '+' + xp[winnerId].xp_earned + ' XP';
+  } else {
+    $('winner-xp').textContent = '';
+  }
+  if (xp && xp[loserId]) {
+    $('winner-subtext').textContent = loserName + ' has been defeated.';
+    $('loser-xp').textContent = loserName + ' earned +' + xp[loserId].xp_earned + ' XP';
+  } else {
+    $('winner-subtext').textContent = loserName + ' has been defeated.';
+    $('loser-xp').textContent = '';
+  }
+
+  // Show first-fight CTAs if applicable
+  if (isFirstFight) {
+    var ctasEl = $('first-fight-ctas');
+    if (ctasEl) {
+      ctasEl.style.display = 'flex';
+    }
+  }
+
+  Audio.play('victory');
+  $('winner-overlay').classList.add('active');
+}
+
+function saveLobster() {
+  // Trigger Clerk sign-in; after login the user can claim from portfolio
+  if (typeof ClawAuth !== 'undefined' && ClawAuth.signIn) {
+    ClawAuth.signIn();
+  } else {
+    window.location.href = '/portfolio.html';
+  }
+}
+</script>
+<script src="/js/auth.js"></script>
+<script src="/js/analytics.js"></script>
+<script>
+// Track replay view
+ClawAnalytics.trackReplayViewed(new URLSearchParams(window.location.search).get('id'));
+</script>
+</body>
+</html>

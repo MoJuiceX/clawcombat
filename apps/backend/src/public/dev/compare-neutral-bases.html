@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClawCombat — Neutral Base Comparison</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e0e0e0; font-family: 'Segoe UI', system-ui, sans-serif; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 6px; font-size: 1.5rem; color: #fff; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 24px; font-size: 0.85rem; max-width: 800px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; max-width: 1600px; margin: 0 auto; }
+
+  .card { background: #141414; border-radius: 10px; border: 2px solid #2a2a2a; overflow: hidden; cursor: pointer; transition: border-color 0.2s, transform 0.15s; position: relative; }
+  .card:hover { transform: scale(1.02); }
+  .card.selected { border-color: #4caf50; box-shadow: 0 0 12px rgba(76, 175, 80, 0.3); }
+  .card.cut { border-color: #c62828; opacity: 0.35; }
+
+  .card .images { display: flex; gap: 2px; }
+  .card .images img { flex: 1; aspect-ratio: 1; object-fit: cover; display: block; min-width: 0; }
+  .card .images img.ref { max-width: 40%; opacity: 0.7; border-right: 2px solid #333; }
+  .card .images img.result { max-width: 60%; }
+
+  .card .status { position: absolute; top: 10px; right: 10px; font-size: 1.4rem; z-index: 2; }
+  .card .info { padding: 10px 12px; }
+  .card .name { font-weight: 700; font-size: 1rem; }
+  .card .labels { display: flex; gap: 6px; margin-top: 4px; }
+  .card .label { font-size: 0.7rem; padding: 2px 8px; border-radius: 4px; }
+  .label-ref { background: #333; color: #999; }
+  .label-new { background: #2e7d32; color: #cfc; }
+
+  .summary { text-align: center; margin-top: 24px; padding: 16px; background: #161616; border-radius: 8px; max-width: 700px; margin-left: auto; margin-right: auto; }
+  .summary h3 { margin-bottom: 8px; color: #4caf50; }
+  .summary .count { font-size: 1.1rem; margin-bottom: 8px; }
+  .summary .list { color: #aaa; font-size: 0.85rem; line-height: 1.6; }
+
+  .lightbox { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 1000; justify-content: center; align-items: center; cursor: zoom-out; }
+  .lightbox.active { display: flex; }
+  .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+  .lightbox .lbl { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: #aaa; font-size: 0.9rem; background: rgba(0,0,0,0.8); padding: 8px 16px; border-radius: 6px; }
+</style>
+</head>
+<body>
+
+<h1>Neutral Base LOPSERs — Pick Your Favorites</h1>
+<p class="subtitle">Each card shows the original reference (left, dimmed) and the new FLUX 2 Pro neutral base (right). Click to toggle ON/OFF. Goal: keep ~8 distinct silhouettes.</p>
+
+<div class="grid" id="grid"></div>
+<div class="summary" id="summary"></div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <img id="lb-img" src="">
+  <div class="lbl" id="lb-lbl"></div>
+</div>
+
+<script>
+const BASES = [
+  { name: 'Neutral',  result: '/references/bases-neutral/base-neutral.webp', ref: '/references/neutral-type-young.webp' },
+  { name: 'Fire',     result: '/references/bases-neutral/base-fire.webp',    ref: '/references/fire-type-young.webp' },
+  { name: 'Water',    result: '/references/bases-neutral/base-water.webp',   ref: '/references/water-type-young.webp' },
+  { name: 'Grass',    result: '/references/bases-neutral/base-grass.webp',   ref: '/references/grass-type-young.webp' },
+  { name: 'Ice',      result: '/references/bases-neutral/base-ice.webp',     ref: '/references/ice-type-young.webp' },
+{ name: 'Venom',    result: '/references/bases-neutral/base-venom.webp',   ref: '/references/venom-type-young.webp' },
+  { name: 'Earth',    result: '/references/bases-neutral/base-earth.webp',   ref: '/references/earth-type-young.webp' },
+  { name: 'Metal',    result: '/references/bases-neutral/base-metal.webp',   ref: '/references/metal-type-young.webp' },
+  { name: 'Mean',     result: '/references/bases-neutral/base-mean.webp',    ref: '/references/new-bases/mean-lopster.png' },
+  { name: 'Bulky',    result: '/references/bases-neutral/base-bulky.webp',   ref: '/references/new-bases/bulky-lobster.jpg' },
+  { name: 'Nature',   result: '/references/bases-neutral/base-nature.webp',  ref: '/references/new-bases/nature-lobster.jpg' },
+];
+
+const state = {};
+BASES.forEach(b => state[b.name] = true);
+
+function render() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  BASES.forEach(b => {
+    const sel = state[b.name];
+    const card = document.createElement('div');
+    card.className = `card ${sel ? 'selected' : 'cut'}`;
+    card.innerHTML = `
+      <div class="images">
+        <img class="ref" src="${b.ref}" alt="Reference" ondblclick="event.stopPropagation(); openLightbox('${b.ref}', '${b.name} — Original Reference')">
+        <img class="result" src="${b.result}" alt="Neutral Base" ondblclick="event.stopPropagation(); openLightbox('${b.result}', '${b.name} — Neutral Base (FLUX 2 Pro)')">
+      </div>
+      <div class="status">${sel ? '\u2705' : '\u274C'}</div>
+      <div class="info">
+        <span class="name">${b.name}</span>
+        <div class="labels">
+          <span class="label label-ref">Original ref</span>
+          <span class="label label-new">Neutral base</span>
+        </div>
+      </div>
+    `;
+    card.addEventListener('click', (e) => {
+      if (e.target.tagName === 'IMG' && e.detail === 2) return;
+      state[b.name] = !state[b.name];
+      render();
+    });
+    grid.appendChild(card);
+  });
+
+  updateSummary();
+}
+
+function updateSummary() {
+  const selected = BASES.filter(b => state[b.name]);
+  const cut = BASES.filter(b => !state[b.name]);
+  document.getElementById('summary').innerHTML = `
+    <h3>${selected.length} Bases Selected</h3>
+    <div class="count">${selected.length} bases x 18 types = ${selected.length * 18} total variants</div>
+    <div class="list">
+      <strong>Selected:</strong> ${selected.map(b => b.name).join(', ') || 'None'}<br>
+      ${cut.length ? '<strong>Cut:</strong> ' + cut.map(b => b.name).join(', ') : ''}
+    </div>
+  `;
+}
+
+function openLightbox(src, label) {
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-lbl').textContent = label;
+  document.getElementById('lightbox').classList.add('active');
+}
+
+function closeLightbox(e) {
+  document.getElementById('lightbox').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+render();
+</script>
+</body>
+</html>
