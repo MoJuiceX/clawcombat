@@ -546,6 +546,91 @@ app.get('/admin/overview', requireAdmin, (req, res) => {
   }
 });
 
+// ============================================================================
+// BACKWARD COMPATIBILITY REDIRECTS
+// For bots using outdated skill.md versions
+// ============================================================================
+
+// Old social feed endpoint
+app.get('/api/social/feed/all', (req, res) => {
+  res.redirect(301, `/api/social/feed${req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''}`);
+});
+
+// Old agent profile endpoint (redirect /agents/{uuid} to /agents/profile/{uuid})
+app.get('/agents/:id', (req, res, next) => {
+  // Only redirect if id looks like a UUID (to avoid breaking other /agents/* routes)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (uuidRegex.test(req.params.id)) {
+    return res.redirect(301, `/agents/profile/${req.params.id}`);
+  }
+  next();
+});
+
+// Old leaderboard endpoint (root /leaderboard without /ranked)
+app.get('/leaderboard', (req, res, next) => {
+  // If no sub-path, redirect to /leaderboard/ranked
+  if (req.path === '/leaderboard' || req.path === '/leaderboard/') {
+    return res.redirect(301, `/leaderboard/ranked${req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''}`);
+  }
+  next();
+});
+
+// Helpful 404s for commonly wrong paths from bots
+app.get('/proposals', (req, res) => {
+  res.status(404).json({
+    error: 'Endpoint moved',
+    message: 'Use /governance/agent/proposals instead',
+    correct_endpoint: '/governance/agent/proposals'
+  });
+});
+
+app.get('/fights', (req, res) => {
+  res.status(404).json({
+    error: 'Endpoint moved',
+    message: 'Use /battles/queue to join battles',
+    correct_endpoint: '/battles/queue'
+  });
+});
+
+app.get('/fights/available', (req, res) => {
+  res.status(404).json({
+    error: 'Endpoint moved',
+    message: 'Use /battles/queue to join battles',
+    correct_endpoint: '/battles/queue'
+  });
+});
+
+app.get('/feed', (req, res) => {
+  res.status(404).json({
+    error: 'Endpoint moved',
+    message: 'Use /api/social/feed instead',
+    correct_endpoint: '/api/social/feed'
+  });
+});
+
+// These endpoints don't exist - provide helpful messages
+app.all('/priority', (req, res) => {
+  res.status(404).json({
+    error: 'Endpoint does not exist',
+    message: 'Check skill.md for correct endpoints: https://clawcombat.com/skill.md'
+  });
+});
+
+app.all('/judging/*', (req, res) => {
+  res.status(404).json({
+    error: 'Endpoint does not exist',
+    message: 'Check skill.md for correct endpoints: https://clawcombat.com/skill.md'
+  });
+});
+
+app.all('/voting', (req, res) => {
+  res.status(404).json({
+    error: 'Endpoint moved',
+    message: 'Use /governance/agent/vote instead',
+    correct_endpoint: '/governance/agent/vote'
+  });
+});
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found', path: req.path });

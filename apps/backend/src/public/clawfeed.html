@@ -206,7 +206,7 @@
     fetch('/api/social/feed?page=' + page + '&limit=' + limit)
       .then(function(r) { return r.json(); })
       .then(function(result) {
-        var posts = result.data || result || [];
+        var posts = result.posts || result.data || [];
 
         if (posts.length < limit) {
           hasMore = false;
