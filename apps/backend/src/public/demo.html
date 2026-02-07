@@ -476,7 +476,7 @@ async function autoPlayLoop() {
   while (autoPlaying) {
     await submitMove(null, true);
     if (!battleState || battleState.status === 'finished') break; // Don't reset autoPlaying - preserve preference
-    await delay(600);
+    await delay(ANIM_TIMING.turnGap); // Pause between turns for better viewing
   }
 }
 
@@ -533,7 +533,7 @@ async function animateTurnEvents(turn) {
     if (ev.phase === 'first_attack' || ev.phase === 'second_attack') {
       if (ev.phase === 'second_attack') addAttackGap();
       currentAttackerSide = ev.side;
-      await delay(500);
+      await delay(ANIM_TIMING.phaseDelay);
     }
 
     // Flush buffered use_move if this isn't a damage event
@@ -556,7 +556,7 @@ async function animateTurnEvents(turn) {
         // Brief attacker telegraph (log entry deferred to damage)
         var ae = document.getElementById(ms === 'player' ? 'playerLobster' : 'opponentLobster');
         ae.classList.add('attacking');
-        await delay(400);
+        await delay(ANIM_TIMING.useMoveTelegraph);
         break;
       }
       case 'damage': {
@@ -583,23 +583,16 @@ async function animateTurnEvents(turn) {
         var ae2 = document.getElementById(attackerSide === 'player' ? 'playerLobster' : 'opponentLobster');
         ae2.classList.remove('attacking');
 
-        // Calculate travel time based on pattern (standardized across all pages)
-        var travelTime = 300;
-        if (animResult && animResult.pattern) {
-          if (animResult.pattern === 'beam') travelTime = 200;
-          else if (animResult.pattern === 'slash') travelTime = 150;
-          else if (animResult.pattern === 'arc') travelTime = 450;
-          else if (animResult.pattern === 'charge') travelTime = 250;
-          else if (animResult.pattern === 'wave') travelTime = 300;
-        }
+        // Calculate travel time based on pattern (uses shared timing constants)
+        var travelTime = getAnimTravelTime(animResult && animResult.pattern ? animResult.pattern : 'default');
         await delay(travelTime);
 
         // Critical hit handling - freeze frame + critical text + zoom
         if (ev.crit) {
-          await delay(100); // Freeze frame
+          await delay(ANIM_TIMING.critFreeze); // Freeze frame
           showCriticalText(ts);
           triggerCritZoom(isPlayerAttacking ? 'player' : 'opponent'); // Zoom the attacker
-          flashScreen('rgba(255, 255, 255, 0.3)', 150);
+          flashScreen('rgba(255, 255, 255, 0.3)', 200);
         }
 
         // Audio + damage number + hit effect simultaneously
@@ -650,9 +643,9 @@ async function animateTurnEvents(turn) {
           else if (ev.typeEffectiveness === 0) showEffectivenessCallout('immune');
           else showEffectivenessCallout('not-very');
         }
-        await delay(400);
+        await delay(ANIM_TIMING.damageDisplay);
         de.classList.remove('hit');
-        await delay(300);
+        await delay(ANIM_TIMING.hitRecover);
         break;
       }
       case 'recoil': {
@@ -663,7 +656,7 @@ async function animateTurnEvents(turn) {
           updateHPBar(recoilSide, ev.remainingHP, mx2);
         }
         addToHistory(ev.message, recoilSide);
-        await delay(500);
+        await delay(ANIM_TIMING.postDamage);
         break;
       }
       case 'status_inflict': {
@@ -673,7 +666,7 @@ async function animateTurnEvents(turn) {
         // Add persistent status icon
         var stName = ev.status || ev.effect || '';
         if (stName) addStatusIcon(statusTarget, stName);
-        await delay(600);
+        await delay(ANIM_TIMING.statusInflict);
         break;
       }
       case 'heal': case 'drain': case 'wish_heal': {
@@ -683,7 +676,7 @@ async function animateTurnEvents(turn) {
           var mx3 = parseInt(document.getElementById(hs === 'player' ? 'playerMaxHp' : 'opponentMaxHp').textContent) || 100;
           updateHPBar(hs, ev.remainingHP, mx3);
         }
-        addToHistory(ev.message, hs); await delay(600); break;
+        addToHistory(ev.message, hs); await delay(ANIM_TIMING.healEffect); break;
       }
       case 'burn_damage': case 'poison_damage': case 'curse_damage': case 'leech_seed': {
         addToHistory(ev.message);
@@ -692,11 +685,11 @@ async function animateTurnEvents(turn) {
           var mx4 = parseInt(document.getElementById(dotSide === 'player' ? 'playerMaxHp' : 'opponentMaxHp').textContent) || 100;
           updateHPBar(dotSide, ev.remainingHP, mx4);
         }
-        await delay(600); break;
+        await delay(ANIM_TIMING.dotDamage); break;
       }
-      case 'miss': case 'dodge': case 'immune': case 'flinch': Audio.play('miss'); addToHistory(ev.message); await delay(600); break;
-      case 'stat_boost': Audio.play('statBoost'); addToHistory(ev.message); await delay(500); break;
-      case 'stat_drop': Audio.play('statDrop'); addToHistory(ev.message); await delay(500); break;
+      case 'miss': case 'dodge': case 'immune': case 'flinch': Audio.play('miss'); addToHistory(ev.message); await delay(ANIM_TIMING.missEffect); break;
+      case 'stat_boost': Audio.play('statBoost'); addToHistory(ev.message); await delay(ANIM_TIMING.statChange); break;
+      case 'stat_drop': Audio.play('statDrop'); addToHistory(ev.message); await delay(ANIM_TIMING.statChange); break;
       case 'ability': addToHistory(ev.message); await delay(600); break;
       case 'faint': {
         Audio.play('faint'); var fs = ev.side === myAgentSide ? 'player' : 'opponent';

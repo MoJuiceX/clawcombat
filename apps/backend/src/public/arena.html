@@ -903,7 +903,7 @@ async function animateEvents(events, battleState) {
     if (event.phase === 'first_attack' || event.phase === 'second_attack') {
       if (event.phase === 'second_attack') addAttackGap();
       currentAttackerSide = event.side;
-      await delay(500);
+      await delay(ANIM_TIMING.phaseDelay);
     }
 
     // Flush buffered use_move if this isn't a damage event
@@ -926,7 +926,7 @@ async function animateEvents(events, battleState) {
         // Log entry deferred to damage
         var attackerEl = document.getElementById(useMoveDisplaySide === 'player' ? 'playerLobster' : 'opponentLobster');
         attackerEl.classList.add('attacking');
-        await delay(400);
+        await delay(ANIM_TIMING.useMoveTelegraph);
         break;
       }
 
@@ -954,23 +954,16 @@ async function animateEvents(events, battleState) {
         var atkEl = document.getElementById(atkSide === 'player' ? 'playerLobster' : 'opponentLobster');
         atkEl.classList.remove('attacking');
 
-        // Calculate travel time based on pattern (standardized across all pages)
-        var travelTime = 300;
-        if (animResult && animResult.pattern) {
-          if (animResult.pattern === 'beam') travelTime = 200;
-          else if (animResult.pattern === 'slash') travelTime = 150;
-          else if (animResult.pattern === 'arc') travelTime = 450;
-          else if (animResult.pattern === 'charge') travelTime = 250;
-          else if (animResult.pattern === 'wave') travelTime = 300;
-        }
+        // Calculate travel time based on pattern (uses shared timing constants)
+        var travelTime = getAnimTravelTime(animResult && animResult.pattern ? animResult.pattern : 'default');
         await delay(travelTime);
 
         // Critical hit handling - freeze frame + critical text + zoom
         if (event.crit) {
-          await delay(100); // Freeze frame
+          await delay(ANIM_TIMING.critFreeze); // Freeze frame
           showCriticalText(targetSide);
           triggerCritZoom(isPlayerAttacking ? 'player' : 'opponent'); // Zoom the attacker
-          flashScreen('rgba(255, 255, 255, 0.3)', 150);
+          flashScreen('rgba(255, 255, 255, 0.3)', 200);
         }
 
         Audio.play(event.typeEffectiveness >= 2 ? 'hitSuper' : event.crit ? 'hitCrit' : 'hit', lastUsedMoveType);
@@ -1019,9 +1012,9 @@ async function animateEvents(events, battleState) {
           else if (event.typeEffectiveness === 0) showEffectivenessCallout('immune');
           else showEffectivenessCallout('not-very');
         }
-        await delay(400);
+        await delay(ANIM_TIMING.damageDisplay);
         defenderEl.classList.remove('hit');
-        await delay(300);
+        await delay(ANIM_TIMING.hitRecover);
         break;
       }
 
@@ -1033,7 +1026,7 @@ async function animateEvents(events, battleState) {
           updateHPBar(recoilSide, event.remainingHP, mx2);
         }
         addToHistory(event.message, recoilSide);
-        await delay(500);
+        await delay(ANIM_TIMING.postDamage);
         break;
       }
 
@@ -1044,7 +1037,7 @@ async function animateEvents(events, battleState) {
         // Add persistent status icon
         var stName = event.status || event.effect || '';
         if (stName) addStatusIcon(statusTarget, stName);
-        await delay(600);
+        await delay(ANIM_TIMING.statusInflict);
         break;
       }
 
@@ -1059,7 +1052,7 @@ async function animateEvents(events, battleState) {
           updateHPBar(healSide, event.remainingHP, mx3);
         }
         addToHistory(event.message, healSide);
-        await delay(600);
+        await delay(ANIM_TIMING.healEffect);
         break;
       }
 
@@ -1073,7 +1066,7 @@ async function animateEvents(events, battleState) {
           var mx4 = parseInt(document.getElementById(dotSide === 'player' ? 'playerMaxHp' : 'opponentMaxHp').textContent) || 100;
           updateHPBar(dotSide, event.remainingHP, mx4);
         }
-        await delay(600);
+        await delay(ANIM_TIMING.dotDamage);
         break;
 
       case 'miss':
@@ -1082,24 +1075,24 @@ async function animateEvents(events, battleState) {
       case 'flinch':
         Audio.play('miss');
         addToHistory(event.message);
-        await delay(600);
+        await delay(ANIM_TIMING.missEffect);
         break;
 
       case 'stat_boost':
         Audio.play('statBoost');
         addToHistory(event.message);
-        await delay(500);
+        await delay(ANIM_TIMING.statChange);
         break;
 
       case 'stat_drop':
         Audio.play('statDrop');
         addToHistory(event.message);
-        await delay(500);
+        await delay(ANIM_TIMING.statChange);
         break;
 
       case 'ability':
         addToHistory(event.message);
-        await delay(600);
+        await delay(ANIM_TIMING.statChange);
         break;
 
       case 'faint': {
@@ -1108,7 +1101,7 @@ async function animateEvents(events, battleState) {
         var faintEl = document.getElementById(faintSide === 'player' ? 'playerLobster' : 'opponentLobster');
         faintEl.classList.add('fainted');
         addToHistory(event.message, faintSide);
-        await delay(1000);
+        await delay(ANIM_TIMING.knockoutPause);
         break;
       }
 

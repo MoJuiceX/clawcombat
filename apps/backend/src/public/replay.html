@@ -659,7 +659,7 @@ async function playTurnEvents(turnIndex) {
     // Phase markers
     if (ev.phase === 'first_attack' || ev.phase === 'second_attack') {
       currentAttackerSide = ev.side === 'A' ? 'a' : 'b';
-      if (ev.phase === 'second_attack') await delay(1000);
+      if (ev.phase === 'second_attack') await delay(ANIM_TIMING.phaseDelay);
       continue;
     }
 
@@ -691,7 +691,7 @@ async function playTurnEvents(turnIndex) {
       // Attacker scales up briefly
       var atkEl = $(side === 'a' ? 'playerLobster' : 'opponentLobster');
       atkEl.classList.add('attacking');
-      await delay(600);
+      await delay(ANIM_TIMING.useMoveTelegraph);
       continue;
     }
 
@@ -716,23 +716,16 @@ async function playTurnEvents(turnIndex) {
         triggerAttackerMovement(attackerDisplaySide, animResult.pattern);
       }
 
-      // Calculate travel time based on pattern (standardized across all pages)
-      var travelTime = 300;
-      if (animResult && animResult.pattern) {
-        if (animResult.pattern === 'beam') travelTime = 200;
-        else if (animResult.pattern === 'slash') travelTime = 150;
-        else if (animResult.pattern === 'arc') travelTime = 450;
-        else if (animResult.pattern === 'charge') travelTime = 250;
-        else if (animResult.pattern === 'wave') travelTime = 300;
-      }
+      // Calculate travel time based on pattern (uses shared timing constants)
+      var travelTime = getAnimTravelTime(animResult && animResult.pattern ? animResult.pattern : 'default');
       await delay(travelTime);
 
       // Critical hit handling - freeze frame + critical text + zoom
       if (ev.crit) {
-        await delay(100);
+        await delay(ANIM_TIMING.critFreeze);
         showCriticalText(displaySide(targetSide));
         triggerCritZoom(displaySide(currentAttackerSide)); // Zoom the attacker
-        flashScreen('rgba(255, 255, 255, 0.3)', 150);
+        flashScreen('rgba(255, 255, 255, 0.3)', 200);
       }
 
       Audio.play(ev.typeEffectiveness >= 2 ? 'hitSuper' : ev.crit ? 'hitCrit' : 'hit', lastMoveType);
@@ -778,7 +771,7 @@ async function playTurnEvents(turnIndex) {
 
       // Effectiveness text + dramatic callout
       if (ev.typeEffectiveness && ev.typeEffectiveness !== 1) {
-        await delay(300);
+        await delay(ANIM_TIMING.postDamage);
         if (ev.typeEffectiveness > 1) {
           showEffectivenessCallout('super'); // Big dramatic callout
           showEffectFloat('Super effective!', 'super');
@@ -791,7 +784,7 @@ async function playTurnEvents(turnIndex) {
         }
       }
 
-      await delay(800);
+      await delay(ANIM_TIMING.damageDisplay + ANIM_TIMING.hitRecover);
       continue;
     }
 
@@ -807,7 +800,7 @@ async function playTurnEvents(turnIndex) {
       if (selfSide === 'a') { curHpA = Math.max(0, curHpA - (ev.damage || 0)); updateHPBar('player', curHpA, maxHpA); }
       else { curHpB = Math.max(0, curHpB - (ev.damage || 0)); updateHPBar('opponent', curHpB, maxHpB); }
       showStatusFloat(selfSide, 'Confused!');
-      await delay(1000);
+      await delay(ANIM_TIMING.damageDisplay + ANIM_TIMING.hitRecover);
       continue;
     }
 
@@ -820,7 +813,7 @@ async function playTurnEvents(turnIndex) {
       showStatusFloat(stSide, stName.charAt(0).toUpperCase() + stName.slice(1) + '!');
       // Add the persistent status icon
       addStatusIcon(displaySide(stSide), stName);
-      await delay(900);
+      await delay(ANIM_TIMING.statusInflict);
       continue;
     }
 
@@ -831,7 +824,7 @@ async function playTurnEvents(turnIndex) {
       var statSide = getSide(ev) || currentAttackerSide || 'a';
       var statLabel = ev.type === 'stat_drop' ? (ev.stat || 'stat') + ' fell!' : (ev.stat || 'stat') + ' rose!';
       showStatusFloat(statSide, statLabel);
-      await delay(800);
+      await delay(ANIM_TIMING.statChange);
       continue;
     }
 
@@ -844,7 +837,7 @@ async function playTurnEvents(turnIndex) {
       showDamageNumber(displaySide(healSide), healAmt, false, true);
       if (healSide === 'a') { curHpA = Math.min(maxHpA, curHpA + healAmt); updateHPBar('player', curHpA, maxHpA); }
       else { curHpB = Math.min(maxHpB, curHpB + healAmt); updateHPBar('opponent', curHpB, maxHpB); }
-      await delay(900);
+      await delay(ANIM_TIMING.healEffect);
       continue;
     }
 
@@ -857,7 +850,7 @@ async function playTurnEvents(turnIndex) {
       var loserSide = winnerId === agentA.id ? 'b' : 'a';
       var loserEl = $(loserSide === 'a' ? 'playerLobster' : 'opponentLobster');
       loserEl.classList.add('fainted');
-      await delay(1600);
+      await delay(ANIM_TIMING.knockoutPause + ANIM_TIMING.victoryDelay);
       continue;
     }
   }

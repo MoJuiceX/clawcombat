@@ -40,10 +40,25 @@ function randomName() {
 }
 
 // ============================================================================
-// RANDOM STATS GENERATOR
+// RANDOM STATS GENERATOR (Demo-optimized for longer battles)
 // ============================================================================
 
 function randomStats() {
+  // Demo stats are optimized for 4-8 turn battles (good viewer experience)
+  // Higher HP, lower attack = more back-and-forth, not one-shot kills
+  const stats = {
+    base_hp: 22 + Math.floor(Math.random() * 6),     // 22-27 (high HP for survivability)
+    attack: 10 + Math.floor(Math.random() * 6),      // 10-15 (moderate attack)
+    defense: 14 + Math.floor(Math.random() * 5),     // 14-18 (decent defense)
+    sp_atk: 10 + Math.floor(Math.random() * 6),      // 10-15 (moderate sp_atk)
+    sp_def: 14 + Math.floor(Math.random() * 5),      // 14-18 (decent sp_def)
+    speed: 12 + Math.floor(Math.random() * 6),       // 12-17 (varied speed for turn order)
+  };
+  return stats;
+}
+
+// Original random stats for non-demo use (if needed)
+function randomStatsBalanced() {
   // 6 stats summing to 100, each between 8 and 25
   const statKeys = ['base_hp', 'attack', 'defense', 'sp_atk', 'sp_def', 'speed'];
   const min = 8;

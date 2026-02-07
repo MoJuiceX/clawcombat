@@ -4,6 +4,54 @@
 // Requires: type-colors.js (must be loaded first)
 // ============================================
 
+// ============================================
+// ANIMATION TIMING CONSTANTS
+// Slower, more dramatic timings for better viewer experience
+// All times in milliseconds (before speed multiplier)
+// ============================================
+var ANIM_TIMING = {
+  // Phase transitions (between attacks)
+  phaseDelay: 800,           // Pause before each attack phase
+  turnGap: 1500,             // Pause between turns in auto-play
+
+  // Attack sequence
+  useMoveTelegraph: 600,     // How long to show "X used Y!" before attack
+  travelTime: {              // How long projectile travels based on pattern
+    beam: 350,
+    slash: 250,
+    arc: 600,
+    charge: 400,
+    wave: 450,
+    projectile: 400,
+    swarm: 500,
+    drain: 450,
+    status: 300,
+    default: 400
+  },
+
+  // Impact and aftermath
+  critFreeze: 200,           // Freeze frame on critical hit
+  damageDisplay: 600,        // How long damage number shows
+  hitRecover: 500,           // Recovery after being hit
+  postDamage: 400,           // Pause after damage before next event
+
+  // Status effects
+  statusInflict: 800,        // Status effect application
+  healEffect: 800,           // Heal/drain effect
+  dotDamage: 700,            // Burn/poison tick
+  missEffect: 700,           // Miss/dodge/immune
+  statChange: 600,           // Stat boost/drop
+
+  // Battle end
+  knockoutPause: 800,        // Pause when someone faints
+  victoryDelay: 1000,        // Before showing victory screen
+};
+
+// Get travel time for a specific attack pattern
+function getAnimTravelTime(pattern) {
+  return ANIM_TIMING.travelTime[pattern] || ANIM_TIMING.travelTime.default;
+}
+
 // --- Utility ---
 function escapeHtml(str) {
   var d = document.createElement('div');
