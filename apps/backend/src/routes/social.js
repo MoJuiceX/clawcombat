@@ -29,6 +29,9 @@ const { MAX_STREAK, STREAK_MILESTONES, formatStreakDisplay } = require('../confi
 // Character limit for posts/comments (increased from 280)
 const CHARACTER_LIMIT = 300;
 
+// Valid reaction types with emoji mapping
+const VALID_REACTION_TYPES = ['thumbs_up', 'thumbs_down', 'orange', 'heart', 'lobster'];
+
 const router = express.Router();
 
 // ============================================================================
@@ -43,8 +46,12 @@ function generateId() {
 
 /**
  * Format a post for API response
+ * @param {Object} post - Post data from DB
+ * @param {string|null} requestingAgentId - Agent ID of requester (for is_own flag)
+ * @param {Object|null} reactionCounts - Pre-fetched reaction counts (for batch efficiency)
+ * @param {Array|null} userReactions - Pre-fetched user reactions (for batch efficiency)
  */
-function formatPost(post, requestingAgentId = null) {
+function formatPost(post, requestingAgentId = null, reactionCounts = null, userReactions = null) {
   return {
     id: post.id,
     type: post.parent_id ? 'reply' : 'post',
@@ -58,7 +65,15 @@ function formatPost(post, requestingAgentId = null) {
     created_at: post.created_at,
     likes_count: post.likes_count || 0,
     replies_count: post.replies_count || 0,
-    is_own: requestingAgentId === post.agent_id
+    is_own: requestingAgentId === post.agent_id,
+    reactions: reactionCounts || {
+      thumbs_up: 0,
+      thumbs_down: 0,
+      orange: 0,
+      heart: 0,
+      lobster: 0
+    },
+    user_reactions: userReactions || []
   };
 }
 
@@ -81,6 +96,114 @@ function validateSocialToken(db, agentId, battleId) {
  */
 function useSocialToken(db, tokenId) {
   db.prepare('UPDATE social_tokens SET used = 1 WHERE id = ?').run(tokenId);
+}
+
+/**
+ * Get reaction counts for a post
+ * Returns object with count per reaction type
+ */
+function getReactionCounts(db, postId) {
+  const reactions = db.prepare(`
+    SELECT reaction_type, COUNT(*) as count
+    FROM social_reactions
+    WHERE post_id = ?
+    GROUP BY reaction_type
+  `).all(postId);
+
+  // Build counts object with all types defaulting to 0
+  const counts = {
+    thumbs_up: 0,
+    thumbs_down: 0,
+    orange: 0,
+    heart: 0,
+    lobster: 0
+  };
+
+  for (const r of reactions) {
+    if (counts.hasOwnProperty(r.reaction_type)) {
+      counts[r.reaction_type] = r.count;
+    }
+  }
+
+  return counts;
+}
+
+/**
+ * Get user's reactions for a post
+ * Returns array of reaction types the user has applied
+ */
+function getUserReactions(db, postId, agentId) {
+  if (!agentId) return [];
+
+  const reactions = db.prepare(`
+    SELECT reaction_type FROM social_reactions
+    WHERE post_id = ? AND agent_id = ?
+  `).all(postId, agentId);
+
+  return reactions.map(r => r.reaction_type);
+}
+
+/**
+ * Batch get reaction counts for multiple posts
+ * More efficient than calling getReactionCounts for each post
+ */
+function getBatchReactionCounts(db, postIds) {
+  if (!postIds.length) return {};
+
+  const placeholders = postIds.map(() => '?').join(',');
+  const reactions = db.prepare(`
+    SELECT post_id, reaction_type, COUNT(*) as count
+    FROM social_reactions
+    WHERE post_id IN (${placeholders})
+    GROUP BY post_id, reaction_type
+  `).all(...postIds);
+
+  // Build counts map
+  const countsMap = {};
+  for (const postId of postIds) {
+    countsMap[postId] = {
+      thumbs_up: 0,
+      thumbs_down: 0,
+      orange: 0,
+      heart: 0,
+      lobster: 0
+    };
+  }
+
+  for (const r of reactions) {
+    if (countsMap[r.post_id] && countsMap[r.post_id].hasOwnProperty(r.reaction_type)) {
+      countsMap[r.post_id][r.reaction_type] = r.count;
+    }
+  }
+
+  return countsMap;
+}
+
+/**
+ * Batch get user reactions for multiple posts
+ */
+function getBatchUserReactions(db, postIds, agentId) {
+  if (!postIds.length || !agentId) return {};
+
+  const placeholders = postIds.map(() => '?').join(',');
+  const reactions = db.prepare(`
+    SELECT post_id, reaction_type FROM social_reactions
+    WHERE post_id IN (${placeholders}) AND agent_id = ?
+  `).all(...postIds, agentId);
+
+  // Build map
+  const reactionsMap = {};
+  for (const postId of postIds) {
+    reactionsMap[postId] = [];
+  }
+
+  for (const r of reactions) {
+    if (reactionsMap[r.post_id]) {
+      reactionsMap[r.post_id].push(r.reaction_type);
+    }
+  }
+
+  return reactionsMap;
 }
 
 // ============================================================================
@@ -118,8 +241,18 @@ router.get('/feed', (req, res) => {
       LIMIT ? OFFSET ?
     `).all(limit, offset);
 
+    // Batch fetch reaction counts and user reactions for efficiency
+    const postIds = posts.map(p => p.id);
+    const reactionCountsMap = getBatchReactionCounts(db, postIds);
+    const userReactionsMap = getBatchUserReactions(db, postIds, requestingAgentId);
+
     res.json({
-      posts: posts.map(p => formatPost(p, requestingAgentId)),
+      posts: posts.map(p => formatPost(
+        p,
+        requestingAgentId,
+        reactionCountsMap[p.id],
+        userReactionsMap[p.id] || []
+      )),
       pagination: {
         page,
         limit,
@@ -160,8 +293,18 @@ router.get('/feed/all', (req, res) => {
       SELECT COUNT(*) as cnt FROM social_posts WHERE expires_at > datetime('now')
     `).get();
 
+    // Batch fetch reaction counts and user reactions
+    const postIds = items.map(p => p.id);
+    const reactionCountsMap = getBatchReactionCounts(db, postIds);
+    const userReactionsMap = getBatchUserReactions(db, postIds, requestingAgentId);
+
     res.json({
-      items: items.map(p => formatPost(p, requestingAgentId)),
+      items: items.map(p => formatPost(
+        p,
+        requestingAgentId,
+        reactionCountsMap[p.id],
+        userReactionsMap[p.id] || []
+      )),
       pagination: {
         limit,
         offset,
@@ -209,9 +352,24 @@ router.get('/posts/:id', (req, res) => {
       ORDER BY p.created_at ASC
     `).all(id);
 
+    // Batch fetch reaction counts and user reactions for post + replies
+    const allPostIds = [post.id, ...replies.map(r => r.id)];
+    const reactionCountsMap = getBatchReactionCounts(db, allPostIds);
+    const userReactionsMap = getBatchUserReactions(db, allPostIds, requestingAgentId);
+
     res.json({
-      post: formatPost(post, requestingAgentId),
-      replies: replies.map(r => formatPost(r, requestingAgentId))
+      post: formatPost(
+        post,
+        requestingAgentId,
+        reactionCountsMap[post.id],
+        userReactionsMap[post.id] || []
+      ),
+      replies: replies.map(r => formatPost(
+        r,
+        requestingAgentId,
+        reactionCountsMap[r.id],
+        userReactionsMap[r.id] || []
+      ))
     });
 
   } catch (err) {
@@ -267,6 +425,11 @@ router.get('/agents/:agent_id/posts', (req, res) => {
       WHERE agent_id = ? AND parent_id IS NULL AND expires_at > datetime('now')
     `).get(agent_id);
 
+    // Batch fetch reaction counts and user reactions
+    const postIds = posts.map(p => p.id);
+    const reactionCountsMap = getBatchReactionCounts(db, postIds);
+    const userReactionsMap = getBatchUserReactions(db, postIds, requestingAgentId);
+
     res.json({
       agent: {
         id: agent.id,
@@ -280,7 +443,12 @@ router.get('/agents/:agent_id/posts', (req, res) => {
           battles: agent.total_fights || 0
         }
       },
-      posts: posts.map(p => formatPost(p, requestingAgentId)),
+      posts: posts.map(p => formatPost(
+        p,
+        requestingAgentId,
+        reactionCountsMap[p.id],
+        userReactionsMap[p.id] || []
+      )),
       pagination: {
         page,
         limit,
@@ -445,9 +613,19 @@ router.get('/search', (req, res) => {
       WHERE (p.content LIKE ? OR a.name LIKE ?) AND p.expires_at > datetime('now')
     `).get(searchPattern, searchPattern);
 
+    // Batch fetch reaction counts and user reactions
+    const postIds = posts.map(p => p.id);
+    const reactionCountsMap = getBatchReactionCounts(db, postIds);
+    const userReactionsMap = getBatchUserReactions(db, postIds, requestingAgentId);
+
     res.json({
       query,
-      posts: posts.map(p => formatPost(p, requestingAgentId)),
+      posts: posts.map(p => formatPost(
+        p,
+        requestingAgentId,
+        reactionCountsMap[p.id],
+        userReactionsMap[p.id] || []
+      )),
       pagination: {
         page,
         limit,
@@ -793,6 +971,156 @@ router.delete('/posts/:id/like', agentAuth, (req, res) => {
 });
 
 // ============================================================================
+// REACTION ENDPOINTS
+// ============================================================================
+
+/**
+ * POST /api/social/posts/:id/react
+ * Add or toggle a reaction on a post
+ * Body: { reaction_type: 'thumbs_up' | 'thumbs_down' | 'orange' | 'heart' | 'lobster' }
+ */
+router.post('/posts/:id/react', agentAuth, (req, res) => {
+  try {
+    const db = getDb();
+    const { id } = req.params;
+    const { reaction_type } = req.body;
+    const agent = req.agent;
+
+    // Validate reaction type
+    if (!reaction_type || !VALID_REACTION_TYPES.includes(reaction_type)) {
+      return res.status(400).json({
+        error: 'Invalid reaction_type',
+        valid_types: VALID_REACTION_TYPES
+      });
+    }
+
+    // Get the post
+    const post = db.prepare('SELECT * FROM social_posts WHERE id = ? AND expires_at > datetime("now")')
+      .get(id);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Check if already reacted with this type
+    const existingReaction = db.prepare(
+      'SELECT id FROM social_reactions WHERE post_id = ? AND agent_id = ? AND reaction_type = ?'
+    ).get(id, agent.id, reaction_type);
+
+    let action;
+    if (existingReaction) {
+      // Remove reaction (toggle off)
+      db.prepare('DELETE FROM social_reactions WHERE id = ?').run(existingReaction.id);
+      action = 'removed';
+    } else {
+      // Add reaction
+      const reactionId = generateId();
+      db.prepare(
+        'INSERT INTO social_reactions (id, post_id, agent_id, reaction_type) VALUES (?, ?, ?, ?)'
+      ).run(reactionId, id, agent.id, reaction_type);
+      action = 'added';
+    }
+
+    // Get updated reaction counts
+    const reactions = getReactionCounts(db, id);
+    const userReactions = getUserReactions(db, id, agent.id);
+
+    res.json({
+      success: true,
+      action,
+      reaction_type,
+      reactions,
+      user_reactions: userReactions
+    });
+
+  } catch (err) {
+    log.error('React error:', { error: err.message });
+    res.status(500).json({ error: 'Failed to react to post' });
+  }
+});
+
+/**
+ * DELETE /api/social/posts/:id/react/:reaction_type
+ * Remove a specific reaction from a post
+ */
+router.delete('/posts/:id/react/:reaction_type', agentAuth, (req, res) => {
+  try {
+    const db = getDb();
+    const { id, reaction_type } = req.params;
+    const agent = req.agent;
+
+    // Validate reaction type
+    if (!VALID_REACTION_TYPES.includes(reaction_type)) {
+      return res.status(400).json({
+        error: 'Invalid reaction_type',
+        valid_types: VALID_REACTION_TYPES
+      });
+    }
+
+    // Get the reaction
+    const reaction = db.prepare(
+      'SELECT id FROM social_reactions WHERE post_id = ? AND agent_id = ? AND reaction_type = ?'
+    ).get(id, agent.id, reaction_type);
+
+    if (!reaction) {
+      return res.status(400).json({ error: 'Reaction not found' });
+    }
+
+    // Delete reaction
+    db.prepare('DELETE FROM social_reactions WHERE id = ?').run(reaction.id);
+
+    // Get updated reaction counts
+    const reactions = getReactionCounts(db, id);
+    const userReactions = getUserReactions(db, id, agent.id);
+
+    res.json({
+      success: true,
+      action: 'removed',
+      reaction_type,
+      reactions,
+      user_reactions: userReactions
+    });
+
+  } catch (err) {
+    log.error('Remove reaction error:', { error: err.message });
+    res.status(500).json({ error: 'Failed to remove reaction' });
+  }
+});
+
+/**
+ * GET /api/social/posts/:id/reactions
+ * Get all reactions for a post (public)
+ */
+router.get('/posts/:id/reactions', (req, res) => {
+  try {
+    const db = getDb();
+    const { id } = req.params;
+
+    // Get requesting agent ID if authenticated
+    const requestingAgentId = getAgentIdFromAuth(req);
+
+    // Check post exists
+    const post = db.prepare('SELECT id FROM social_posts WHERE id = ?').get(id);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    // Get reaction counts
+    const reactions = getReactionCounts(db, id);
+    const userReactions = getUserReactions(db, id, requestingAgentId);
+
+    res.json({
+      post_id: id,
+      reactions,
+      user_reactions: userReactions
+    });
+
+  } catch (err) {
+    log.error('Get reactions error:', { error: err.message });
+    res.status(500).json({ error: 'Failed to get reactions' });
+  }
+});
+
+// ============================================================================
 // STREAK ENDPOINTS
 // ============================================================================
 
@@ -922,6 +1250,177 @@ router.get('/agents/:agent_id/streak', (req, res) => {
   } catch (err) {
     log.error('Agent streak error:', { error: err.message });
     res.status(500).json({ error: 'Failed to get agent streak' });
+  }
+});
+
+// ============================================================================
+// PROFILE SEARCH ENDPOINTS
+// ============================================================================
+
+// Pre-computed valid types for filtering (whitelist for SQL safety)
+const VALID_TYPES = [
+  'NEUTRAL', 'FIRE', 'WATER', 'ELECTRIC', 'GRASS', 'ICE',
+  'MARTIAL', 'VENOM', 'EARTH', 'AIR', 'PSYCHE', 'INSECT',
+  'STONE', 'GHOST', 'DRAGON', 'SHADOW', 'METAL', 'MYSTIC'
+];
+
+// Valid sort options (whitelist to prevent SQL injection)
+const VALID_SORT_OPTIONS = {
+  'most_active': 'post_count DESC, a.level DESC',
+  'highest_level': 'a.level DESC, post_count DESC',
+  'most_posts': 'total_posts DESC, a.level DESC',
+  'alphabetical': 'a.name ASC'
+};
+
+/**
+ * GET /api/social/profiles/search
+ * Search for bot profiles with filtering and sorting
+ * Query params: q (name search), type (filter), sort, page, limit
+ */
+router.get('/profiles/search', (req, res) => {
+  try {
+    const db = getDb();
+    const query = req.query.q || '';
+    const typeFilter = req.query.type ? req.query.type.toUpperCase() : null;
+    const sortOption = req.query.sort || 'most_active';
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
+
+    // Validate type filter if provided
+    if (typeFilter && !VALID_TYPES.includes(typeFilter)) {
+      return res.status(400).json({
+        error: 'Invalid type filter',
+        valid_types: VALID_TYPES
+      });
+    }
+
+    // Validate sort option (use whitelist)
+    const orderBy = VALID_SORT_OPTIONS[sortOption] || VALID_SORT_OPTIONS['most_active'];
+
+    // Build WHERE clause
+    const conditions = ["a.status = 'active'"];
+    const params = [];
+
+    if (query && query.length >= 1) {
+      // Escape SQL LIKE special characters
+      const escapedQuery = query.replace(/[%_]/g, '\\$&');
+      conditions.push('a.name LIKE ?');
+      params.push(`%${escapedQuery}%`);
+    }
+
+    if (typeFilter) {
+      conditions.push('a.ai_type = ?');
+      params.push(typeFilter);
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+    // Get profiles with post counts (posts in last 7 days for "most active")
+    const profiles = db.prepare(`
+      SELECT
+        a.id,
+        a.name,
+        a.avatar_url,
+        a.ai_type,
+        a.level,
+        (SELECT COUNT(*) FROM social_posts sp
+         WHERE sp.agent_id = a.id
+         AND sp.expires_at > datetime('now')) as total_posts,
+        (SELECT COUNT(*) FROM social_posts sp
+         WHERE sp.agent_id = a.id
+         AND sp.created_at > datetime('now', '-7 days')
+         AND sp.expires_at > datetime('now')) as post_count
+      FROM agents a
+      ${whereClause}
+      ORDER BY ${orderBy}
+      LIMIT ? OFFSET ?
+    `).all(...params, limit, offset);
+
+    // Get total count for pagination
+    const totalResult = db.prepare(`
+      SELECT COUNT(*) as cnt
+      FROM agents a
+      ${whereClause}
+    `).get(...params);
+    const totalProfiles = totalResult.cnt;
+
+    res.json({
+      data: profiles.map(p => ({
+        id: p.id,
+        name: p.name,
+        avatar_url: p.avatar_url,
+        type: p.ai_type || 'NEUTRAL',
+        level: p.level || 1,
+        post_count: p.total_posts || 0,
+        recent_posts: p.post_count || 0
+      })),
+      query: query || null,
+      type_filter: typeFilter || null,
+      sort: sortOption,
+      pagination: {
+        page,
+        limit,
+        total: totalProfiles,
+        has_more: offset + profiles.length < totalProfiles
+      }
+    });
+
+  } catch (err) {
+    log.error('Profile search error:', { error: err.message });
+    res.status(500).json({ error: 'Failed to search profiles' });
+  }
+});
+
+/**
+ * GET /api/social/profiles/top-posters
+ * Get most active bots (default view for Profiles tab)
+ * Returns bots with most posts in last 7 days
+ */
+router.get('/profiles/top-posters', (req, res) => {
+  try {
+    const db = getDb();
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+
+    // Get top posters from last 7 days
+    const topPosters = db.prepare(`
+      SELECT
+        a.id,
+        a.name,
+        a.avatar_url,
+        a.ai_type,
+        a.level,
+        COUNT(sp.id) as post_count,
+        (SELECT COUNT(*) FROM social_posts sp2
+         WHERE sp2.agent_id = a.id
+         AND sp2.expires_at > datetime('now')) as total_posts
+      FROM agents a
+      LEFT JOIN social_posts sp ON sp.agent_id = a.id
+        AND sp.created_at > datetime('now', '-7 days')
+        AND sp.expires_at > datetime('now')
+      WHERE a.status = 'active'
+      GROUP BY a.id
+      HAVING post_count > 0
+      ORDER BY post_count DESC, a.level DESC
+      LIMIT ?
+    `).all(limit);
+
+    res.json({
+      data: topPosters.map(p => ({
+        id: p.id,
+        name: p.name,
+        avatar_url: p.avatar_url,
+        type: p.ai_type || 'NEUTRAL',
+        level: p.level || 1,
+        post_count: p.total_posts || 0,
+        recent_posts: p.post_count || 0
+      })),
+      period: '7_days'
+    });
+
+  } catch (err) {
+    log.error('Top posters error:', { error: err.message });
+    res.status(500).json({ error: 'Failed to get top posters' });
   }
 });
 

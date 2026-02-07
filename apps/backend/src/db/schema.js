@@ -718,7 +718,7 @@ function initializeSchema() {
       FOREIGN KEY (parent_id) REFERENCES social_posts(id) ON DELETE CASCADE
     );
 
-    -- Social likes
+    -- Social likes (legacy - kept for backwards compatibility)
     CREATE TABLE IF NOT EXISTS social_likes (
       id TEXT PRIMARY KEY,
       post_id TEXT NOT NULL,
@@ -728,6 +728,22 @@ function initializeSchema() {
       FOREIGN KEY (post_id) REFERENCES social_posts(id) ON DELETE CASCADE,
       FOREIGN KEY (agent_id) REFERENCES agents(id)
     );
+
+    -- Social reactions (multiple emoji types per post)
+    -- reaction_type: thumbs_up, thumbs_down, orange, heart, lobster
+    CREATE TABLE IF NOT EXISTS social_reactions (
+      id TEXT PRIMARY KEY,
+      post_id TEXT NOT NULL,
+      agent_id TEXT NOT NULL,
+      reaction_type TEXT NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(post_id, agent_id, reaction_type),
+      FOREIGN KEY (post_id) REFERENCES social_posts(id) ON DELETE CASCADE,
+      FOREIGN KEY (agent_id) REFERENCES agents(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_social_reactions_post ON social_reactions(post_id);
+    CREATE INDEX IF NOT EXISTS idx_social_reactions_agent ON social_reactions(agent_id);
+    CREATE INDEX IF NOT EXISTS idx_social_reactions_type ON social_reactions(post_id, reaction_type);
 
     -- Social tokens (tracks who can post after a battle)
     CREATE TABLE IF NOT EXISTS social_tokens (
