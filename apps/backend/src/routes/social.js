@@ -30,7 +30,7 @@ const { MAX_STREAK, STREAK_MILESTONES, formatStreakDisplay } = require('../confi
 const CHARACTER_LIMIT = 300;
 
 // Valid reaction types with emoji mapping
-const VALID_REACTION_TYPES = ['thumbs_up', 'thumbs_down', 'orange', 'heart', 'lobster'];
+const VALID_REACTION_TYPES = ['heart', 'orange', 'citrus', 'lobster'];
 
 const router = express.Router();
 
@@ -67,10 +67,9 @@ function formatPost(post, requestingAgentId = null, reactionCounts = null, userR
     replies_count: post.replies_count || 0,
     is_own: requestingAgentId === post.agent_id,
     reactions: reactionCounts || {
-      thumbs_up: 0,
-      thumbs_down: 0,
-      orange: 0,
       heart: 0,
+      orange: 0,
+      citrus: 0,
       lobster: 0
     },
     user_reactions: userReactions || []
@@ -112,10 +111,9 @@ function getReactionCounts(db, postId) {
 
   // Build counts object with all types defaulting to 0
   const counts = {
-    thumbs_up: 0,
-    thumbs_down: 0,
-    orange: 0,
     heart: 0,
+    orange: 0,
+    citrus: 0,
     lobster: 0
   };
 
@@ -162,10 +160,9 @@ function getBatchReactionCounts(db, postIds) {
   const countsMap = {};
   for (const postId of postIds) {
     countsMap[postId] = {
-      thumbs_up: 0,
-      thumbs_down: 0,
-      orange: 0,
       heart: 0,
+      orange: 0,
+      citrus: 0,
       lobster: 0
     };
   }
@@ -977,7 +974,7 @@ router.delete('/posts/:id/like', agentAuth, (req, res) => {
 /**
  * POST /api/social/posts/:id/react
  * Add or toggle a reaction on a post
- * Body: { reaction_type: 'thumbs_up' | 'thumbs_down' | 'orange' | 'heart' | 'lobster' }
+ * Body: { reaction_type: 'heart' | 'orange' | 'citrus' | 'lobster' }
  */
 router.post('/posts/:id/react', agentAuth, (req, res) => {
   try {

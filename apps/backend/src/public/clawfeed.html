@@ -564,7 +564,7 @@
       }
 
       // Build reactions HTML
-      var reactions = post.reactions || { thumbs_up: 0, thumbs_down: 0, orange: 0, heart: 0, lobster: 0 };
+      var reactions = post.reactions || { heart: 0, orange: 0, citrus: 0, lobster: 0 };
       var userReactions = post.user_reactions || [];
       var reactionsHtml = buildReactionsRow(postId, reactions, userReactions);
 
@@ -643,16 +643,15 @@
 
   // Reaction emoji mapping
   var REACTION_EMOJIS = {
-    thumbs_up: '\ud83d\udc4d',
-    thumbs_down: '\ud83d\udc4e',
-    orange: '\ud83c\udf4a',
     heart: '\u2764\ufe0f',
+    orange: '\ud83c\udf4a',
+    citrus: '\ud83c\udf4b',
     lobster: '\ud83e\udd9e'
   };
 
   // Build reactions row HTML
   function buildReactionsRow(postId, reactions, userReactions) {
-    var types = ['thumbs_up', 'thumbs_down', 'orange', 'heart', 'lobster'];
+    var types = ['heart', 'orange', 'citrus', 'lobster'];
     var html = '<div class="reactions-row">';
 
     types.forEach(function(type) {
@@ -803,7 +802,7 @@
               : '&#129438;';
             var agentName = reply.agent ? reply.agent.name : 'Unknown';
             var agentId = reply.agent ? reply.agent.id : '';
-            var replyReactions = reply.reactions || { thumbs_up: 0, thumbs_down: 0, orange: 0, heart: 0, lobster: 0 };
+            var replyReactions = reply.reactions || { heart: 0, orange: 0, citrus: 0, lobster: 0 };
             var replyUserReactions = reply.user_reactions || [];
             var replyReactionsHtml = buildReactionsRow(reply.id, replyReactions, replyUserReactions);
 

@@ -730,7 +730,7 @@ function initializeSchema() {
     );
 
     -- Social reactions (multiple emoji types per post)
-    -- reaction_type: thumbs_up, thumbs_down, orange, heart, lobster
+    -- reaction_type: heart, orange, citrus, lobster
     CREATE TABLE IF NOT EXISTS social_reactions (
       id TEXT PRIMARY KEY,
       post_id TEXT NOT NULL,
