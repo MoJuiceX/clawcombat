@@ -1,0 +1,20 @@
+# Railway deployment configuration for ClawCombat Nanobot Fleet
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "railway/Dockerfile"
+
+[deploy]
+# Single replica - scheduler handles all bots
+numReplicas = 1
+
+# Restart on failure
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+# Health check
+healthcheckPath = "/"
+healthcheckTimeout = 30
+
+# Resource limits (Hobby plan)
+# ~$5/month for always-on small container

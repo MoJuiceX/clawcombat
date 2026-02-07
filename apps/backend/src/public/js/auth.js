@@ -10,7 +10,7 @@
     return new Promise(function(resolve, reject) {
       if (window.Clerk) { resolve(window.Clerk); return; }
       var script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js';
+      script.src = 'https://cdn.clerk.com/clerk.browser.js';
       script.crossOrigin = 'anonymous';
       script.onload = function() {
         var Clerk = window.Clerk;
@@ -57,18 +57,16 @@
     if (!container) return;
 
     if (clerk && clerk.user) {
-      var name = clerk.user.firstName || clerk.user.username || 'Account';
-      var avatarUrl = clerk.user.imageUrl || '';
       var dropdownId = 'auth-dropdown-' + Date.now();
 
       container.innerHTML =
         '<div class="auth-dropdown-wrapper" style="position:relative;">' +
-          '<button id="auth-dropdown-btn" style="display:flex;align-items:center;gap:8px;background:none;border:1px solid #3a3a5e;padding:6px 12px;border-radius:8px;cursor:pointer;color:#fff;font-size:13px;font-weight:600;">' +
-            (avatarUrl ? '<img src="' + escapeHtml(avatarUrl) + '" style="width:24px;height:24px;border-radius:50%;object-fit:cover;">' : '') +
-            '<span>' + escapeHtml(name) + '</span>' +
-            '<span style="font-size:10px;color:#888;">&#9662;</span>' +
+          '<button id="auth-dropdown-btn" style="display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#6366f1,#4f46e5);border:none;padding:8px 16px;border-radius:8px;cursor:pointer;color:#fff;font-size:13px;font-weight:700;">' +
+            '<span>Dashboard</span>' +
+            '<span style="font-size:10px;opacity:0.7;">&#9662;</span>' +
           '</button>' +
           '<div id="' + dropdownId + '" class="auth-dropdown" style="display:none;position:absolute;right:0;top:100%;margin-top:6px;background:#12121a;border:1px solid #2a2a3e;border-radius:10px;min-width:180px;box-shadow:0 10px 40px rgba(0,0,0,0.5);z-index:1000;overflow:hidden;">' +
+            '<a href="/arena.html" style="display:block;padding:12px 16px;color:#ccc;text-decoration:none;font-size:13px;border-bottom:1px solid #1e1e2e;">My Arena</a>' +
             '<a href="/portfolio.html" style="display:block;padding:12px 16px;color:#ccc;text-decoration:none;font-size:13px;border-bottom:1px solid #1e1e2e;">My Portfolio</a>' +
             '<a id="auth-premium-link" href="/premium.html" style="display:block;padding:12px 16px;color:#a855f7;text-decoration:none;font-size:13px;font-weight:600;border-bottom:1px solid #1e1e2e;">&#11088; Upgrade to Premium</a>' +
             '<button id="auth-signout-btn" style="display:block;width:100%;text-align:left;padding:12px 16px;background:none;border:none;color:#888;font-size:13px;cursor:pointer;">Sign Out</button>' +
@@ -109,8 +107,11 @@
       };
     } else {
       container.innerHTML =
-        '<button id="auth-signin-btn" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;padding:6px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;">Sign In</button>';
-      document.getElementById('auth-signin-btn').onclick = function() {
+        '<button id="auth-signin-btn" class="btn-login" style="background:transparent;border:1px solid #3a3a5e;color:#888;padding:8px 20px;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;">Login</button>';
+      var loginBtn = document.getElementById('auth-signin-btn');
+      loginBtn.onmouseenter = function() { this.style.borderColor = '#6366f1'; this.style.color = '#fff'; };
+      loginBtn.onmouseleave = function() { this.style.borderColor = '#3a3a5e'; this.style.color = '#888'; };
+      loginBtn.onclick = function() {
         if (clerk) clerk.openSignIn();
       };
     }

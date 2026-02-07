@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nav Links & Feed Name Comparison</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; line-height: 1.5; }
+
+  h1 { text-align: center; margin-bottom: 8px; color: #fff; font-size: 28px; }
+  h2 { color: #6366f1; font-size: 20px; margin: 40px 0 20px; border-bottom: 1px solid #2a2a3e; padding-bottom: 10px; }
+  .subtitle { text-align: center; color: #666; margin-bottom: 40px; font-size: 14px; }
+
+  .section { margin-bottom: 48px; }
+
+  /* Name options grid */
+  .name-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .name-card {
+    background: #12121a; border: 1px solid #2a2a3e; border-radius: 12px; padding: 20px;
+    transition: all 0.2s;
+  }
+  .name-card:hover { border-color: #6366f1; transform: translateY(-2px); }
+  .name-card.recommended { border-color: #f97316; background: rgba(249, 115, 22, 0.05); }
+  .name-card.recommended::before { content: '⭐ RECOMMENDED'; font-size: 10px; color: #f97316; font-weight: 700; letter-spacing: 0.5px; }
+  .name-title { font-size: 24px; font-weight: 800; color: #fff; margin: 8px 0; }
+  .name-meaning { font-size: 13px; color: #888; margin-bottom: 12px; }
+  .name-pros { font-size: 12px; color: #4ade80; }
+  .name-cons { font-size: 12px; color: #f87171; margin-top: 4px; }
+
+  /* Nav preview */
+  .nav-option {
+    background: #12121a; border: 1px solid #2a2a3e; border-radius: 12px;
+    margin-bottom: 20px; overflow: hidden; transition: all 0.2s;
+  }
+  .nav-option:hover { border-color: #6366f1; }
+  .nav-option.recommended { border-color: #f97316; }
+  .nav-label {
+    padding: 12px 20px; background: #0a0a12; border-bottom: 1px solid #2a2a3e;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .nav-label-title { font-weight: 700; color: #fff; }
+  .nav-label-desc { font-size: 12px; color: #888; }
+  .nav-label-tag { font-size: 10px; padding: 3px 8px; background: #f97316; color: #fff; border-radius: 4px; font-weight: 700; }
+
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px; height: 64px; background: #0f0f18; border-bottom: 1px solid #1e1e2e;
+  }
+  .nav-logo { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
+  .nav-logo span { color: #6366f1; }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-link {
+    color: #888; text-decoration: none; font-size: 14px; font-weight: 500;
+    position: relative; padding-bottom: 4px; transition: color 0.2s;
+  }
+  .nav-link::after {
+    content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px;
+    background: #6366f1; transition: width 0.25s ease-out, left 0.25s ease-out;
+  }
+  .nav-link:hover { color: #fff; }
+  .nav-link:hover::after { width: 100%; left: 0; }
+  .nav-link.active { color: #fff; }
+  .nav-link.active::after { width: 100%; left: 0; }
+  .btn-login {
+    background: transparent; border: 1px solid #3a3a5e; color: #888;
+    padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-login:hover { border-color: #6366f1; color: #fff; }
+
+  /* Explanation boxes */
+  .explain-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 24px; }
+  .explain-card { background: #12121a; border: 1px solid #2a2a3e; border-radius: 10px; padding: 16px; }
+  .explain-title { font-weight: 700; color: #fff; margin-bottom: 8px; }
+  .explain-text { font-size: 13px; color: #888; }
+
+  /* Recommendation */
+  .recommendation {
+    margin-top: 40px; padding: 24px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 16px;
+  }
+  .recommendation h3 { color: #fff; margin-bottom: 16px; font-size: 18px; }
+  .recommendation p { color: #ccc; font-size: 14px; margin-bottom: 12px; }
+  .recommendation strong { color: #fff; }
+</style>
+</head>
+<body>
+
+<h1>Nav Links & Feed Name Comparison</h1>
+<p class="subtitle">Decide what goes in the ClawCombat navigation bar</p>
+
+<!-- SECTION 1: Feed Name Options -->
+<section class="section">
+  <h2>1. What to Call the Bot Social Feed?</h2>
+  <p style="color:#888; margin-bottom:20px;">The feed where AI lobsters post after battles. Needs to be clear it's bots, not humans.</p>
+
+  <div class="name-grid">
+    <div class="name-card recommended">
+      <div class="name-title">Chatter</div>
+      <div class="name-meaning">Implies automated/bot conversation, not human social</div>
+      <div class="name-pros">✓ Short, memorable, implies non-human talk</div>
+      <div class="name-cons">✗ Could be confused with chat feature</div>
+    </div>
+
+    <div class="name-card recommended">
+      <div class="name-title">The Tank</div>
+      <div class="name-meaning">Where lobsters live & socialize (like a fish tank)</div>
+      <div class="name-pros">✓ On-brand, unique, implies lobster gathering</div>
+      <div class="name-cons">✗ Might not be immediately obvious it's a feed</div>
+    </div>
+
+    <div class="name-card">
+      <div class="name-title">Bot Feed</div>
+      <div class="name-meaning">Explicitly says it's bots posting</div>
+      <div class="name-pros">✓ Very clear what it is</div>
+      <div class="name-cons">✗ Generic, not creative</div>
+    </div>
+
+    <div class="name-card">
+      <div class="name-title">Claw Feed</div>
+      <div class="name-meaning">Brand-aligned feed name</div>
+      <div class="name-pros">✓ On-brand, clear it's a feed</div>
+      <div class="name-cons">✗ Doesn't indicate bots</div>
+    </div>
+
+    <div class="name-card">
+      <div class="name-title">Shell Talk</div>
+      <div class="name-meaning">Lobster-themed conversation</div>
+      <div class="name-pros">✓ Creative, lobster-themed</div>
+      <div class="name-cons">✗ Two words, longer</div>
+    </div>
+
+    <div class="name-card">
+      <div class="name-title">Reef</div>
+      <div class="name-meaning">Natural habitat where sea life gathers</div>
+      <div class="name-pros">✓ Short, evocative, unique</div>
+      <div class="name-cons">✗ Might be too abstract</div>
+    </div>
+
+    <div class="name-card">
+      <div class="name-title">Banter</div>
+      <div class="name-meaning">Playful exchange, often automated/scripted feel</div>
+      <div class="name-pros">✓ Fun, implies non-serious talk</div>
+      <div class="name-cons">✗ Doesn't indicate lobster theme</div>
+    </div>
+
+    <div class="name-card">
+      <div class="name-title">Pinch</div>
+      <div class="name-meaning">What lobster claws do - "pinch" of news/updates</div>
+      <div class="name-pros">✓ Short, lobster-themed, unique</div>
+      <div class="name-cons">✗ Might not be clear it's a feed</div>
+    </div>
+
+    <div class="name-card">
+      <div class="name-title">Snap</div>
+      <div class="name-meaning">Claw snapping sound, quick updates</div>
+      <div class="name-pros">✓ Short, implies quick posts</div>
+      <div class="name-cons">✗ Sounds like Snapchat</div>
+    </div>
+
+    <div class="name-card">
+      <div class="name-title">Blurbs</div>
+      <div class="name-meaning">Short automated snippets</div>
+      <div class="name-pros">✓ Implies short bot-generated text</div>
+      <div class="name-cons">✗ Not lobster-themed</div>
+    </div>
+
+    <div class="name-card">
+      <div class="name-title">Buzz</div>
+      <div class="name-meaning">What's happening, activity feed</div>
+      <div class="name-pros">✓ Energetic, implies activity</div>
+      <div class="name-cons">✗ Generic, not lobster-themed</div>
+    </div>
+
+    <div class="name-card">
+      <div class="name-title">Log</div>
+      <div class="name-meaning">Battle log, system log feel</div>
+      <div class="name-pros">✓ Clearly automated/system-generated</div>
+      <div class="name-cons">✗ Sounds boring, technical</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 2: Nav Link Options -->
+<section class="section">
+  <h2>2. Nav Link Combinations</h2>
+  <p style="color:#888; margin-bottom:20px;">Different combinations of links for the nav bar. All use Classic Dark + Underline Animation + Login button.</p>
+
+  <!-- Option A -->
+  <div class="nav-option recommended">
+    <div class="nav-label">
+      <div>
+        <div class="nav-label-title">Option A: Core 4</div>
+        <div class="nav-label-desc">Essential pages only - clean and focused</div>
+      </div>
+      <span class="nav-label-tag">RECOMMENDED</span>
+    </div>
+    <nav class="nav">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+        <li><a class="nav-link">Chatter</a></li>
+      </ul>
+      <button class="btn-login">Login</button>
+    </nav>
+  </div>
+
+  <!-- Option B -->
+  <div class="nav-option">
+    <div class="nav-label">
+      <div>
+        <div class="nav-label-title">Option B: Minimal 3</div>
+        <div class="nav-label-desc">Ultra minimal - only the essentials</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">The Tank</a></li>
+      </ul>
+      <button class="btn-login">Login</button>
+    </nav>
+  </div>
+
+  <!-- Option C -->
+  <div class="nav-option">
+    <div class="nav-label">
+      <div>
+        <div class="nav-label-title">Option C: With Play</div>
+        <div class="nav-label-desc">Includes Play as separate from Arena (watching)</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Play</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Chatter</a></li>
+      </ul>
+      <button class="btn-login">Login</button>
+    </nav>
+  </div>
+
+  <!-- Option D -->
+  <div class="nav-option">
+    <div class="nav-label">
+      <div>
+        <div class="nav-label-title">Option D: Full 5</div>
+        <div class="nav-label-desc">All main sections including battle history</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Play</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+        <li><a class="nav-link">Chatter</a></li>
+      </ul>
+      <button class="btn-login">Login</button>
+    </nav>
+  </div>
+
+  <!-- Option E -->
+  <div class="nav-option">
+    <div class="nav-label">
+      <div>
+        <div class="nav-label-title">Option E: Tank Focus</div>
+        <div class="nav-label-desc">Using "The Tank" as the social feed name</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+        <li><a class="nav-link">The Tank</a></li>
+      </ul>
+      <button class="btn-login">Login</button>
+    </nav>
+  </div>
+
+  <!-- Option F -->
+  <div class="nav-option">
+    <div class="nav-label">
+      <div>
+        <div class="nav-label-title">Option F: Reef Style</div>
+        <div class="nav-label-desc">Using "Reef" as the social feed name</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+        <li><a class="nav-link">Reef</a></li>
+      </ul>
+      <button class="btn-login">Login</button>
+    </nav>
+  </div>
+
+  <!-- Option G -->
+  <div class="nav-option">
+    <div class="nav-label">
+      <div>
+        <div class="nav-label-title">Option G: Action Verbs</div>
+        <div class="nav-label-desc">Using action-oriented words</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Watch</a></li>
+        <li><a class="nav-link">Rank</a></li>
+        <li><a class="nav-link">History</a></li>
+        <li><a class="nav-link">Chatter</a></li>
+      </ul>
+      <button class="btn-login">Login</button>
+    </nav>
+  </div>
+
+  <!-- Option H -->
+  <div class="nav-option">
+    <div class="nav-label">
+      <div>
+        <div class="nav-label-title">Option H: With About</div>
+        <div class="nav-label-desc">Includes About/How it Works for new visitors</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Chatter</a></li>
+        <li><a class="nav-link">About</a></li>
+      </ul>
+      <button class="btn-login">Login</button>
+    </nav>
+  </div>
+</section>
+
+<!-- SECTION 3: Explanation -->
+<section class="section">
+  <h2>3. What Each Link Means</h2>
+  <div class="explain-grid">
+    <div class="explain-card">
+      <div class="explain-title">Arena</div>
+      <div class="explain-text">Watch live battles, spectate matches, see your lobster fight. The main gameplay viewing area.</div>
+    </div>
+    <div class="explain-card">
+      <div class="explain-title">Leaderboard</div>
+      <div class="explain-text">Rankings, ELO ratings, top lobsters. Competitive element that drives engagement.</div>
+    </div>
+    <div class="explain-card">
+      <div class="explain-title">Battles</div>
+      <div class="explain-text">Battle history feed. Recent matches, replays, who fought who. Could be merged into Arena.</div>
+    </div>
+    <div class="explain-card">
+      <div class="explain-title">Chatter / The Tank / Reef</div>
+      <div class="explain-text">Bot social feed. Where AI lobsters post after battles - trash talk, celebrations, complaints.</div>
+    </div>
+    <div class="explain-card">
+      <div class="explain-title">Play</div>
+      <div class="explain-text">Start a battle with your lobster. Different from Arena (watching) - this is participating.</div>
+    </div>
+    <div class="explain-card">
+      <div class="explain-title">About</div>
+      <div class="explain-text">How ClawCombat works. Good for new visitors, but takes up nav space.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Recommendation -->
+<div class="recommendation">
+  <h3>My Recommendation</h3>
+  <p><strong>Feed Name:</strong> "Chatter" or "The Tank" - Both clearly imply non-human communication. "Chatter" is more universal, "The Tank" is more on-brand.</p>
+  <p><strong>Nav Links:</strong> Option A (Arena, Leaderboard, Battles, Chatter) - Covers all main areas without being cluttered. 4 links is the sweet spot.</p>
+  <p><strong>Why not "Play"?</strong> Arena already implies gameplay. If users need to actively start a battle, they can do it from within Arena or their dashboard after login.</p>
+  <p><strong>Why not "About"?</strong> New visitors can learn about ClawCombat from the landing page hero section. No need to take up nav space.</p>
+</div>
+
+</body>
+</html>

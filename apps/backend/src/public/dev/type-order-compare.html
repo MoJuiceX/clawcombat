@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Type Filter - Premium Design Options</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; line-height: 1.5; }
+
+  h1 { text-align: center; margin-bottom: 8px; color: #fff; font-size: 28px; }
+  .subtitle { text-align: center; color: #666; margin-bottom: 40px; font-size: 14px; }
+  h2 { margin-bottom: 16px; font-size: 16px; color: #6366f1; font-weight: 600; }
+
+  .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; max-width: 1200px; margin: 0 auto; }
+  @media (max-width: 900px) { .options-grid { grid-template-columns: 1fr; } }
+
+  .option-card {
+    background: #12121a; border: 1px solid #2a2a3e; border-radius: 16px; padding: 24px;
+    transition: border-color 0.2s;
+  }
+  .option-card:hover { border-color: #3a3a5e; }
+  .option-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .option-badge { background: #6366f1; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+  .option-title { font-size: 18px; font-weight: 700; color: #fff; }
+  .option-desc { font-size: 13px; color: #888; margin-bottom: 20px; }
+
+  /* Type colors */
+  .t-NEUTRAL { --c: #A8A878; --tc: #333; } .t-FIRE { --c: #F08030; --tc: #fff; }
+  .t-WATER { --c: #6890F0; --tc: #fff; } .t-ELECTRIC { --c: #F8D030; --tc: #333; }
+  .t-GRASS { --c: #78C850; --tc: #fff; } .t-ICE { --c: #98D8D8; --tc: #333; }
+  .t-MARTIAL { --c: #C03028; --tc: #fff; } .t-VENOM { --c: #A040A0; --tc: #fff; }
+  .t-EARTH { --c: #E0C068; --tc: #333; } .t-AIR { --c: #A890F0; --tc: #fff; }
+  .t-PSYCHE { --c: #F85888; --tc: #fff; } .t-INSECT { --c: #A8B820; --tc: #333; }
+  .t-STONE { --c: #B8A038; --tc: #333; } .t-GHOST { --c: #705898; --tc: #fff; }
+  .t-DRAGON { --c: #7038F8; --tc: #fff; } .t-SHADOW { --c: #705848; --tc: #fff; }
+  .t-METAL { --c: #B8B8D0; --tc: #333; } .t-MYSTIC { --c: #EE99AC; --tc: #333; }
+
+  /* ========== DESIGN A: Fixed Grid ========== */
+  .design-a {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+  .design-a .btn {
+    padding: 8px 4px;
+    border: none;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    background: var(--c);
+    color: var(--tc);
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .design-a .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .design-a .btn.active { box-shadow: 0 0 0 2px #fff, 0 4px 12px rgba(0,0,0,0.3); }
+  .design-a .btn-all { background: #2a2a3e; color: #fff; }
+
+  /* ========== DESIGN B: Uniform Chips ========== */
+  .design-b {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .design-b .chip {
+    min-width: 72px;
+    padding: 6px 12px;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    background: var(--c);
+    color: var(--tc);
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .design-b .chip:hover { transform: scale(1.05); }
+  .design-b .chip.active { border-color: #fff; }
+  .design-b .chip-all { background: #333; color: #fff; min-width: 50px; }
+
+  /* ========== DESIGN C: Grouped Sections ========== */
+  .design-c { display: flex; flex-direction: column; gap: 12px; }
+  .design-c .group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .design-c .group-label {
+    font-size: 10px;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    width: 70px;
+    flex-shrink: 0;
+  }
+  .design-c .tag {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    background: var(--c);
+    color: var(--tc);
+    transition: all 0.15s;
+  }
+  .design-c .tag:hover { opacity: 0.85; }
+  .design-c .tag.active { box-shadow: 0 0 0 2px #6366f1; }
+  .design-c .tag-all { background: #333; color: #fff; }
+
+  /* ========== DESIGN D: Compact Icons ========== */
+  .design-d {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+  }
+  @media (max-width: 600px) { .design-d { grid-template-columns: repeat(6, 1fr); } }
+  .design-d .icon-btn {
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    background: var(--c);
+    color: var(--tc);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .design-d .icon-btn:hover { transform: scale(1.1); z-index: 1; }
+  .design-d .icon-btn.active { box-shadow: 0 0 0 2px #fff; }
+  .design-d .icon-btn::after {
+    content: attr(data-name);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 8px;
+    font-weight: 600;
+    color: #666;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .design-d .icon-btn:hover::after { opacity: 1; }
+  .design-d .icon-all { background: #333; font-size: 12px; font-weight: 700; color: #fff; }
+
+  /* ========== DESIGN E: Minimal Outline ========== */
+  .design-e {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+  }
+  .design-e .outline-btn {
+    padding: 8px 4px;
+    border: 2px solid var(--c);
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--c);
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .design-e .outline-btn:hover, .design-e .outline-btn.active {
+    background: var(--c);
+    color: var(--tc);
+  }
+  .design-e .outline-all { border-color: #555; color: #888; }
+  .design-e .outline-all:hover, .design-e .outline-all.active { background: #555; color: #fff; }
+
+  /* ========== DESIGN F: Premium Gradient ========== */
+  .design-f {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+  .design-f .grad-btn {
+    padding: 10px 4px;
+    border: none;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    background: linear-gradient(135deg, var(--c) 0%, color-mix(in srgb, var(--c) 70%, #000) 100%);
+    color: var(--tc);
+    transition: all 0.2s;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .design-f .grad-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  }
+  .design-f .grad-btn.active {
+    box-shadow: 0 0 0 2px #fff, 0 6px 20px rgba(0,0,0,0.3);
+  }
+  .design-f .grad-all {
+    background: linear-gradient(135deg, #3a3a5e 0%, #1a1a2e 100%);
+    color: #fff;
+  }
+
+  /* Recommendation box */
+  .recommendation {
+    max-width: 1200px;
+    margin: 40px auto 0;
+    padding: 24px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 16px;
+  }
+  .recommendation h3 { color: #a5b4fc; margin-bottom: 12px; font-size: 16px; }
+  .recommendation ul { padding-left: 20px; }
+  .recommendation li { margin-bottom: 8px; color: #ccc; font-size: 14px; }
+  .recommendation strong { color: #fff; }
+
+  /* Responsive preview */
+  .responsive-demo {
+    max-width: 1200px;
+    margin: 40px auto 0;
+  }
+  .responsive-demo h2 { margin-bottom: 20px; }
+  .demo-row { display: flex; gap: 24px; flex-wrap: wrap; }
+  .demo-box {
+    background: #12121a;
+    border: 1px solid #2a2a3e;
+    border-radius: 12px;
+    padding: 16px;
+    overflow: hidden;
+  }
+  .demo-box h4 { font-size: 11px; color: #666; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .demo-wide { width: 500px; }
+  .demo-narrow { width: 300px; }
+</style>
+</head>
+<body>
+
+<h1>Type Filter - Premium Designs</h1>
+<p class="subtitle">Compare different approaches for a polished, orderly filter UI</p>
+
+<div class="options-grid">
+
+  <!-- Design A: Fixed Grid -->
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-badge">A</span>
+      <span class="option-title">Fixed 6-Column Grid</span>
+    </div>
+    <p class="option-desc">All buttons equal width. Clean rows that always align. Best for order.</p>
+    <div class="design-a" id="grid-a"></div>
+  </div>
+
+  <!-- Design B: Uniform Chips -->
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-badge">B</span>
+      <span class="option-title">Uniform Pill Chips</span>
+    </div>
+    <p class="option-desc">Rounded pills with minimum width. Friendly, modern feel.</p>
+    <div class="design-b" id="grid-b"></div>
+  </div>
+
+  <!-- Design C: Grouped -->
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-badge">C</span>
+      <span class="option-title">Grouped by Category</span>
+    </div>
+    <p class="option-desc">Types organized into logical groups. Easy to find related types.</p>
+    <div class="design-c" id="grid-c"></div>
+  </div>
+
+  <!-- Design D: Compact Icons -->
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-badge">D</span>
+      <span class="option-title">Compact Icon Grid</span>
+    </div>
+    <p class="option-desc">Square icons with hover labels. Minimal, saves space. Hover to see name.</p>
+    <div class="design-d" id="grid-d"></div>
+  </div>
+
+  <!-- Design E: Outline -->
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-badge">E</span>
+      <span class="option-title">Minimal Outline</span>
+    </div>
+    <p class="option-desc">Subtle outline buttons that fill on hover/active. Clean, understated.</p>
+    <div class="design-e" id="grid-e"></div>
+  </div>
+
+  <!-- Design F: Premium Gradient -->
+  <div class="option-card">
+    <div class="option-header">
+      <span class="option-badge">F</span>
+      <span class="option-title">Premium Gradient</span>
+    </div>
+    <p class="option-desc">Gradient fills with depth shadows. Rich, game-like aesthetic.</p>
+    <div class="design-f" id="grid-f"></div>
+  </div>
+
+</div>
+
+<!-- Recommendation -->
+<div class="recommendation">
+  <h3>My Recommendation</h3>
+  <ul>
+    <li><strong>Best overall:</strong> Design A or F (Fixed Grid) - Creates perfect alignment, looks organized on all screen sizes.</li>
+    <li><strong>Most premium feel:</strong> Design F (Gradient) - The depth and shadows give a polished, game-quality look.</li>
+    <li><strong>Best for mobile:</strong> Design A - 6 columns works well, can reduce to 3 on small screens.</li>
+    <li><strong>Why grid works:</strong> Equal-width buttons create visual rhythm. No jagged edges from varying text lengths.</li>
+  </ul>
+</div>
+
+<!-- Responsive Demo -->
+<div class="responsive-demo">
+  <h2>Responsive Preview (Design F)</h2>
+  <div class="demo-row">
+    <div class="demo-box demo-wide">
+      <h4>Desktop (500px)</h4>
+      <div class="design-f" id="demo-wide"></div>
+    </div>
+    <div class="demo-box demo-narrow">
+      <h4>Mobile (300px)</h4>
+      <div class="design-f" id="demo-narrow" style="grid-template-columns: repeat(3, 1fr);"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TYPES = ['NEUTRAL','FIRE','WATER','GRASS','ELECTRIC','ICE','MARTIAL','VENOM','EARTH','AIR','PSYCHE','INSECT','STONE','GHOST','DRAGON','SHADOW','METAL','MYSTIC'];
+
+const TYPE_ICONS = {
+  NEUTRAL: '⚪', FIRE: '🔥', WATER: '💧', GRASS: '🌿', ELECTRIC: '⚡', ICE: '❄️',
+  MARTIAL: '👊', VENOM: '☠️', EARTH: '🌍', AIR: '🌪️', PSYCHE: '🔮', INSECT: '🐛',
+  STONE: '🪨', GHOST: '👻', DRAGON: '🐲', SHADOW: '🌑', METAL: '⚙️', MYSTIC: '✨'
+};
+
+const GROUPS = {
+  'Elements': ['FIRE', 'WATER', 'GRASS', 'ELECTRIC'],
+  'Physical': ['MARTIAL', 'STONE', 'EARTH', 'METAL'],
+  'Special': ['PSYCHE', 'GHOST', 'DRAGON', 'MYSTIC'],
+  'Nature': ['ICE', 'AIR', 'VENOM', 'INSECT'],
+  'Other': ['NEUTRAL', 'SHADOW']
+};
+
+// Design A: Fixed Grid
+function renderGridA(id) {
+  const el = document.getElementById(id);
+  el.innerHTML = '<button class="btn btn-all active" style="--c:#2a2a3e;--tc:#fff">ALL</button>' +
+    TYPES.map(t => `<button class="btn t-${t}">${t}</button>`).join('');
+}
+
+// Design B: Uniform Chips
+function renderGridB(id) {
+  const el = document.getElementById(id);
+  el.innerHTML = '<button class="chip chip-all active">ALL</button>' +
+    TYPES.map(t => `<button class="chip t-${t}">${t}</button>`).join('');
+}
+
+// Design C: Grouped
+function renderGridC(id) {
+  const el = document.getElementById(id);
+  let html = '<div class="group"><span class="group-label"></span><button class="tag tag-all active">ALL</button></div>';
+  for (const [group, types] of Object.entries(GROUPS)) {
+    html += `<div class="group"><span class="group-label">${group}</span>`;
+    html += types.map(t => `<button class="tag t-${t}">${t}</button>`).join('');
+    html += '</div>';
+  }
+  el.innerHTML = html;
+}
+
+// Design D: Icons
+function renderGridD(id) {
+  const el = document.getElementById(id);
+  el.innerHTML = '<button class="icon-btn icon-all" data-name="ALL">ALL</button>' +
+    TYPES.map(t => `<button class="icon-btn t-${t}" data-name="${t}">${TYPE_ICONS[t]}</button>`).join('');
+}
+
+// Design E: Outline
+function renderGridE(id) {
+  const el = document.getElementById(id);
+  el.innerHTML = '<button class="outline-btn outline-all active" style="--c:#555">ALL</button>' +
+    TYPES.map(t => `<button class="outline-btn t-${t}">${t}</button>`).join('');
+}
+
+// Design F: Gradient
+function renderGridF(id) {
+  const el = document.getElementById(id);
+  el.innerHTML = '<button class="grad-btn grad-all active">ALL</button>' +
+    TYPES.map(t => `<button class="grad-btn t-${t}">${t}</button>`).join('');
+}
+
+// Render all
+renderGridA('grid-a');
+renderGridB('grid-b');
+renderGridC('grid-c');
+renderGridD('grid-d');
+renderGridE('grid-e');
+renderGridF('grid-f');
+renderGridF('demo-wide');
+renderGridF('demo-narrow');
+
+// Add click handlers for demo
+document.querySelectorAll('.btn, .chip, .tag, .icon-btn, .outline-btn, .grad-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const container = this.parentElement;
+    container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+
+</body>
+</html>

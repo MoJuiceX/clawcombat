@@ -62,9 +62,22 @@ function init(options = {}) {
             ? JSON.parse(event.request.data)
             : event.request.data;
 
-          if (data.password) data.password = '[REDACTED]';
-          if (data.api_key) data.api_key = '[REDACTED]';
-          if (data.secret) data.secret = '[REDACTED]';
+          // Redact known sensitive fields
+          const sensitiveFields = [
+            'password', 'api_key', 'secret', 'session_token', 'claim_code',
+            'webhook_secret', 'bot_token', 'access_token', 'refresh_token',
+            'private_key', 'stripe_key', 'clerk_key'
+          ];
+          for (const field of sensitiveFields) {
+            if (data[field]) data[field] = '[REDACTED]';
+          }
+
+          // Redact any field ending in _key, _token, or _secret
+          for (const key of Object.keys(data)) {
+            if (/_key$|_token$|_secret$/.test(key)) {
+              data[key] = '[REDACTED]';
+            }
+          }
 
           event.request.data = JSON.stringify(data);
         }

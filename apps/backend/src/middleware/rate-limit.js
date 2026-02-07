@@ -108,17 +108,17 @@ function getFightLimitInfo(agent, options = {}) {
     };
   }
 
-  // Free tier (post-trial): 4 fights per day
+  // Free tier (post-trial): 6 fights per day
   const remaining = Math.max(0, FREE_FIGHTS_PER_DAY - (agent.fights_today || 0));
   return {
-    allowed: remaining,
+    allowed: remaining > 0,
     remaining,
     limit: FREE_FIGHTS_PER_DAY,
     period: 'day',
     tier: 'free',
     trialDaysLeft: 0,
     reason: remaining > 0 ? null : 'Daily fight limit reached. Upgrade to Premium for 1 fight/hour.',
-    upgradeMessage: 'Upgrade to Premium ($4.99/mo) for 1 fight per hour instead of 4 per day.',
+    upgradeMessage: 'Upgrade to Premium ($4.99/mo) for 1 fight per hour instead of 6 per day.',
   };
 }
 

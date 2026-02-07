@@ -27,15 +27,27 @@ body {
 a { text-decoration: none; }
 
 /* ============================================ */
-/* NAV BAR                                     */
+/* NAV BAR - Classic Dark with Underline       */
 /* ============================================ */
-.nav { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 16px; padding-right: 70px; }
+.nav-wrap { background: #0f0f18; border-bottom: 1px solid #1e1e2e; position: relative; z-index: 100; }
+.nav { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 0 24px; padding-right: 80px; height: 64px; }
 .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
 .nav-brand span { color: #6366f1; }
-.nav-links { display: flex; gap: 20px; }
-.nav-links a { color: #888; font-size: 14px; font-weight: 600; }
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a {
+  color: #888; font-size: 14px; font-weight: 500; text-decoration: none;
+  position: relative; padding: 4px 0; transition: color 0.2s;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: 0; left: 50%;
+  width: 0; height: 2px; background: #6366f1;
+  transition: width 0.25s ease-out, left 0.25s ease-out;
+}
 .nav-links a:hover { color: #fff; }
-.nav-audio { position: fixed; top: 14px; right: 16px; display: flex; align-items: center; gap: 4px; z-index: 100; }
+.nav-links a:hover::after { width: 100%; left: 0; }
+.nav-links a.active { color: #fff; }
+.nav-links a.active::after { width: 100%; left: 0; }
+.nav-audio { position: fixed; top: 18px; right: 16px; display: flex; align-items: center; gap: 4px; z-index: 200; }
 
 /* ============================================ */
 /* BATTLE ARENA CONTAINER                      */
@@ -861,8 +873,8 @@ a { text-decoration: none; }
 }
 .status-icons {
   position: absolute;
-  bottom: -10px;
-  left: 14px;
+  bottom: 60px;
+  left: 10px;
   display: flex;
   flex-direction: row;
   gap: 6px;
@@ -871,11 +883,10 @@ a { text-decoration: none; }
 }
 .opponent-lobster .status-icons {
   left: auto;
-  right: 14px;
-  transform: scaleX(-1);
+  right: 10px;
 }
 .opponent-lobster .status-icons .status-icon {
-  transform: scaleX(-1);
+  /* No transform needed */
 }
 
 /* ============================================ */
@@ -1685,7 +1696,7 @@ a { text-decoration: none; }
 
   /* Phase 2: Mobile scaling for status icons */
   .status-icon { width: 24px; height: 24px; font-size: 0.85rem; }
-  .status-icons { gap: 4px; bottom: -8px; }
+  .status-icons { gap: 4px; bottom: 50px; }
 
   /* Phase 2: Mobile scaling for callouts */
   .super-effective-callout { font-size: 1.4rem; letter-spacing: 2px; }
@@ -1733,8 +1744,8 @@ a { text-decoration: none; }
 
   /* Phase 2: Phone scaling for status icons */
   .status-icon { width: 20px; height: 20px; font-size: 0.7rem; border-radius: 4px; }
-  .status-icons { gap: 3px; bottom: -6px; left: 10px; }
-  .opponent-lobster .status-icons { left: auto; right: 10px; }
+  .status-icons { gap: 3px; bottom: 40px; left: 8px; }
+  .opponent-lobster .status-icons { left: auto; right: 8px; }
 
   /* Phase 2: Phone scaling for callouts */
   .super-effective-callout { font-size: 1.1rem; letter-spacing: 1px; }

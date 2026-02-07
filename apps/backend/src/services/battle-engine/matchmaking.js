@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const log = require('../../utils/logger').createLogger('BATTLE_ENGINE');
 
 const { mapDbAgent } = require('./constants');
+const { BATTLE_TURN_TIMEOUT_MS, MAX_CONSECUTIVE_TIMEOUTS } = require('../../config/constants');
 const { checkBattleEnd } = require('./core');
 const { applyStatusDamage } = require('./effects');
 const { applyMove } = require('./moves');
@@ -112,9 +113,7 @@ function matchFromQueue(db) {
 // ============================================================================
 
 function checkTimeouts(db, applyBattleResults) {
-  const TIMEOUT_MS = 30000; // 30 seconds
-  const MAX_CONSECUTIVE_TIMEOUTS = 3; // forfeit match after 3 consecutive skips
-  const cutoff = new Date(Date.now() - TIMEOUT_MS).toISOString();
+  const cutoff = new Date(Date.now() - BATTLE_TURN_TIMEOUT_MS).toISOString();
   const staleBattles = db.prepare(`
     SELECT * FROM battles
     WHERE status = 'active'

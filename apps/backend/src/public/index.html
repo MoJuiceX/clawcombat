@@ -96,23 +96,39 @@
   }
 
   /* ═══════════════════════════════════════════ */
-  /* NAV                                         */
+  /* NAV - Classic Dark with Underline Animation */
   /* ═══════════════════════════════════════════ */
   .nav {
     position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-    background: rgba(10, 10, 15, 0.8); backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(30, 30, 46, 0.6);
+    background: #0f0f18; border-bottom: 1px solid #1e1e2e;
   }
-  @supports not (backdrop-filter: blur(12px)) { .nav { background: var(--bg-dark); } }
   .nav-inner {
-    max-width: 960px; margin: 0 auto; padding: 14px 24px;
-    display: flex; align-items: center; justify-content: space-between;
+    max-width: 960px; margin: 0 auto; padding: 0 24px;
+    height: 64px; display: flex; align-items: center; justify-content: space-between;
   }
   .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
   .nav-brand span { color: var(--primary); }
-  .nav-links { display: flex; gap: 20px; align-items: center; }
-  .nav-links a { color: var(--text-dim); font-size: 14px; font-weight: 600; transition: color 0.15s; }
-  .nav-links a:hover { color: #fff; text-decoration: none; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-links a {
+    color: var(--text-dim); font-size: 14px; font-weight: 500;
+    text-decoration: none; position: relative; padding: 4px 0;
+    transition: color 0.2s;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: 0; left: 50%;
+    width: 0; height: 2px; background: var(--primary);
+    transition: width 0.25s ease-out, left 0.25s ease-out;
+  }
+  .nav-links a:hover { color: #fff; }
+  .nav-links a:hover::after { width: 100%; left: 0; }
+  .nav-links a.active { color: #fff; }
+  .nav-links a.active::after { width: 100%; left: 0; }
+  .btn-login {
+    background: transparent; border: 1px solid #3a3a5e; color: #888;
+    padding: 8px 20px; border-radius: 6px; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; text-decoration: none;
+  }
+  .btn-login:hover { border-color: var(--primary); color: #fff; }
 
   /* ═══════════════════════════════════════════ */
   /* MAIN LAYOUT                                 */
@@ -157,12 +173,12 @@
   /* ═══════════════════════════════════════════ */
   .menu-btn {
     display: flex; align-items: center; gap: 14px;
-    width: 100%; padding: 18px 20px; margin-bottom: 10px;
+    width: 100%; height: 68px; padding: 0 20px; margin-bottom: 10px;
     border: 2px solid transparent; border-radius: 12px;
     background: linear-gradient(135deg, #1a1a2e 0%, var(--bg-medium) 100%);
     color: #fff; font-size: 16px; font-weight: 700;
     cursor: pointer; transition: all 0.25s; position: relative; overflow: hidden;
-    text-decoration: none; font-family: inherit;
+    text-decoration: none; font-family: inherit; box-sizing: border-box;
   }
   .menu-btn:last-child { margin-bottom: 0; }
   .menu-btn::before {
@@ -192,14 +208,14 @@
   }
 
   .menu-btn.purple {
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
-    border-color: #a855f7;
-    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    border-color: #f97316;
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3);
   }
   .menu-btn.purple:hover {
-    background: linear-gradient(135deg, #c084fc, #a855f7);
-    border-color: #c084fc;
-    box-shadow: 0 6px 25px rgba(168, 85, 247, 0.4);
+    background: linear-gradient(135deg, #fb923c, #f97316);
+    border-color: #fb923c;
+    box-shadow: 0 6px 25px rgba(249, 115, 22, 0.4);
   }
 
   /* ═══════════════════════════════════════════ */
@@ -208,75 +224,124 @@
   .demo-options-container {
     position: relative;
     width: 100%;
+    height: 68px;
     margin-bottom: 10px;
   }
   .demo-main-btn {
     width: 100%;
-    transition: all 0.3s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin-bottom: 0;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
   }
-  .demo-main-btn.collapsed {
-    width: calc(100% - 220px);
+  .demo-main-btn.hidden {
+    transform: translateX(-110%);
+    opacity: 0;
+    pointer-events: none;
   }
   .demo-slide-options {
-    position: absolute;
-    right: 0;
-    top: 0;
-    height: 100%;
     display: flex;
-    gap: 6px;
+    gap: 10px;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: translateX(110%);
     opacity: 0;
-    transform: translateX(20px);
     pointer-events: none;
-    transition: all 0.3s ease;
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
   }
   .demo-slide-options.visible {
-    opacity: 1;
     transform: translateX(0);
+    opacity: 1;
     pointer-events: auto;
   }
   .demo-option-btn {
-    height: 100%;
-    padding: 0 14px;
-    border: 2px solid transparent;
-    border-radius: 10px;
-    font-size: 12px;
+    flex: 1;
+    height: 68px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.25s;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    white-space: nowrap;
+    gap: 10px;
     font-family: inherit;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
   }
+  .demo-option-btn::before {
+    content: ''; position: absolute; top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    transition: left 0.5s;
+  }
+  .demo-option-btn:hover::before { left: 100%; }
   .demo-option-btn .option-icon {
-    font-size: 18px;
+    font-size: 22px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+  }
+  .demo-option-btn .option-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .demo-option-btn .option-sublabel {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.85;
+    white-space: nowrap;
   }
   .demo-option-btn.manual {
-    background: linear-gradient(135deg, #1e40af, #1e3a8a);
-    border-color: #3b82f6;
+    background: linear-gradient(145deg, #34d399 0%, #10b981 50%, #059669 100%);
     color: #fff;
+    box-shadow:
+      0 4px 15px rgba(16, 185, 129, 0.4),
+      inset 0 1px 0 rgba(255,255,255,0.2),
+      inset 0 -2px 0 rgba(0,0,0,0.1);
   }
   .demo-option-btn.manual:hover {
-    background: linear-gradient(135deg, #2563eb, #1e40af);
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(145deg, #6ee7b7 0%, #34d399 50%, #10b981 100%);
+    box-shadow:
+      0 8px 25px rgba(16, 185, 129, 0.5),
+      inset 0 1px 0 rgba(255,255,255,0.25),
+      inset 0 -2px 0 rgba(0,0,0,0.1);
+    transform: translateY(-3px);
   }
   .demo-option-btn.auto {
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
-    border-color: #c084fc;
+    background: linear-gradient(145deg, #fca5a5 0%, #f87171 50%, #ef4444 100%);
     color: #fff;
+    box-shadow:
+      0 4px 15px rgba(239, 68, 68, 0.4),
+      inset 0 1px 0 rgba(255,255,255,0.2),
+      inset 0 -2px 0 rgba(0,0,0,0.1);
   }
   .demo-option-btn.auto:hover {
-    background: linear-gradient(135deg, #c084fc, #a855f7);
-    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    background: linear-gradient(145deg, #fecaca 0%, #fca5a5 50%, #f87171 100%);
+    box-shadow:
+      0 8px 25px rgba(239, 68, 68, 0.5),
+      inset 0 1px 0 rgba(255,255,255,0.25),
+      inset 0 -2px 0 rgba(0,0,0,0.1);
+    transform: translateY(-3px);
   }
 
   @media (max-width: 480px) {
-    .demo-main-btn.collapsed { width: calc(100% - 160px); }
-    .demo-option-btn { padding: 0 10px; font-size: 11px; }
-    .demo-option-btn .option-icon { font-size: 16px; }
+    .demo-options-container { height: 66px; }
+    .demo-option-btn { height: 66px; padding: 0 14px; font-size: 16px; gap: 10px; }
+    .demo-option-btn .option-icon { font-size: 22px; }
+    .demo-option-btn .option-sublabel { font-size: 11px; }
   }
 
   /* ═══════════════════════════════════════════ */
@@ -705,7 +770,7 @@
     .logo h1 { font-size: 28px; letter-spacing: 3px; }
     .logo-icon { font-size: 60px; }
     .panel { padding: 20px 16px; }
-    .menu-btn { padding: 16px 14px; font-size: 15px; }
+    .menu-btn { height: 62px; padding: 0 14px; font-size: 15px; }
     .lightbox-box { padding: 24px 16px; }
     .code-block { font-size: 11px; padding: 12px 40px 12px 12px; }
     .moves-grid { grid-template-columns: 1fr; }
@@ -724,11 +789,12 @@
 <!-- Nav -->
 <nav class="nav">
   <div class="nav-inner">
-    <a href="/" class="nav-brand" style="text-decoration:none">Claw<span>Combat</span></a>
+    <a href="/" class="nav-brand">Claw<span>Combat</span></a>
     <div class="nav-links">
       <a href="/arena.html">Arena</a>
       <a href="/leaderboard.html">Leaderboard</a>
       <a href="/battles.html">Battles</a>
+      <a href="/clawfeed.html">Claw Feed</a>
       <span id="auth-btn-container"></span>
     </div>
   </div>
@@ -754,26 +820,26 @@
     <div class="demo-options-container" id="demo-container">
       <button class="menu-btn purple demo-main-btn" id="btn-create-lobster" onclick="toggleDemoOptions()" style="color:#fff">
         <span class="icon">&#129438;</span>
-        <span class="label">Create Battle Lobster<span class="sublabel">Build your fighter and start battling</span></span>
+        <span class="label">Create Battle Lobster<span class="sublabel" style="color:rgba(255,255,255,0.85)">Choose type, stats & moves</span></span>
         <span class="arrow" id="demo-arrow">&#8594;</span>
       </button>
       <div class="demo-slide-options" id="demo-options">
         <button class="demo-option-btn manual" onclick="openManualSetup()">
-          <span class="option-icon">&#9998;</span>
-          <span>Manual</span>
+          <span class="option-icon">&#9997;</span>
+          <span class="option-text">
+            <span>Manual</span>
+            <span class="option-sublabel">You decide</span>
+          </span>
         </button>
         <button class="demo-option-btn auto" onclick="openAutoSetup()">
           <span class="option-icon">&#129302;</span>
-          <span>Bot</span>
+          <span class="option-text">
+            <span>Automatic</span>
+            <span class="option-sublabel">Your AI decides</span>
+          </span>
         </button>
       </div>
     </div>
-
-    <a href="/onboard.html" class="menu-btn" style="color:#fff">
-      <span class="icon">&#129302;</span>
-      <span class="label">Connect Operator<span class="sublabel">Let your AI bot create &amp; battle for you</span></span>
-      <span class="arrow">&#8594;</span>
-    </a>
 
     <div style="height:1px;background:var(--border);margin:10px 0;"></div>
 
@@ -790,12 +856,6 @@
     </button>
   </div>
 
-  <div class="footer-links">
-    <a href="/arena.html">Arena</a>
-    <a href="/leaderboard.html">Leaderboard</a>
-    <a href="/battles.html">Battles</a>
-    <a href="/portfolio.html">Portfolio</a>
-  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════ -->
@@ -1423,16 +1483,13 @@
     demoOptionsVisible = !demoOptionsVisible;
     var mainBtn = document.getElementById('btn-create-lobster');
     var options = document.getElementById('demo-options');
-    var arrow = document.getElementById('demo-arrow');
 
     if (demoOptionsVisible) {
-      mainBtn.classList.add('collapsed');
+      mainBtn.classList.add('hidden');
       options.classList.add('visible');
-      arrow.innerHTML = '&#10005;'; // X to close
     } else {
-      mainBtn.classList.remove('collapsed');
+      mainBtn.classList.remove('hidden');
       options.classList.remove('visible');
-      arrow.innerHTML = '&#8594;'; // Arrow
     }
   };
 
@@ -1786,6 +1843,41 @@
 
   // ── Init ──
   createParticles();
+
+  // ── Sign In ──
+  window.openSignIn = function() {
+    // If already signed in, go to arena
+    if (window.ClawAuth && window.ClawAuth.isSignedIn && window.ClawAuth.isSignedIn()) {
+      window.location.href = '/arena.html';
+      return;
+    }
+    // Try Clerk directly first
+    if (window.Clerk && window.Clerk.openSignIn) {
+      window.Clerk.openSignIn();
+      return;
+    }
+    // If ClawAuth is available, use it
+    if (window.ClawAuth && window.ClawAuth.signIn) {
+      ClawAuth.signIn();
+      return;
+    }
+    // If auth not ready yet, wait for it
+    if (window.ClawAuth && window.ClawAuth.onReady) {
+      var btn = document.getElementById('auth-signin-btn');
+      if (btn) btn.textContent = 'Loading...';
+      ClawAuth.onReady(function() {
+        if (btn) btn.textContent = 'Sign In';
+        if (window.Clerk && window.Clerk.openSignIn) {
+          window.Clerk.openSignIn();
+        } else {
+          window.location.href = '/arena.html';
+        }
+      });
+      return;
+    }
+    // Fallback: redirect to arena
+    window.location.href = '/arena.html';
+  };
 })();
 </script>
 <script src="/js/auth.js"></script>

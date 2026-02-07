@@ -4,7 +4,7 @@ const log = require('../utils/logger').createLogger('ONBOARD');
 const express = require('express');
 const crypto = require('crypto');
 const { getDb } = require('../db/schema');
-const { MS_PER_HOUR } = require('../config/constants');
+const { MS_PER_HOUR, MS_PER_DAY, TRIAL_PERIOD_MS, CLAIM_CODE_EXPIRY_MS } = require('../config/constants');
 const { VALID_TYPES, TYPE_ADVANTAGES, TYPE_WEAKNESSES, TYPE_EMOJIS, randomAbility } = require('../utils/type-system');
 const { getMovePoolForType, randomMovesForType, getMovesByIds } = require('../data/moves');
 const { checkLevelUp } = require('../utils/xp-scaling');
@@ -20,6 +20,54 @@ const {
 } = require('../utils/natures');
 
 const router = express.Router();
+
+// ============================================================================
+// RATE LIMITING FOR CREATE ENDPOINT
+// ============================================================================
+
+const CREATE_RATE_LIMIT = 5;         // Max creates per IP per hour
+const CREATE_RATE_WINDOW_MS = MS_PER_HOUR;
+
+// In-memory tracking: ip -> { count, windowStart }
+const createAttempts = new Map();
+
+// Cleanup stale entries every 10 minutes
+const createCleanupInterval = setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of createAttempts) {
+    if (now - entry.windowStart > CREATE_RATE_WINDOW_MS * 2) {
+      createAttempts.delete(ip);
+    }
+  }
+}, 10 * 60 * 1000);
+if (createCleanupInterval.unref) createCleanupInterval.unref();
+
+function checkCreateRateLimit(ip) {
+  const now = Date.now();
+  const entry = createAttempts.get(ip);
+
+  if (!entry || now - entry.windowStart >= CREATE_RATE_WINDOW_MS) {
+    return { allowed: true, remaining: CREATE_RATE_LIMIT - 1, resetAt: now + CREATE_RATE_WINDOW_MS };
+  }
+
+  if (entry.count >= CREATE_RATE_LIMIT) {
+    return { allowed: false, remaining: 0, resetAt: entry.windowStart + CREATE_RATE_WINDOW_MS };
+  }
+
+  return { allowed: true, remaining: CREATE_RATE_LIMIT - entry.count - 1, resetAt: entry.windowStart + CREATE_RATE_WINDOW_MS };
+}
+
+function trackCreateAttempt(ip) {
+  const now = Date.now();
+  const entry = createAttempts.get(ip);
+
+  if (!entry || now - entry.windowStart >= CREATE_RATE_WINDOW_MS) {
+    createAttempts.set(ip, { count: 1, windowStart: now });
+    return;
+  }
+
+  entry.count++;
+}
 
 // ============================================================================
 // CONSTANTS
@@ -180,6 +228,18 @@ function generateOperatorReasoning(type, stats, moves, nature) {
 
 router.post('/create', async (req, res) => {
   try {
+    // Check IP-based rate limit
+    const clientIp = req.ip || req.connection?.remoteAddress || 'unknown';
+    const rateCheck = checkCreateRateLimit(clientIp);
+    if (!rateCheck.allowed) {
+      const resetIn = Math.ceil((rateCheck.resetAt - Date.now()) / 60000);
+      return res.status(429).json({
+        error: `Rate limit exceeded. Max ${CREATE_RATE_LIMIT} creates per hour.`,
+        retry_after_minutes: resetIn
+      });
+    }
+    trackCreateAttempt(clientIp);
+
     const db = getDb();
     const {
       mode,           // 'operator' or 'user'
@@ -281,7 +341,7 @@ router.post('/create', async (req, res) => {
     const apiKey = generateApiKey();
     const apiKeyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
     const sessionToken = generateSessionToken();
-    const claimExpiresAt = new Date(Date.now() + CLAIM_WINDOW_HOURS * 60 * 60 * 1000).toISOString();
+    const claimExpiresAt = new Date(Date.now() + CLAIM_WINDOW_HOURS * MS_PER_HOUR).toISOString();
 
     // Get ability for type
     const ability = randomAbility(finalType);
@@ -716,7 +776,7 @@ router.post('/claim', (req, res) => {
     }
 
     // Claim the lobster and start 14-day trial
-    const trialExpiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+    const trialExpiresAt = new Date(Date.now() + TRIAL_PERIOD_MS).toISOString();
     db.prepare(`
       UPDATE agents SET
         owner_id = ?,
@@ -881,7 +941,7 @@ router.post('/generate-claim-link', (req, res) => {
     }
 
     // Code expires in 24 hours (same as claim window)
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + MS_PER_DAY).toISOString();
 
     // Delete any existing claim codes for this agent
     db.prepare('DELETE FROM link_codes WHERE agent_id = ?').run(agent.id);
@@ -984,7 +1044,7 @@ router.post('/claim-by-code', (req, res) => {
     }
 
     // Transaction: mark code as used and claim the agent with 14-day trial
-    const trialExpiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+    const trialExpiresAt = new Date(Date.now() + TRIAL_PERIOD_MS).toISOString();
     const claimResult = db.transaction(() => {
       // Mark code as used
       const updateCode = db.prepare('UPDATE link_codes SET used = 1 WHERE code = ? AND used = 0').run(code);

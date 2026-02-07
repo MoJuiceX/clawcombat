@@ -33,6 +33,7 @@ const rateLimit = require('express-rate-limit');
 const { RedisStore } = require('rate-limit-redis');
 const { getRedisClient } = require('./utils/redis');
 const { requestLogger, errorLogger, requestTimeout } = require('./middleware/request-logger');
+const { REQUEST_TIMEOUT_MS } = require('./config/constants');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -137,7 +138,7 @@ app.use(express.json({ limit: '100kb' }));
 app.use(requestLogger);
 
 // RELIABILITY: Request timeout middleware (30s, returns 408)
-app.use(requestTimeout(30000));
+app.use(requestTimeout(REQUEST_TIMEOUT_MS));
 
 // Rate limiting store - will be set to Redis if available, otherwise in-memory
 let rateLimitStore = undefined;  // undefined = use default memory store
@@ -197,7 +198,7 @@ app.use(/\/agents\/.*\/webhook\/test/, (req, res, next) => strictLimiter(req, re
 
 // Serve skill.md for AI agent onboarding
 app.get('/skill.md', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'clawcombat-skill', 'SKILL.md'));
+  res.sendFile(path.join(__dirname, 'public', 'skill.md'));
 });
 
 // Public config (safe to expose — publishable key is designed for frontend)

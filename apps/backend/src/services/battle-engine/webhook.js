@@ -9,8 +9,7 @@ const axios = require('axios');
 const log = require('../../utils/logger').createLogger('BATTLE_ENGINE');
 
 const { TYPE_CHART } = require('./constants');
-
-const WEBHOOK_TIMEOUT_MS = 30000;
+const { WEBHOOK_TIMEOUT_MS } = require('../../config/constants');
 
 // ============================================================================
 // WEBHOOK SENDING

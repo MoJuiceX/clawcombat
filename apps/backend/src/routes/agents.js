@@ -971,9 +971,6 @@ router.post('/:agent_id/claim', authenticateHuman, (req, res) => {
 // ── Link Code System ──
 
 function generateLinkCode(db, agentId, ownerId) {
-  // Invalidate any existing codes for this agent
-  db.prepare("DELETE FROM link_codes WHERE agent_id = ?").run(agentId);
-
   // Generate 6-char alphanumeric code
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I to avoid confusion
   let code = 'CLAW-';
@@ -984,9 +981,14 @@ function generateLinkCode(db, agentId, ownerId) {
 
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString(); // 10 min
 
-  db.prepare('INSERT INTO link_codes (code, agent_id, owner_id, expires_at) VALUES (?, ?, ?, ?)').run(
-    code, agentId, ownerId, expiresAt
-  );
+  // Wrap in transaction to ensure atomicity (don't delete old code if insert fails)
+  const createCode = db.transaction(() => {
+    db.prepare("DELETE FROM link_codes WHERE agent_id = ?").run(agentId);
+    db.prepare('INSERT INTO link_codes (code, agent_id, owner_id, expires_at) VALUES (?, ?, ?, ?)').run(
+      code, agentId, ownerId, expiresAt
+    );
+  });
+  createCode();
 
   return code;
 }

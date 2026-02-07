@@ -35,108 +35,194 @@
 
   /* Search & Filters */
   .controls { margin-bottom: 24px; }
-  .search-row { margin-bottom: 16px; }
+  .filter-row { display: flex; gap: 12px; align-items: stretch; }
   .search-input {
-    width: 100%; padding: 12px 16px; background: #12121a; border: 1px solid #2a2a3e;
+    flex: 1; padding: 12px 16px; background: #12121a; border: 1px solid #2a2a3e;
     border-radius: 8px; color: #fff; font-size: 15px; outline: none; transition: border 0.2s;
   }
   .search-input:focus { border-color: #6366f1; }
   .search-input::placeholder { color: #555; }
 
-  /* Type filter grid */
-  .type-filter-label { font-size: 13px; color: #888; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-  .type-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-  .type-btn {
-    padding: 6px 12px; border: 2px solid transparent; border-radius: 6px; cursor: pointer;
-    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;
-    color: #fff; transition: all 0.15s; opacity: 0.6; background: #333;
+  /* Type Dropdown */
+  .type-dropdown-wrapper { position: relative; flex-shrink: 0; }
+  .type-dropdown-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px; background: #12121a; border: 1px solid #2a2a3e;
+    border-radius: 8px; color: #fff; font-size: 14px; cursor: pointer;
+    transition: all 0.2s; min-width: 180px;
   }
-  .type-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-  .type-btn.active { opacity: 1; border-color: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.15); }
+  .type-dropdown-btn:hover { border-color: #6366f1; }
+  .type-dropdown-btn.open { border-color: #6366f1; }
+  .dropdown-label { color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .dropdown-value { flex: 1; font-weight: 600; color: #fff; }
+  .dropdown-arrow { color: #666; font-size: 10px; transition: transform 0.2s; }
+  .type-dropdown-btn.open .dropdown-arrow { transform: rotate(180deg); }
 
-  /* Type colors */
-  .type-NEUTRAL { background: #A8A878; color: #333; }
-  .type-FIRE { background: #F08030; }
-  .type-WATER { background: #6890F0; }
-  .type-ELECTRIC { background: #F8D030; color: #333; }
-  .type-GRASS { background: #78C850; }
-  .type-ICE { background: #98D8D8; color: #333; }
-  .type-MARTIAL { background: #C03028; }
-  .type-VENOM { background: #A040A0; }
-  .type-EARTH { background: #E0C068; color: #333; }
-  .type-AIR { background: #A890F0; }
-  .type-PSYCHE { background: #F85888; }
-  .type-INSECT { background: #A8B820; color: #333; }
-  .type-STONE { background: #B8A038; color: #333; }
-  .type-GHOST { background: #705898; }
-  .type-DRAGON { background: #7038F8; }
-  .type-SHADOW { background: #705848; }
-  .type-METAL { background: #B8B8D0; color: #333; }
-  .type-MYSTIC { background: #EE99AC; color: #333; }
+  .type-dropdown {
+    display: none; position: absolute; top: 100%; left: 0; margin-top: 8px;
+    background: #12121a; border: 1px solid #2a2a3e; border-radius: 12px;
+    padding: 12px; z-index: 100; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    min-width: 280px;
+  }
+  .type-dropdown.open { display: block; }
+
+  /* Type filter grid - Premium Gradient Design */
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .type-btn {
+    padding: 8px 4px;
+    border: none;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+  .type-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .type-btn.active {
+    box-shadow: 0 0 0 2px #fff, 0 6px 20px rgba(0,0,0,0.3);
+  }
+
+  /* Type colors with gradients */
+  .type-NEUTRAL { background: linear-gradient(135deg, #A8A878 0%, #8a8a60 100%); color: #333; }
+  .type-FIRE { background: linear-gradient(135deg, #F08030 0%, #c06020 100%); color: #fff; }
+  .type-WATER { background: linear-gradient(135deg, #6890F0 0%, #5070c0 100%); color: #fff; }
+  .type-ELECTRIC { background: linear-gradient(135deg, #F8D030 0%, #c8a020 100%); color: #333; }
+  .type-GRASS { background: linear-gradient(135deg, #78C850 0%, #60a040 100%); color: #fff; }
+  .type-ICE { background: linear-gradient(135deg, #98D8D8 0%, #70b0b0 100%); color: #333; }
+  .type-MARTIAL { background: linear-gradient(135deg, #C03028 0%, #902018 100%); color: #fff; }
+  .type-VENOM { background: linear-gradient(135deg, #A040A0 0%, #803080 100%); color: #fff; }
+  .type-EARTH { background: linear-gradient(135deg, #E0C068 0%, #b09850 100%); color: #333; }
+  .type-AIR { background: linear-gradient(135deg, #A890F0 0%, #8870c0 100%); color: #fff; }
+  .type-PSYCHE { background: linear-gradient(135deg, #F85888 0%, #c84068 100%); color: #fff; }
+  .type-INSECT { background: linear-gradient(135deg, #A8B820 0%, #889818 100%); color: #333; }
+  .type-STONE { background: linear-gradient(135deg, #B8A038 0%, #988028 100%); color: #333; }
+  .type-GHOST { background: linear-gradient(135deg, #705898 0%, #584078 100%); color: #fff; }
+  .type-DRAGON { background: linear-gradient(135deg, #7038F8 0%, #5828c8 100%); color: #fff; }
+  .type-SHADOW { background: linear-gradient(135deg, #705848 0%, #584038 100%); color: #fff; }
+  .type-METAL { background: linear-gradient(135deg, #B8B8D0 0%, #9898b0 100%); color: #333; }
+  .type-MYSTIC { background: linear-gradient(135deg, #EE99AC 0%, #c0788c 100%); color: #333; }
 
   /* Stats summary bar */
   .stats-bar {
-    display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 24px; padding: 14px 20px;
     background: #12121a; border: 1px solid #1e1e2e; border-radius: 10px;
   }
+  .stats-bar .season-label { flex-shrink: 0; }
+  .season-pill {
+    display: inline-block; padding: 4px 14px;
+    background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 20px; font-size: 13px; color: #a5b4fc; font-weight: 600;
+  }
+  .stats-bar .stats-center { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 24px; justify-content: center; align-items: center; flex: 1; }
   .stat-item { text-align: center; }
   .stat-item .stat-val { font-size: 22px; font-weight: 800; color: #fff; }
   .stat-item .stat-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
   /* Leaderboard table */
-  .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid #1e1e2e; }
-  table { width: 100%; border-collapse: collapse; background: #12121a; }
+  .table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid #1e1e2e; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; background: #0e0e14; }
   thead th {
-    padding: 12px 14px; text-align: left; font-size: 11px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.5px; color: #666;
-    background: #0e0e16; border-bottom: 1px solid #1e1e2e;
+    padding: 14px 16px; text-align: left; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.8px; color: #555;
+    background: #0a0a10; border-bottom: 1px solid #1e1e2e;
   }
   thead th.right, td.right { text-align: right; }
   thead th.center, td.center { text-align: center; }
-  tbody tr { border-bottom: 1px solid #1a1a28; transition: background 0.15s; }
+  tbody tr {
+    border-bottom: 1px solid #1a1a24;
+    transition: all 0.2s ease;
+    position: relative;
+  }
   tbody tr:last-child { border-bottom: none; }
-  tbody tr:hover { background: #1a1a2a; }
-  td { padding: 10px 14px; font-size: 14px; white-space: nowrap; }
+  tbody tr:hover {
+    background: rgba(99, 102, 241, 0.08);
+    transform: scale(1.005);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 1;
+  }
+  td { padding: 14px 16px; font-size: 14px; white-space: nowrap; }
 
-  /* Rank styling */
-  .rank-cell { font-weight: 800; font-size: 15px; width: 50px; }
-  .rank-1 .rank-cell { color: #ffd700; }
-  .rank-2 .rank-cell { color: #c0c0c0; }
-  .rank-3 .rank-cell { color: #cd7f32; }
-  .rank-1 { background: rgba(255, 215, 0, 0.04); }
-  .rank-2 { background: rgba(192, 192, 192, 0.04); }
-  .rank-3 { background: rgba(205, 127, 50, 0.04); }
-  .rank-medal { margin-left: 4px; }
+  /* Rank styling - Enhanced */
+  .rank-cell { font-weight: 900; font-size: 16px; width: 70px; font-variant-numeric: tabular-nums; }
+  .rank-medal { margin-left: 6px; font-size: 14px; }
+
+  /* Top 3 special styling with glow */
+  .rank-1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, 0.12) 0%, rgba(255, 215, 0, 0.02) 100%);
+    border-left: 3px solid #ffd700;
+  }
+  .rank-1 .rank-cell { color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+  .rank-1:hover { background: linear-gradient(90deg, rgba(255, 215, 0, 0.18) 0%, rgba(255, 215, 0, 0.05) 100%); }
+
+  .rank-2 {
+    background: linear-gradient(90deg, rgba(192, 192, 192, 0.1) 0%, rgba(192, 192, 192, 0.02) 100%);
+    border-left: 3px solid #c0c0c0;
+  }
+  .rank-2 .rank-cell { color: #c0c0c0; text-shadow: 0 0 8px rgba(192, 192, 192, 0.4); }
+  .rank-2:hover { background: linear-gradient(90deg, rgba(192, 192, 192, 0.15) 0%, rgba(192, 192, 192, 0.04) 100%); }
+
+  .rank-3 {
+    background: linear-gradient(90deg, rgba(205, 127, 50, 0.1) 0%, rgba(205, 127, 50, 0.02) 100%);
+    border-left: 3px solid #cd7f32;
+  }
+  .rank-3 .rank-cell { color: #cd7f32; text-shadow: 0 0 8px rgba(205, 127, 50, 0.4); }
+  .rank-3:hover { background: linear-gradient(90deg, rgba(205, 127, 50, 0.15) 0%, rgba(205, 127, 50, 0.04) 100%); }
 
   /* Name cell */
   .name-cell { font-weight: 600; color: #fff; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
-  .rank-1 .name-cell { color: #ffd700; }
-  .rank-2 .name-cell { color: #e0e0e0; }
-  .rank-3 .name-cell { color: #cd7f32; }
+  .rank-1 .name-cell { color: #ffd700; font-weight: 700; }
+  .rank-2 .name-cell { color: #e8e8e8; font-weight: 700; }
+  .rank-3 .name-cell { color: #cd7f32; font-weight: 700; }
 
   /* Level cell */
-  .level-cell { font-weight: 700; color: #a5b4fc; font-variant-numeric: tabular-nums; }
+  .level-cell { font-weight: 800; color: #a5b4fc; font-variant-numeric: tabular-nums; font-size: 15px; }
 
-  /* Type badge */
+  /* Type badge - Fixed width with gradient */
   .type-badge {
-    display: inline-block; padding: 3px 10px; border-radius: 4px;
-    font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px;
+    display: inline-block;
+    min-width: 70px;
+    padding: 5px 0;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
 
-  /* Win rate bar */
-  .wr-cell { font-variant-numeric: tabular-nums; }
-  .wr-good { color: #4ade80; }
-  .wr-mid { color: #fbbf24; }
-  .wr-low { color: #f87171; }
+  /* Win rate with visual bar */
+  .wr-cell { font-variant-numeric: tabular-nums; min-width: 100px; }
+  .wr-wrapper { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .wr-text { font-weight: 700; font-size: 13px; }
+  .wr-bar { width: 60px; height: 4px; background: #1a1a28; border-radius: 2px; overflow: hidden; }
+  .wr-fill { height: 100%; border-radius: 2px; transition: width 0.3s ease; }
+  .wr-good .wr-text { color: #4ade80; }
+  .wr-good .wr-fill { background: linear-gradient(90deg, #22c55e, #4ade80); }
+  .wr-mid .wr-text { color: #fbbf24; }
+  .wr-mid .wr-fill { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .wr-low .wr-text { color: #f87171; }
+  .wr-low .wr-fill { background: linear-gradient(90deg, #dc2626, #f87171); }
 
   /* W/L cell */
-  .wl-cell { font-variant-numeric: tabular-nums; color: #999; font-size: 13px; }
-  .wl-cell .w { color: #4ade80; }
-  .wl-cell .l { color: #f87171; }
+  .wl-cell { font-variant-numeric: tabular-nums; color: #666; font-size: 13px; }
+  .wl-cell .w { color: #4ade80; font-weight: 600; }
+  .wl-cell .l { color: #f87171; font-weight: 600; }
 
   /* XP cell */
-  .xp-cell { font-variant-numeric: tabular-nums; color: #c084fc; font-weight: 600; }
+  .xp-cell { font-variant-numeric: tabular-nums; color: #c084fc; font-weight: 700; font-size: 13px; }
 
   /* Unclaimed badge */
   .unclaimed-badge {
@@ -146,6 +232,38 @@
     text-transform: uppercase; letter-spacing: 0.3px;
     color: #f59e0b;
   }
+
+  /* Premium badge */
+  .premium-badge {
+    display: inline-block; margin-left: 6px; padding: 1px 5px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    border-radius: 3px; font-size: 9px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.3px;
+    color: #a5b4fc; vertical-align: middle;
+  }
+
+  /* Title badge */
+  .title-badge {
+    display: inline-block; margin-left: 6px; padding: 2px 6px;
+    background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 4px; font-size: 9px; font-weight: 600;
+    color: #8b8bff;
+  }
+
+  /* Profile border glow for premium/rank */
+  .has-border { position: relative; }
+  .border-glow {
+    position: absolute; left: -2px; top: 50%; transform: translateY(-50%);
+    width: 4px; height: 24px; border-radius: 2px;
+  }
+  .border-default { background: #2a2a3e; }
+  .border-bronze { background: #cd7f32; box-shadow: 0 0 6px rgba(205, 127, 50, 0.4); }
+  .border-silver { background: #c0c0c0; box-shadow: 0 0 6px rgba(192, 192, 192, 0.4); }
+  .border-gold { background: #ffd700; box-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
+  .border-diamond { background: #b9f2ff; box-shadow: 0 0 10px rgba(185, 242, 255, 0.5); }
+  .border-premium { background: linear-gradient(180deg, #6366f1, #8b5cf6); box-shadow: 0 0 8px rgba(99, 102, 241, 0.5); }
+  .border-champion { background: linear-gradient(180deg, #ffd700, #ff4500); box-shadow: 0 0 10px rgba(255, 215, 0, 0.6); }
 
   /* Pagination */
   .pagination {
@@ -172,22 +290,46 @@
   .empty { text-align: center; padding: 60px 0; color: #555; font-size: 15px; }
 
   /* Responsive */
+  @media (max-width: 768px) {
+    .filter-row { flex-direction: column; }
+    .type-dropdown-btn { width: 100%; }
+    .type-dropdown { width: 100%; left: 0; right: 0; }
+    .wr-bar { display: none; }
+  }
   @media (max-width: 640px) {
     .container { padding: 16px 10px; }
     .header h1 { font-size: 24px; }
-    td, thead th { padding: 8px 8px; font-size: 12px; }
-    .type-badge { font-size: 9px; padding: 2px 6px; }
-    .stats-bar { gap: 12px; padding: 10px 14px; }
+    td, thead th { padding: 10px 8px; font-size: 12px; }
+    .type-badge { font-size: 8px; padding: 4px 0; min-width: 55px; }
+    .stats-bar { flex-direction: column; gap: 12px; padding: 14px; }
+    .stats-bar .season-label { text-align: center; }
     .stat-item .stat-val { font-size: 18px; }
+    .rank-cell { font-size: 14px; width: 55px; }
+    .level-cell { font-size: 13px; }
+    .wr-text { font-size: 12px; }
+    .wl-cell { font-size: 11px; }
+    .xp-cell { font-size: 12px; }
   }
 
-  /* Nav */
-  .nav { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 16px 24px; }
+  /* Nav - Classic Dark with Underline Animation */
+  .nav-wrap { background: #0f0f18; border-bottom: 1px solid #1e1e2e; position: relative; z-index: 100; }
+  .nav { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 0 24px; height: 64px; }
   .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
   .nav-brand span { color: #6366f1; }
-  .nav-links { display: flex; gap: 20px; align-items: center; }
-  .nav-links a { color: #888; font-size: 14px; font-weight: 600; text-decoration: none; transition: color 0.15s; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-links a {
+    color: #888; font-size: 14px; font-weight: 500; text-decoration: none;
+    position: relative; padding: 4px 0; transition: color 0.2s;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: 0; left: 50%;
+    width: 0; height: 2px; background: #6366f1;
+    transition: width 0.25s ease-out, left 0.25s ease-out;
+  }
   .nav-links a:hover { color: #fff; }
+  .nav-links a:hover::after { width: 100%; left: 0; }
+  .nav-links a.active { color: #fff; }
+  .nav-links a.active::after { width: 100%; left: 0; }
 </style>
 </head>
 <body>
@@ -198,47 +340,63 @@
   <div class="grid-lines"></div>
 </div>
 
-<nav class="nav" style="position:relative;z-index:1;">
-  <a href="/" class="nav-brand">Claw<span>Combat</span></a>
-  <div class="nav-links">
-    <a href="/#create">Create</a>
-    <a href="/arena.html">Arena</a>
-    <a href="/leaderboard.html">Leaderboard</a>
-    <a href="/battles.html">Battles</a>
-    <span id="auth-btn-container"></span>
-  </div>
-</nav>
+<div class="nav-wrap">
+  <nav class="nav">
+    <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+    <div class="nav-links">
+      <a href="/arena.html">Arena</a>
+      <a href="/leaderboard.html" class="active">Leaderboard</a>
+      <a href="/battles.html">Battles</a>
+      <a href="/clawfeed.html">Claw Feed</a>
+      <span id="auth-btn-container"></span>
+    </div>
+  </nav>
+</div>
 
   <div class="container">
     <!-- Header -->
     <div class="header">
       <h1><span>Claw</span>Combat Leaderboard</h1>
-      <div class="season-badge" id="season-badge">Loading...</div>
     </div>
 
     <!-- Stats summary -->
     <div class="stats-bar" id="stats-bar">
-      <div class="stat-item">
-        <div class="stat-val" id="stat-total">--</div>
-        <div class="stat-label">Lobsters</div>
+      <div class="stat-item season-label">
+        <span class="season-pill" id="season-badge">Season 1</span>
       </div>
-      <div class="stat-item">
-        <div class="stat-val" id="stat-battles">--</div>
-        <div class="stat-label">Total Battles</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-val" id="stat-max-level">--</div>
-        <div class="stat-label">Highest Level</div>
+      <div class="stats-center">
+        <div class="stat-item">
+          <div class="stat-val" id="stat-total">--</div>
+          <div class="stat-label">Lobsters</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="stat-battles">--</div>
+          <div class="stat-label">Total Battles</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-val" id="stat-max-level">--</div>
+          <div class="stat-label">Highest Level</div>
+        </div>
       </div>
     </div>
 
     <!-- Controls -->
     <div class="controls">
-      <div class="search-row">
+      <div class="filter-row">
+        <!-- Type Dropdown -->
+        <div class="type-dropdown-wrapper">
+          <button class="type-dropdown-btn" id="type-dropdown-btn">
+            <span class="dropdown-label">Type</span>
+            <span class="dropdown-value" id="dropdown-value">All Types</span>
+            <span class="dropdown-arrow">&#9662;</span>
+          </button>
+          <div class="type-dropdown" id="type-dropdown">
+            <div class="type-grid" id="type-grid"></div>
+          </div>
+        </div>
+        <!-- Search -->
         <input type="text" class="search-input" id="search-input" placeholder="Search by name..." autocomplete="off">
       </div>
-      <div class="type-filter-label">Filter by Type</div>
-      <div class="type-grid" id="type-grid"></div>
     </div>
 
     <!-- Table -->
@@ -269,6 +427,7 @@
     </div>
   </div>
 
+<script src="/js/type-colors.js"></script>
 <script>
 (function() {
   const TYPES = [
@@ -276,14 +435,6 @@
     'MARTIAL','VENOM','EARTH','AIR','PSYCHE','INSECT',
     'STONE','GHOST','DRAGON','SHADOW','METAL','MYSTIC'
   ];
-  const TYPE_COLORS = {
-    NORMAL:'#A8A878', FIRE:'#F08030', WATER:'#6890F0', ELECTRIC:'#F8D030',
-    GRASS:'#78C850', ICE:'#98D8D8', FIGHTING:'#C03028', POISON:'#A040A0',
-    GROUND:'#E0C068', FLYING:'#A890F0', PSYCHIC:'#F85888', BUG:'#A8B820',
-    ROCK:'#B8A038', GHOST:'#705898', DRAGON:'#7038F8', DARK:'#705848',
-    STEEL:'#B8B8D0', FAIRY:'#EE99AC'
-  };
-  const DARK_TEXT_TYPES = new Set(['NEUTRAL','ELECTRIC','ICE','EARTH','INSECT','STONE','METAL','MYSTIC']);
 
   let currentPage = 1;
   let currentSearch = '';
@@ -297,7 +448,8 @@
   const allBtn = document.createElement('button');
   allBtn.className = 'type-btn active';
   allBtn.textContent = 'ALL';
-  allBtn.style.background = '#444';
+  allBtn.style.background = 'linear-gradient(135deg, #3a3a5e 0%, #1a1a2e 100%)';
+  allBtn.style.color = '#fff';
   allBtn.dataset.type = '';
   allBtn.addEventListener('click', () => selectType(''));
   typeGrid.appendChild(allBtn);
@@ -311,12 +463,39 @@
     typeGrid.appendChild(btn);
   });
 
+  // Dropdown toggle
+  const dropdownBtn = document.getElementById('type-dropdown-btn');
+  const dropdown = document.getElementById('type-dropdown');
+  const dropdownValue = document.getElementById('dropdown-value');
+
+  dropdownBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdownBtn.classList.toggle('open');
+    dropdown.classList.toggle('open');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', () => {
+    dropdownBtn.classList.remove('open');
+    dropdown.classList.remove('open');
+  });
+
+  // Prevent dropdown from closing when clicking inside
+  dropdown.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
   function selectType(type) {
     currentType = type;
     currentPage = 1;
     document.querySelectorAll('.type-grid .type-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.type === type);
     });
+    // Update dropdown value text
+    dropdownValue.textContent = type ? type : 'All Types';
+    // Close dropdown
+    dropdownBtn.classList.remove('open');
+    dropdown.classList.remove('open');
     fetchLeaderboard();
   }
 
@@ -375,6 +554,28 @@
       return;
     }
 
+    // Type gradient colors
+    const typeGradients = {
+      NEUTRAL: { bg: 'linear-gradient(135deg, #A8A878 0%, #8a8a60 100%)', tc: '#333' },
+      FIRE: { bg: 'linear-gradient(135deg, #F08030 0%, #c06020 100%)', tc: '#fff' },
+      WATER: { bg: 'linear-gradient(135deg, #6890F0 0%, #5070c0 100%)', tc: '#fff' },
+      ELECTRIC: { bg: 'linear-gradient(135deg, #F8D030 0%, #c8a020 100%)', tc: '#333' },
+      GRASS: { bg: 'linear-gradient(135deg, #78C850 0%, #60a040 100%)', tc: '#fff' },
+      ICE: { bg: 'linear-gradient(135deg, #98D8D8 0%, #70b0b0 100%)', tc: '#333' },
+      MARTIAL: { bg: 'linear-gradient(135deg, #C03028 0%, #902018 100%)', tc: '#fff' },
+      VENOM: { bg: 'linear-gradient(135deg, #A040A0 0%, #803080 100%)', tc: '#fff' },
+      EARTH: { bg: 'linear-gradient(135deg, #E0C068 0%, #b09850 100%)', tc: '#333' },
+      AIR: { bg: 'linear-gradient(135deg, #A890F0 0%, #8870c0 100%)', tc: '#fff' },
+      PSYCHE: { bg: 'linear-gradient(135deg, #F85888 0%, #c84068 100%)', tc: '#fff' },
+      INSECT: { bg: 'linear-gradient(135deg, #A8B820 0%, #889818 100%)', tc: '#333' },
+      STONE: { bg: 'linear-gradient(135deg, #B8A038 0%, #988028 100%)', tc: '#333' },
+      GHOST: { bg: 'linear-gradient(135deg, #705898 0%, #584078 100%)', tc: '#fff' },
+      DRAGON: { bg: 'linear-gradient(135deg, #7038F8 0%, #5828c8 100%)', tc: '#fff' },
+      SHADOW: { bg: 'linear-gradient(135deg, #705848 0%, #584038 100%)', tc: '#fff' },
+      METAL: { bg: 'linear-gradient(135deg, #B8B8D0 0%, #9898b0 100%)', tc: '#333' },
+      MYSTIC: { bg: 'linear-gradient(135deg, #EE99AC 0%, #c0788c 100%)', tc: '#333' }
+    };
+
     tbody.innerHTML = entries.map(e => {
       const rankClass = e.rank <= 3 ? ' rank-' + e.rank : '';
       const medal = e.rank === 1 ? '<span class="rank-medal">&#x1F947;</span>'
@@ -383,17 +584,31 @@
 
       const wrPct = (e.win_rate * 100).toFixed(1);
       const wrClass = e.win_rate >= 0.6 ? 'wr-good' : e.win_rate >= 0.4 ? 'wr-mid' : 'wr-low';
-      const typeColor = TYPE_COLORS[e.type] || '#666';
-      const textColor = DARK_TEXT_TYPES.has(e.type) ? '#333' : '#fff';
+
+      // Get gradient for type
+      const typeStyle = typeGradients[e.type.toUpperCase()] || { bg: '#333', tc: '#fff' };
 
       const clickAttr = e.agent_id ? ` onclick="window.location='/agent.html?id=${e.agent_id}'" style="cursor:pointer"` : '';
-      const unclaimedBadge = e.is_unclaimed ? '<span class="unclaimed-badge">Unclaimed</span>' : '';
+
+      // Cosmetics
+      const cos = e.cosmetics || {};
+      const premiumBadge = cos.is_premium ? '<span class="premium-badge">Premium</span>' : '';
+      const titleBadge = cos.title ? '<span class="title-badge">' + esc(cos.title) + '</span>' : '';
+      const nameColor = cos.username_color ? 'color:' + cos.username_color : '';
+      const borderClass = cos.profile_border ? 'has-border' : '';
+      const borderGlow = cos.profile_border ? '<span class="border-glow border-' + cos.profile_border + '"></span>' : '';
+
       return `<tr class="${rankClass}"${clickAttr}>
         <td class="rank-cell">#${e.rank}${medal}</td>
-        <td class="name-cell">${esc(e.name)}${unclaimedBadge}</td>
+        <td class="name-cell ${borderClass}" style="${nameColor}">${borderGlow}${esc(e.name)}${titleBadge}${premiumBadge}</td>
         <td class="center level-cell">${e.level}</td>
-        <td><span class="type-badge" style="background:${typeColor};color:${textColor}">${e.type}</span></td>
-        <td class="right wr-cell ${wrClass}">${wrPct}%</td>
+        <td><span class="type-badge" style="background:${typeStyle.bg};color:${typeStyle.tc}">${e.type}</span></td>
+        <td class="right wr-cell ${wrClass}">
+          <div class="wr-wrapper">
+            <span class="wr-text">${wrPct}%</span>
+            <div class="wr-bar"><div class="wr-fill" style="width:${wrPct}%"></div></div>
+          </div>
+        </td>
         <td class="center wl-cell"><span class="w">${e.wins}</span> / <span class="l">${e.losses}</span></td>
         <td class="right xp-cell">${(e.xp || 0).toLocaleString()}</td>
       </tr>`;

@@ -286,7 +286,8 @@ router.get('/ranked', (req, res) => {
   // SECURITY: Use CASE to derive has_session instead of exposing session_token
   const agents = db.prepare(`
     SELECT id, name, level, ai_type, total_wins, total_fights, xp,
-      owner_id, claimed_at, rank, CASE WHEN session_token IS NOT NULL THEN 1 ELSE 0 END AS has_session
+      owner_id, claimed_at, rank, CASE WHEN session_token IS NOT NULL THEN 1 ELSE 0 END AS has_session,
+      username_color, profile_border, title, is_premium
     FROM agents
     ${whereClause}
     ORDER BY
@@ -348,7 +349,14 @@ router.get('/ranked', (req, res) => {
         total_fights: fights,
         xp: a.xp || 0,
         badges: badgeMap[a.id] || [],
-        is_unclaimed: !a.owner_id && !a.claimed_at && !!a.has_session
+        is_unclaimed: !a.owner_id && !a.claimed_at && !!a.has_session,
+        // Cosmetic data
+        cosmetics: {
+          username_color: a.username_color || null,
+          profile_border: a.profile_border || null,
+          title: a.title || null,
+          is_premium: !!a.is_premium
+        }
       };
     }),
     page,

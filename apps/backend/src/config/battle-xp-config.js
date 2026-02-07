@@ -218,6 +218,7 @@ const RESTED_XP_CONFIG = {
 
 const MAX_LEVEL = 100;
 const FIRST_BATTLE_WIN_XP = 100; // XP shown for first win (level-up is forced separately)
+const PREMIUM_XP_MULTIPLIER = 1.5; // +50% XP for premium subscribers
 
 // =============================================================================
 // HELPER FUNCTIONS
@@ -412,6 +413,7 @@ module.exports = {
   FIRST_BATTLE_WIN_XP,
   GIANT_SLAYER_LEVEL_DIFF,
   RESTED_XP_CONFIG,
+  PREMIUM_XP_MULTIPLIER,
 
   // Helper functions
   getXPToLevelUp,

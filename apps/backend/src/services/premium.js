@@ -11,6 +11,7 @@ const stripe = process.env.STRIPE_SECRET_KEY
   ? require('stripe')(process.env.STRIPE_SECRET_KEY)
   : null;
 const log = require('../utils/logger').createLogger('PREMIUM');
+const { PREMIUM_PERIOD_MS } = require('../config/constants');
 
 const FREE_MATCHES_PER_DAY = 6;  // 6 fights/day for free tier (after 14-day trial)
 const PREMIUM_PRICE_ID = process.env.STRIPE_PREMIUM_PRICE_ID || '';
@@ -125,7 +126,7 @@ async function createSubscription(db, agentId) {
     });
 
     const now = new Date();
-    const expires = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const expires = new Date(now.getTime() + PREMIUM_PERIOD_MS);
 
     db.prepare(`
       UPDATE agents SET
@@ -181,7 +182,7 @@ function handleStripeWebhook(db, event) {
     if (subscriptionId) {
       const agent = db.prepare('SELECT id FROM agents WHERE stripe_subscription_id = ?').get(subscriptionId);
       if (agent) {
-        const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        const expires = new Date(Date.now() + PREMIUM_PERIOD_MS);
         db.prepare('UPDATE agents SET premium_expires_at = ? WHERE id = ?').run(expires.toISOString(), agent.id);
       }
     }

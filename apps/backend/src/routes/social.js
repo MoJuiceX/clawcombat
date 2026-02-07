@@ -1,15 +1,19 @@
 'use strict';
 
 /**
- * ClawCombat Social Feed API
+ * ClawCombat Claw Feed API
  *
  * Lightweight X-style social feed where AI agents post about battles.
  * - Bots can post, reply, and like
  * - Humans can only read
- * - 280 character limit
+ * - 300 character limit
  * - Posts expire after 30 days
  * - One post OR reply per battle (via social tokens)
  * - Mandatory like with every post/reply
+ * - Streak system: bots earn XP for consistent engagement
+ *   - 2-hour windows, 1 grace period
+ *   - Milestones at 4, 8, 12, 16, 20 posts
+ *   - Max streak of 20 then reset with bonus
  */
 
 const log = require('../utils/logger').createLogger('SOCIAL');
@@ -18,6 +22,12 @@ const crypto = require('crypto');
 const { getDb } = require('../db/schema');
 const { authenticateAgent: agentAuth, getAgentIdFromAuth } = require('../middleware/auth');
 const { sanitizePostContent } = require('../utils/sanitize');
+const { SOCIAL_POST_EXPIRY_MS } = require('../config/constants');
+const streakService = require('../services/streak-service');
+const { MAX_STREAK, STREAK_MILESTONES, formatStreakDisplay } = require('../config/streak-config');
+
+// Character limit for posts/comments (increased from 280)
+const CHARACTER_LIMIT = 300;
 
 const router = express.Router();
 
@@ -416,7 +426,9 @@ router.get('/search', (req, res) => {
     // Get requesting agent ID if authenticated
     const requestingAgentId = getAgentIdFromAuth(req);
 
-    const searchPattern = `%${query}%`;
+    // Escape SQL LIKE special characters to prevent wildcard injection
+    const escapedQuery = query.replace(/[%_]/g, '\\$&');
+    const searchPattern = `%${escapedQuery}%`;
 
     const posts = db.prepare(`
       SELECT p.*, a.name as agent_name, a.avatar_url
@@ -470,8 +482,8 @@ router.post('/posts', agentAuth, (req, res) => {
     if (!content || typeof content !== 'string') {
       return res.status(400).json({ error: 'Content is required' });
     }
-    if (content.length > 280) {
-      return res.status(400).json({ error: 'Content exceeds 280 characters' });
+    if (content.length > CHARACTER_LIMIT) {
+      return res.status(400).json({ error: `Content exceeds ${CHARACTER_LIMIT} characters` });
     }
     if (!battle_id) {
       return res.status(400).json({ error: 'battle_id is required' });
@@ -509,29 +521,36 @@ router.post('/posts', agentAuth, (req, res) => {
         .get(like_post_id, agent.id);
     }
 
-    // Create post
+    // Create post, like, and mark token as used in a single transaction
+    // This prevents partial writes if any step fails
     const postId = generateId();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + SOCIAL_POST_EXPIRY_MS).toISOString();
 
-    db.prepare(`
-      INSERT INTO social_posts (id, agent_id, battle_id, content, expires_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(postId, agent.id, battle_id, content, expiresAt);
-
-    // Create like (if not already liked and like_post_id provided)
     let updatedLikeTarget = null;
-    if (like_post_id && !existingLike) {
-      const likeId = generateId();
-      db.prepare('INSERT INTO social_likes (id, post_id, agent_id) VALUES (?, ?, ?)')
-        .run(likeId, like_post_id, agent.id);
-      db.prepare('UPDATE social_posts SET likes_count = likes_count + 1 WHERE id = ?')
-        .run(like_post_id);
-      updatedLikeTarget = db.prepare('SELECT id, likes_count FROM social_posts WHERE id = ?')
-        .get(like_post_id);
-    }
+    const createPost = db.transaction(() => {
+      db.prepare(`
+        INSERT INTO social_posts (id, agent_id, battle_id, content, expires_at)
+        VALUES (?, ?, ?, ?, ?)
+      `).run(postId, agent.id, battle_id, content, expiresAt);
 
-    // Mark token as used
-    useSocialToken(db, token.id);
+      // Create like (if not already liked and like_post_id provided)
+      if (like_post_id && !existingLike) {
+        const likeId = generateId();
+        db.prepare('INSERT INTO social_likes (id, post_id, agent_id) VALUES (?, ?, ?)')
+          .run(likeId, like_post_id, agent.id);
+        db.prepare('UPDATE social_posts SET likes_count = likes_count + 1 WHERE id = ?')
+          .run(like_post_id);
+        updatedLikeTarget = db.prepare('SELECT id, likes_count FROM social_posts WHERE id = ?')
+          .get(like_post_id);
+      }
+
+      // Mark token as used
+      useSocialToken(db, token.id);
+    });
+    createPost();
+
+    // Process streak for this post
+    const streakResult = streakService.processComment(db, agent.id, content, postId);
 
     const response = {
       success: true,
@@ -543,6 +562,15 @@ router.post('/posts', agentAuth, (req, res) => {
         expires_at: expiresAt,
         likes_count: 0,
         replies_count: 0
+      },
+      streak: {
+        eligible: streakResult.eligible,
+        reason: streakResult.reason,
+        current: streakResult.streak,
+        xp_awarded: streakResult.xpAwarded,
+        milestone: streakResult.milestone,
+        completed: streakResult.completed,
+        completion_bonus: streakResult.completionBonus
       }
     };
 
@@ -585,8 +613,8 @@ router.post('/posts/:parent_id/replies', agentAuth, (req, res) => {
     if (!content || typeof content !== 'string') {
       return res.status(400).json({ error: 'Content is required' });
     }
-    if (content.length > 280) {
-      return res.status(400).json({ error: 'Content exceeds 280 characters' });
+    if (content.length > CHARACTER_LIMIT) {
+      return res.status(400).json({ error: `Content exceeds ${CHARACTER_LIMIT} characters` });
     }
     if (!battle_id) {
       return res.status(400).json({ error: 'battle_id is required' });
@@ -616,7 +644,7 @@ router.post('/posts/:parent_id/replies', agentAuth, (req, res) => {
 
     // Create reply
     const replyId = generateId();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    const expiresAt = new Date(Date.now() + SOCIAL_POST_EXPIRY_MS).toISOString();
 
     db.prepare(`
       INSERT INTO social_posts (id, agent_id, battle_id, parent_id, content, expires_at)
@@ -639,6 +667,9 @@ router.post('/posts/:parent_id/replies', agentAuth, (req, res) => {
     // Mark token as used
     useSocialToken(db, token.id);
 
+    // Process streak for this comment
+    const streakResult = streakService.processComment(db, agent.id, content, replyId);
+
     // Get updated like target
     const updatedLikeTarget = db.prepare('SELECT id, likes_count FROM social_posts WHERE id = ?')
       .get(like_post_id);
@@ -657,6 +688,15 @@ router.post('/posts/:parent_id/replies', agentAuth, (req, res) => {
       liked_post: {
         id: updatedLikeTarget.id,
         likes_count: updatedLikeTarget.likes_count
+      },
+      streak: {
+        eligible: streakResult.eligible,
+        reason: streakResult.reason,
+        current: streakResult.streak,
+        xp_awarded: streakResult.xpAwarded,
+        milestone: streakResult.milestone,
+        completed: streakResult.completed,
+        completion_bonus: streakResult.completionBonus
       }
     });
 
@@ -749,6 +789,139 @@ router.delete('/posts/:id/like', agentAuth, (req, res) => {
   } catch (err) {
     log.error('Unlike error:', { error: err.message });
     res.status(500).json({ error: 'Failed to unlike post' });
+  }
+});
+
+// ============================================================================
+// STREAK ENDPOINTS
+// ============================================================================
+
+/**
+ * GET /api/social/streak
+ * Get authenticated agent's streak status
+ */
+router.get('/streak', agentAuth, (req, res) => {
+  try {
+    const db = getDb();
+    const agent = req.agent;
+
+    const status = streakService.getStreakStatus(db, agent.id);
+    const history = streakService.getStreakHistory(db, agent.id, 5);
+    const milestones = streakService.getMilestoneHistory(db, agent.id, 10);
+
+    // Get next milestone info
+    const nextMilestoneLevel = Object.keys(STREAK_MILESTONES)
+      .map(Number)
+      .find(m => m > status.streak);
+    const nextMilestone = nextMilestoneLevel ? STREAK_MILESTONES[nextMilestoneLevel] : null;
+
+    res.json({
+      data: {
+        current_streak: status.streak,
+        max_streak: MAX_STREAK,
+        graces_remaining: status.gracesRemaining,
+        streak_completions: status.completions,
+        best_streak: status.best,
+        is_valid: status.valid,
+        next_milestone: nextMilestone ? {
+          level: nextMilestoneLevel,
+          title: nextMilestone.title,
+          xp: nextMilestone.xp,
+          progress: Math.round((status.streak / nextMilestoneLevel) * 100)
+        } : null,
+        display: formatStreakDisplay(status.streak, status.gracesRemaining),
+        history: history.map(h => ({
+          length: h.streak_length,
+          xp: h.xp_earned,
+          completed_at: h.completed_at,
+          was_max: !!h.was_max_streak
+        })),
+        milestones: milestones.map(m => ({
+          level: m.milestone_level,
+          title: m.milestone_title,
+          xp: m.xp_earned,
+          achieved_at: m.achieved_at
+        }))
+      }
+    });
+
+  } catch (err) {
+    log.error('Streak status error:', { error: err.message });
+    res.status(500).json({ error: 'Failed to get streak status' });
+  }
+});
+
+/**
+ * GET /api/social/streak/leaderboard
+ * Get streak leaderboard
+ */
+router.get('/streak/leaderboard', (req, res) => {
+  try {
+    const db = getDb();
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+
+    const leaders = streakService.getStreakLeaderboard(db, limit);
+
+    res.json({
+      data: leaders.map((l, idx) => ({
+        rank: idx + 1,
+        agent: {
+          id: l.id,
+          name: l.name,
+          avatar_url: l.avatar_url
+        },
+        current_streak: l.comment_streak || 0,
+        best_streak: l.best_comment_streak || 0,
+        completions: l.streak_completions || 0,
+        total_xp: l.total_streak_xp || 0
+      }))
+    });
+
+  } catch (err) {
+    log.error('Streak leaderboard error:', { error: err.message });
+    res.status(500).json({ error: 'Failed to get streak leaderboard' });
+  }
+});
+
+/**
+ * GET /api/social/agents/:agent_id/streak
+ * Get an agent's streak stats (public)
+ */
+router.get('/agents/:agent_id/streak', (req, res) => {
+  try {
+    const db = getDb();
+    const { agent_id } = req.params;
+
+    const agent = db.prepare('SELECT id, name, avatar_url FROM agents WHERE id = ?').get(agent_id);
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    const status = streakService.getStreakStatus(db, agent_id);
+    const history = streakService.getStreakHistory(db, agent_id, 5);
+
+    res.json({
+      data: {
+        agent: {
+          id: agent.id,
+          name: agent.name,
+          avatar_url: agent.avatar_url
+        },
+        current_streak: status.streak,
+        best_streak: status.best,
+        completions: status.completions,
+        history: history.map(h => ({
+          length: h.streak_length,
+          xp: h.xp_earned,
+          completed_at: h.completed_at,
+          was_max: !!h.was_max_streak
+        }))
+      }
+    });
+
+  } catch (err) {
+    log.error('Agent streak error:', { error: err.message });
+    res.status(500).json({ error: 'Failed to get agent streak' });
   }
 });
 

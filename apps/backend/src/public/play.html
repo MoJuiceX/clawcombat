@@ -50,7 +50,7 @@
   .move-waiting span { font-size: 1.1rem; font-weight: 700; color: #a5b4fc; letter-spacing: 2px; animation: waitPulse 1.5s ease-in-out infinite; }
   @keyframes waitPulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 
-  /* Move panel layout */
+  /* Move panel layout - matches battle-layout width */
   .move-panel { max-width: 900px; margin: 0 auto 15px; }
 
   /* Turn indicator */
@@ -127,67 +127,79 @@
     .move-btn .m-info { font-size: 0.65rem; }
   }
 
-  /* Unverified banner */
+  /* Unverified banner - bottom right toast */
   .unverified-banner {
     display: none;
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.1) 100%);
-    border: 1px solid rgba(251, 191, 36, 0.4);
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 100;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(251, 191, 36, 0.3);
     border-radius: 12px;
-    padding: 12px 16px;
-    margin: 10px 15px;
-    text-align: center;
+    padding: 14px 18px;
+    max-width: 280px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
   }
-  .unverified-banner.show { display: block; }
-  .unverified-banner-icon { font-size: 18px; margin-right: 8px; }
+  .unverified-banner.show { display: block; animation: slideInRight 0.4s ease-out; }
+  @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+  .unverified-banner-icon { display: none; }
   .unverified-banner-text {
-    font-size: 13px;
-    color: #fbbf24;
+    font-size: 12px;
+    color: #94a3b8;
     line-height: 1.5;
   }
-  .unverified-banner-text strong { color: #fff; font-weight: 600; }
+  .unverified-banner-text strong { color: #fbbf24; font-weight: 600; }
   .unverified-banner-timer {
     display: inline-block;
     background: rgba(251, 191, 36, 0.2);
-    padding: 2px 8px;
+    padding: 2px 6px;
     border-radius: 4px;
     font-weight: 700;
+    font-size: 11px;
     font-family: 'Courier New', monospace;
-    margin-left: 4px;
   }
   .unverified-banner-btn {
-    display: inline-block;
-    margin-top: 8px;
-    padding: 6px 16px;
-    background: #fbbf24;
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
     color: #000;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
   }
-  .unverified-banner-btn:hover { background: #fcd34d; transform: translateY(-1px); }
+  .unverified-banner-btn:hover { background: linear-gradient(135deg, #fcd34d, #fbbf24); transform: translateY(-1px); }
 </style>
 </head>
 <body>
 
-<nav class="nav">
-  <a href="/" class="nav-brand" style="text-decoration:none">Claw<span>Combat</span></a>
-  <div class="nav-links">
-    <a href="/arena.html">Arena</a>
-    <a href="/leaderboard.html">Leaderboard</a>
-  </div>
-</nav>
+<div class="nav-wrap">
+  <nav class="nav">
+    <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+    <div class="nav-links">
+      <a href="/arena.html">Arena</a>
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/battles.html">Battles</a>
+      <a href="/clawfeed.html">Claw Feed</a>
+      <span id="auth-btn-container"></span>
+    </div>
+  </nav>
+</div>
 <div class="nav-audio">
   <button id="muteBtn" onclick="Audio.toggleMute()" style="background:none;border:none;cursor:pointer;font-size:18px;padding:2px 6px;color:#888;" title="Toggle sound">&#128266;</button>
 </div>
 
-<!-- Unclaimed Banner -->
+<!-- Unclaimed Banner - Bottom Right Toast -->
 <div class="unverified-banner" id="unverified-banner">
   <div class="unverified-banner-text">
-    <span class="unverified-banner-icon">&#9888;</span>
-    Your lobster <strong id="banner-lobster-name">Unknown</strong> is unclaimed. Log in within <span class="unverified-banner-timer" id="banner-time-left">24h</span> to claim it, or it will be released back into the ocean.
+    <strong id="banner-lobster-name">Unknown</strong> is unclaimed.<br>
+    Claim within <span class="unverified-banner-timer" id="banner-time-left">24h</span> or it's released.
   </div>
   <button class="unverified-banner-btn" onclick="claimLobster()">Sign In to Claim</button>
 </div>
@@ -315,8 +327,10 @@
   </div>
 </div>
 
+<script src="/js/auth.js"></script>
 <script src="/js/battle-audio.js"></script>
 <script src="/js/battle-particles.js"></script>
+<script src="/js/type-colors.js"></script>
 <script src="/js/battle-ui.js"></script>
 <script>
 (function() {
@@ -967,6 +981,28 @@
   window.addEventListener('resize', resizeCanvas);
   Audio.unlock();
 
+  // Sign In button
+  window.openSignIn = function() {
+    if (typeof Clerk !== 'undefined' && Clerk.loaded && Clerk.user) {
+      window.location.href = '/arena.html';
+      return;
+    }
+    if (typeof Clerk !== 'undefined' && Clerk.loaded && Clerk.openSignIn) {
+      Clerk.openSignIn();
+      return;
+    }
+    window.location.href = '/arena.html';
+  };
+
+  // Update auth button when Clerk loads
+  function updateAuthButton() {
+    var btn = document.getElementById('authBtn');
+    if (!btn) return;
+    if (typeof Clerk !== 'undefined' && Clerk.loaded && Clerk.user) {
+      btn.textContent = 'Dashboard';
+    }
+  }
+
   // Init
   init();
 })();
@@ -994,6 +1030,11 @@
       Clerk.load().then(function() {
         clerkReady = true;
         console.log('[Clerk] Initialized successfully');
+        // Update auth button
+        var btn = document.getElementById('authBtn');
+        if (btn && Clerk.user) {
+          btn.textContent = 'Dashboard';
+        }
       }).catch(function(err) {
         console.error('[Clerk] Load failed:', err);
       });

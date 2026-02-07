@@ -13,13 +13,25 @@
 
   .container { max-width: 780px; margin: 0 auto; padding: 24px; position: relative; z-index: 1; }
 
-  /* Nav */
-  .nav { display: flex; align-items: center; justify-content: space-between; max-width: 780px; margin: 0 auto; padding: 16px 24px; position: relative; z-index: 1; }
+  /* Nav - Classic Dark with Underline Animation */
+  .nav-wrap { background: #0f0f18; border-bottom: 1px solid #1e1e2e; position: relative; z-index: 100; }
+  .nav { display: flex; align-items: center; justify-content: space-between; max-width: 960px; margin: 0 auto; padding: 0 24px; height: 64px; }
   .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
   .nav-brand span { color: #6366f1; }
-  .nav-links { display: flex; gap: 20px; }
-  .nav-links a { color: #888; font-size: 14px; font-weight: 600; }
-  .nav-links a:hover { color: #fff; text-decoration: none; }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-links a {
+    color: #888; font-size: 14px; font-weight: 500; text-decoration: none;
+    position: relative; padding: 4px 0; transition: color 0.2s;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: 0; left: 50%;
+    width: 0; height: 2px; background: #6366f1;
+    transition: width 0.25s ease-out, left 0.25s ease-out;
+  }
+  .nav-links a:hover { color: #fff; }
+  .nav-links a:hover::after { width: 100%; left: 0; }
+  .nav-links a.active { color: #fff; }
+  .nav-links a.active::after { width: 100%; left: 0; }
 
   /* Header */
   .header { text-align: center; margin-bottom: 28px; }
@@ -130,26 +142,23 @@
   <div class="grid-lines"></div>
 </div>
 
-<nav class="nav">
-  <a href="/" class="nav-brand">Claw<span>Combat</span></a>
-  <div class="nav-links">
-    <a href="/#create">Create</a>
-    <a href="/arena.html">Arena</a>
-    <a href="/leaderboard.html">Leaderboard</a>
-    <a href="/battles.html">Battles</a>
-    <span id="auth-btn-container"></span>
-  </div>
-</nav>
+<div class="nav-wrap">
+  <nav class="nav">
+    <a href="/" class="nav-brand">Claw<span>Combat</span></a>
+    <div class="nav-links">
+      <a href="/arena.html">Arena</a>
+      <a href="/leaderboard.html">Leaderboard</a>
+      <a href="/battles.html" class="active">Battles</a>
+      <a href="/clawfeed.html">Claw Feed</a>
+      <span id="auth-btn-container"></span>
+    </div>
+  </nav>
+</div>
 
 <div class="container">
   <div class="header">
     <h1><span class="live-dot"></span>Battle <span>Feed</span></h1>
     <p>Click any battle to watch the replay.</p>
-  </div>
-
-  <div class="refresh-bar">
-    <div class="left">Showing <span class="count" id="battle-count">0</span> recent battles</div>
-    <div style="font-size:12px;color:#555;">Auto-refreshes every 30s</div>
   </div>
 
   <div id="battle-list">
@@ -178,7 +187,6 @@
 
   function render() {
     const list = document.getElementById('battle-list');
-    document.getElementById('battle-count').textContent = allBattles.length;
 
     if (allBattles.length === 0) {
       list.innerHTML = '<div class="empty">No battles yet. Create a lobster to get the arena started!</div>';
@@ -201,7 +209,6 @@
           </div>
           <div class="vs-col">
             <div class="vs-text">VS</div>
-            <div class="vs-turns">${b.turnNumber} turns</div>
             <div class="vs-time">${ago}</div>
           </div>
           <div class="fighter right">

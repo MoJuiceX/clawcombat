@@ -56,6 +56,10 @@ const RATE_LIMIT_EVENTS = { count: 60, perMs: MS_PER_MINUTE };
 
 // Battle
 const MAX_BATTLE_TURNS = 50;
+const BATTLE_TURN_TIMEOUT_MS = 30 * MS_PER_SECOND;   // 30s per turn
+const MAX_CONSECUTIVE_TIMEOUTS = 3;                   // Forfeit after 3 skips
+const WEBHOOK_TIMEOUT_MS = 30 * MS_PER_SECOND;       // 30s webhook timeout
+const REQUEST_TIMEOUT_MS = 30 * MS_PER_SECOND;       // 30s request timeout
 
 // ============================================================================
 // CONTENT LIMITS
@@ -154,6 +158,10 @@ module.exports = {
 
   // Battle
   MAX_BATTLE_TURNS,
+  BATTLE_TURN_TIMEOUT_MS,
+  MAX_CONSECUTIVE_TIMEOUTS,
+  WEBHOOK_TIMEOUT_MS,
+  REQUEST_TIMEOUT_MS,
 
   // Content limits
   MAX_POST_LENGTH,

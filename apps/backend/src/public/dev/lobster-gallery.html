@@ -159,18 +159,11 @@
   <div class="lightbox-info" id="lightboxInfo"></div>
 </div>
 
+<script src="/js/type-colors.js"></script>
 <script>
 var TYPES = ['mystic','dragon','ghost','neutral','fire','water','electric','grass','ice','martial','venom','earth','air','psyche','insect','stone','shadow','metal'];
 var BODIES = ['cadet','crawler','peeper','scout','sentinel','titan'];
 var VARIANTS = ['attack','balanced','claw','defense','hp','shell','speed'];
-
-var TYPE_COLORS = {
-  neutral:'#A8A878', fire:'#F08030', water:'#6890F0', electric:'#F8D030',
-  grass:'#78C850', ice:'#98D8D8', martial:'#C03028', venom:'#A040A0',
-  earth:'#E0C068', air:'#A890F0', psyche:'#F85888', insect:'#A8B820',
-  stone:'#B8A038', ghost:'#705898', dragon:'#7038F8', shadow:'#705848',
-  metal:'#B8B8D0', mystic:'#EE99AC'
-};
 
 // Manually fixed alternatives: { "type/body/variant": ["alt-1.png", "alt-2.png", ...] }
 var ALTS = {};

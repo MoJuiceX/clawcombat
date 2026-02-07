@@ -941,11 +941,106 @@ function initializeSchema() {
     CREATE INDEX IF NOT EXISTS idx_semantic_cache_expires ON semantic_cache(expires_at);
   `);
 
+  // ============================================================================
+  // COSMETICS SYSTEM - Premium visual customization
+  // ============================================================================
+
+  // Cosmetic items available in the game
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS cosmetic_items (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL,
+      rarity TEXT NOT NULL DEFAULT 'common',
+      premium_only INTEGER DEFAULT 0,
+      unlock_condition TEXT,
+      css_class TEXT,
+      value TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_cosmetic_items_type ON cosmetic_items(type);
+    CREATE INDEX IF NOT EXISTS idx_cosmetic_items_rarity ON cosmetic_items(rarity);
+  `);
+
+  // User-owned cosmetics (linked by owner_id from Clerk)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS user_cosmetics (
+      id TEXT PRIMARY KEY,
+      owner_id TEXT NOT NULL,
+      cosmetic_id TEXT NOT NULL,
+      equipped INTEGER DEFAULT 0,
+      unlocked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (cosmetic_id) REFERENCES cosmetic_items(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_user_cosmetics_owner ON user_cosmetics(owner_id);
+    CREATE INDEX IF NOT EXISTS idx_user_cosmetics_owner_equipped ON user_cosmetics(owner_id, equipped);
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_user_cosmetics_owner_cosmetic ON user_cosmetics(owner_id, cosmetic_id);
+  `);
+
+  // Agent cosmetic display columns
+  try { db.exec('ALTER TABLE agents ADD COLUMN username_color TEXT DEFAULT NULL'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN profile_border TEXT DEFAULT NULL'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN title TEXT DEFAULT NULL'); } catch (e) { /* */ }
+
+  // Seed default cosmetic items
+  seedCosmeticItems(db);
+
   // Additional performance indexes for common query patterns
   try { db.exec('CREATE INDEX IF NOT EXISTS idx_battles_status_created ON battles(status, created_at DESC)'); } catch (e) { /* */ }
   try { db.exec('CREATE INDEX IF NOT EXISTS idx_battles_battle_number ON battles(battle_number)'); } catch (e) { /* */ }
   try { db.exec('CREATE INDEX IF NOT EXISTS idx_gov_agent_creator ON governance_agent_proposals(creator_id, created_at DESC)'); } catch (e) { /* */ }
   try { db.exec('CREATE INDEX IF NOT EXISTS idx_credit_tx_user_created ON credit_transactions(user_id, created_at DESC)'); } catch (e) { /* */ }
+
+  // ============================================================================
+  // CLAW FEED STREAK SYSTEM
+  // ============================================================================
+
+  // Agent streak columns for social feed engagement
+  try { db.exec('ALTER TABLE agents ADD COLUMN comment_streak INTEGER DEFAULT 0'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN last_comment_window INTEGER DEFAULT 0'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN streak_graces_used INTEGER DEFAULT 0'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN streak_completions INTEGER DEFAULT 0'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN best_comment_streak INTEGER DEFAULT 0'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN total_streak_xp INTEGER DEFAULT 0'); } catch (e) { /* */ }
+
+  // Streak history table (tracks completed streaks and milestone achievements)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS streak_history (
+      id TEXT PRIMARY KEY,
+      agent_id TEXT NOT NULL,
+      streak_type TEXT NOT NULL DEFAULT 'comment',
+      streak_length INTEGER NOT NULL,
+      xp_earned INTEGER NOT NULL DEFAULT 0,
+      completed_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      was_max_streak INTEGER DEFAULT 0,
+      FOREIGN KEY (agent_id) REFERENCES agents(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_streak_history_agent ON streak_history(agent_id);
+    CREATE INDEX IF NOT EXISTS idx_streak_history_completed ON streak_history(completed_at DESC);
+  `);
+
+  // Streak milestones table (tracks individual milestone achievements)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS streak_milestones (
+      id TEXT PRIMARY KEY,
+      agent_id TEXT NOT NULL,
+      milestone_level INTEGER NOT NULL,
+      milestone_title TEXT NOT NULL,
+      xp_earned INTEGER NOT NULL,
+      achieved_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (agent_id) REFERENCES agents(id),
+      UNIQUE(agent_id, milestone_level, achieved_at)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_streak_milestones_agent ON streak_milestones(agent_id);
+  `);
+
+  // Comment quality tracking (for anti-spam)
+  try { db.exec('ALTER TABLE social_posts ADD COLUMN streak_eligible INTEGER DEFAULT 1'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE social_posts ADD COLUMN quality_score INTEGER DEFAULT 0'); } catch (e) { /* */ }
 
   // Seed system posts for social feed (prevents first-post-no-like problem)
   seedSystemPosts(db);
@@ -1012,6 +1107,50 @@ function seedSystemPosts(db) {
       }
     }
     log.info('Seeded social feed with system posts');
+  }
+}
+
+/**
+ * Seed default cosmetic items
+ * Includes borders unlocked by rank and premium status
+ */
+function seedCosmeticItems(db) {
+  const cosmetics = [
+    // Borders - unlocked by ELO rank
+    { id: 'border_default', name: 'Default', type: 'border', rarity: 'common', premium_only: 0, unlock_condition: null, css_class: 'border-default', value: '#2a2a3e' },
+    { id: 'border_bronze', name: 'Bronze', type: 'border', rarity: 'common', premium_only: 0, unlock_condition: 'elo_1200', css_class: 'border-bronze', value: '#cd7f32' },
+    { id: 'border_silver', name: 'Silver', type: 'border', rarity: 'uncommon', premium_only: 0, unlock_condition: 'elo_1400', css_class: 'border-silver', value: '#c0c0c0' },
+    { id: 'border_gold', name: 'Gold', type: 'border', rarity: 'rare', premium_only: 0, unlock_condition: 'elo_1600', css_class: 'border-gold', value: '#ffd700' },
+    { id: 'border_diamond', name: 'Diamond', type: 'border', rarity: 'epic', premium_only: 0, unlock_condition: 'elo_1800', css_class: 'border-diamond', value: '#b9f2ff' },
+    { id: 'border_champion', name: 'Champion', type: 'border', rarity: 'legendary', premium_only: 0, unlock_condition: 'season_winner', css_class: 'border-champion', value: 'linear-gradient(45deg, #ffd700, #ff4500)' },
+    { id: 'border_premium', name: 'Premium', type: 'border', rarity: 'rare', premium_only: 1, unlock_condition: 'premium', css_class: 'border-premium', value: 'linear-gradient(45deg, #6366f1, #8b5cf6)' },
+
+    // Username colors - premium only
+    { id: 'color_fire', name: 'Fire', type: 'username_color', rarity: 'uncommon', premium_only: 1, unlock_condition: 'premium', css_class: 'color-fire', value: '#F08030' },
+    { id: 'color_water', name: 'Water', type: 'username_color', rarity: 'uncommon', premium_only: 1, unlock_condition: 'premium', css_class: 'color-water', value: '#6890F0' },
+    { id: 'color_electric', name: 'Electric', type: 'username_color', rarity: 'uncommon', premium_only: 1, unlock_condition: 'premium', css_class: 'color-electric', value: '#F8D030' },
+    { id: 'color_grass', name: 'Grass', type: 'username_color', rarity: 'uncommon', premium_only: 1, unlock_condition: 'premium', css_class: 'color-grass', value: '#78C850' },
+    { id: 'color_dragon', name: 'Dragon', type: 'username_color', rarity: 'rare', premium_only: 1, unlock_condition: 'premium', css_class: 'color-dragon', value: '#7038F8' },
+    { id: 'color_rainbow', name: 'Rainbow', type: 'username_color', rarity: 'epic', premium_only: 1, unlock_condition: 'premium', css_class: 'color-rainbow', value: 'linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)' },
+
+    // Titles - unlocked by achievements
+    { id: 'title_rookie', name: 'Rookie', type: 'title', rarity: 'common', premium_only: 0, unlock_condition: 'battles_10', css_class: null, value: 'Rookie' },
+    { id: 'title_veteran', name: 'Veteran', type: 'title', rarity: 'uncommon', premium_only: 0, unlock_condition: 'battles_100', css_class: null, value: 'Veteran' },
+    { id: 'title_legend', name: 'Legend', type: 'title', rarity: 'rare', premium_only: 0, unlock_condition: 'battles_1000', css_class: null, value: 'Legend' },
+    { id: 'title_premium', name: 'Premium Member', type: 'title', rarity: 'rare', premium_only: 1, unlock_condition: 'premium', css_class: null, value: 'Premium Member' },
+  ];
+
+  const insert = db.prepare(`
+    INSERT OR IGNORE INTO cosmetic_items (id, name, type, rarity, premium_only, unlock_condition, css_class, value)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  for (const item of cosmetics) {
+    try {
+      insert.run(item.id, item.name, item.type, item.rarity, item.premium_only, item.unlock_condition, item.css_class, item.value);
+    } catch (e) {
+      // Item may already exist
+    }
   }
 }
 

@@ -1,12 +1,11 @@
 const crypto = require('crypto');
 const log = require('../utils/logger').createLogger('WEBHOOK');
-
-const TIMEOUT_MS = 30000; // Must match battle-engine checkTimeouts
+const { WEBHOOK_TIMEOUT_MS } = require('../config/constants');
 
 async function sendWebhook(agent, event, payload) {
   if (!agent.webhook_url) return null;
 
-  const body = JSON.stringify({ event, timeout_ms: TIMEOUT_MS, ...payload });
+  const body = JSON.stringify({ event, timeout_ms: WEBHOOK_TIMEOUT_MS, ...payload });
   const signature = crypto
     .createHmac('sha256', agent.webhook_secret || '')
     .update(body)
@@ -55,4 +54,4 @@ async function sendWebhook(agent, event, payload) {
   return null;
 }
 
-module.exports = { sendWebhook, TIMEOUT_MS };
+module.exports = { sendWebhook, WEBHOOK_TIMEOUT_MS };

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Navigation Bar - Premium Design Comparison</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 24px; line-height: 1.5; }
+
+  h1 { text-align: center; margin-bottom: 8px; color: #fff; font-size: 28px; }
+  .subtitle { text-align: center; color: #666; margin-bottom: 40px; font-size: 14px; }
+
+  .option-card {
+    background: #12121a; border: 1px solid #2a2a3e; border-radius: 16px; padding: 20px;
+    margin-bottom: 24px; transition: border-color 0.2s;
+  }
+  .option-card:hover { border-color: #6366f1; }
+  .option-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .option-badge { background: #6366f1; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 6px; }
+  .option-title { font-size: 18px; font-weight: 700; color: #fff; }
+  .option-desc { font-size: 13px; color: #888; margin-bottom: 16px; }
+  .option-tags { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tag { font-size: 10px; padding: 3px 8px; background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 4px; color: #a5b4fc; }
+
+  .nav-preview { border-radius: 8px; overflow: hidden; }
+
+  /* ========== SHARED STYLES ========== */
+  .nav { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 64px; }
+  .nav-logo { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; }
+  .nav-logo span { color: #6366f1; }
+  .nav-links { display: flex; gap: 28px; list-style: none; }
+  .nav-link { color: #888; text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-link:hover { color: #fff; }
+  .nav-link.active { color: #fff; }
+  .nav-auth { display: flex; align-items: center; gap: 12px; }
+  .btn-login { background: transparent; border: 1px solid #3a3a5e; color: #888; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+  .btn-login:hover { border-color: #6366f1; color: #fff; }
+  .btn-cta { border: none; padding: 10px 20px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+
+  /* ========== DESIGN 1: Classic Dark ========== */
+  .nav-1 { background: #0f0f18; border-bottom: 1px solid #1e1e2e; }
+  .nav-1 .btn-cta { background: #6366f1; color: #fff; }
+  .nav-1 .btn-cta:hover { background: #5558e3; }
+
+  /* ========== DESIGN 2: Glassmorphism ========== */
+  .nav-2 { background: rgba(15, 15, 24, 0.75); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .nav-2 .btn-cta { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; }
+  .nav-2 .btn-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4); }
+
+  /* ========== DESIGN 3: Neon Glow ========== */
+  .nav-3 { background: #0a0a12; border-bottom: 1px solid #1a1a2e; }
+  .nav-3 .nav-link.active { color: #00d4ff; text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
+  .nav-3 .btn-cta { background: linear-gradient(135deg, #00d4ff, #0099ff); color: #fff; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
+  .nav-3 .btn-cta:hover { box-shadow: 0 0 30px rgba(0, 212, 255, 0.6); transform: translateY(-1px); }
+
+  /* ========== DESIGN 4: Coral Gaming ========== */
+  .nav-4 { background: linear-gradient(180deg, #12121a 0%, #0f0f18 100%); border-bottom: 1px solid #2a2a3e; }
+  .nav-4 .nav-link.active { color: #f97316; }
+  .nav-4 .btn-cta { background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; box-shadow: 0 0 20px rgba(249, 115, 22, 0.3); }
+  .nav-4 .btn-cta:hover { box-shadow: 0 0 30px rgba(249, 115, 22, 0.5); transform: translateY(-1px); }
+
+  /* ========== DESIGN 5: Underline Accent ========== */
+  .nav-5 { background: #0f0f18; border-bottom: 1px solid #1e1e2e; }
+  .nav-5 .nav-link { position: relative; padding-bottom: 4px; }
+  .nav-5 .nav-link::after { content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px; background: #6366f1; transition: width 0.2s; }
+  .nav-5 .nav-link:hover::after, .nav-5 .nav-link.active::after { width: 100%; }
+  .nav-5 .btn-cta { background: #6366f1; color: #fff; }
+
+  /* ========== DESIGN 6: Pill Navigation ========== */
+  .nav-6 { background: #0f0f18; border-bottom: 1px solid #1e1e2e; }
+  .nav-6 .nav-link { padding: 6px 14px; border-radius: 20px; transition: all 0.2s; }
+  .nav-6 .nav-link:hover { background: rgba(99, 102, 241, 0.1); }
+  .nav-6 .nav-link.active { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+  .nav-6 .btn-cta { background: #6366f1; color: #fff; border-radius: 20px; }
+
+  /* ========== DESIGN 7: Border Bottom Active ========== */
+  .nav-7 { background: #0f0f18; border-bottom: 1px solid #1e1e2e; }
+  .nav-7 .nav-link { padding: 20px 0; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .nav-7 .nav-link.active { border-bottom-color: #10b981; color: #10b981; }
+  .nav-7 .btn-cta { background: #10b981; color: #fff; }
+  .nav-7 .btn-cta:hover { background: #059669; }
+
+  /* ========== DESIGN 8: Gradient Border ========== */
+  .nav-8 { background: #0f0f18; position: relative; }
+  .nav-8::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899, #f97316); }
+  .nav-8 .btn-cta { background: linear-gradient(135deg, #6366f1, #ec4899); color: #fff; }
+
+  /* ========== DESIGN 9: Minimal Clean ========== */
+  .nav-9 { background: #0f0f18; }
+  .nav-9 .nav-link { font-weight: 400; letter-spacing: 0.5px; }
+  .nav-9 .nav-link.active { font-weight: 600; }
+  .nav-9 .btn-login { border: none; background: transparent; }
+  .nav-9 .btn-cta { background: #fff; color: #0f0f18; font-weight: 700; }
+  .nav-9 .btn-cta:hover { background: #e5e5e5; }
+
+  /* ========== DESIGN 10: Floating Card ========== */
+  .nav-10-wrap { padding: 12px 24px; background: #0a0a12; }
+  .nav-10 { background: #16161f; border: 1px solid #2a2a3e; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .nav-10 .btn-cta { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; border-radius: 8px; }
+
+  /* ========== DESIGN 11: Split Layout ========== */
+  .nav-11 { background: #0f0f18; border-bottom: 1px solid #1e1e2e; }
+  .nav-11 .nav-center { position: absolute; left: 50%; transform: translateX(-50%); }
+  .nav-11 .nav-logo { font-size: 24px; }
+  .nav-11 .btn-cta { background: #dc2626; color: #fff; }
+  .nav-11 .btn-cta:hover { background: #b91c1c; }
+
+  /* ========== DESIGN 12: Icon Labels ========== */
+  .nav-12 { background: #0f0f18; border-bottom: 1px solid #1e1e2e; }
+  .nav-12 .nav-link { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; }
+  .nav-12 .nav-icon { font-size: 18px; }
+  .nav-12 .nav-link.active { color: #6366f1; }
+  .nav-12 .btn-cta { background: #6366f1; color: #fff; }
+
+  /* Recommendation */
+  .recommendation {
+    margin-top: 40px; padding: 24px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+    border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 16px;
+  }
+  .recommendation h3 { color: #fff; margin-bottom: 16px; font-size: 18px; }
+  .recommendation ul { padding-left: 20px; }
+  .recommendation li { margin-bottom: 10px; color: #ccc; font-size: 14px; }
+  .recommendation strong { color: #fff; }
+  .recommendation code { background: #1a1a2e; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #a5b4fc; }
+</style>
+</head>
+<body>
+
+<h1>Navigation Bar - Premium Designs</h1>
+<p class="subtitle">Compare 12 different nav bar styles for ClawCombat</p>
+
+<!-- Design 1 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">1</span>
+    <span class="option-title">Classic Dark</span>
+  </div>
+  <p class="option-desc">Simple, clean dark theme. Solid background with subtle border. Safe and professional.</p>
+  <div class="option-tags"><span class="tag">Simple</span><span class="tag">Professional</span><span class="tag">Safe</span></div>
+  <div class="nav-preview">
+    <nav class="nav nav-1">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Play Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 2 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">2</span>
+    <span class="option-title">Glassmorphism</span>
+  </div>
+  <p class="option-desc">Frosted glass effect with blur. Modern, premium feel. Works great over dynamic backgrounds.</p>
+  <div class="option-tags"><span class="tag">Modern</span><span class="tag">Premium</span><span class="tag">Trending 2025</span></div>
+  <div class="nav-preview" style="background: linear-gradient(135deg, #1a1a2e, #2d1b4e);">
+    <nav class="nav nav-2">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Play Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 3 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">3</span>
+    <span class="option-title">Neon Cyber</span>
+  </div>
+  <p class="option-desc">Cyan neon glow effects. Cyberpunk/esports aesthetic. High energy, attention-grabbing.</p>
+  <div class="option-tags"><span class="tag">Gaming</span><span class="tag">Esports</span><span class="tag">Cyberpunk</span></div>
+  <div class="nav-preview">
+    <nav class="nav nav-3">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Battle Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 4 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">4</span>
+    <span class="option-title">Coral Gaming</span>
+  </div>
+  <p class="option-desc">Warm coral/orange accent matching lobster theme. Energetic but not overwhelming.</p>
+  <div class="option-tags"><span class="tag">On-Brand</span><span class="tag">Warm</span><span class="tag">Energetic</span></div>
+  <div class="nav-preview">
+    <nav class="nav nav-4">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Battle Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 5 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">5</span>
+    <span class="option-title">Underline Animation</span>
+  </div>
+  <p class="option-desc">Animated underline on hover/active. Subtle but engaging micro-interaction.</p>
+  <div class="option-tags"><span class="tag">Animated</span><span class="tag">Subtle</span><span class="tag">Interactive</span></div>
+  <div class="nav-preview">
+    <nav class="nav nav-5">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Play Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 6 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">6</span>
+    <span class="option-title">Pill Navigation</span>
+  </div>
+  <p class="option-desc">Rounded pill-shaped active states. Friendly, modern SaaS-like feel.</p>
+  <div class="option-tags"><span class="tag">Friendly</span><span class="tag">Modern</span><span class="tag">SaaS-style</span></div>
+  <div class="nav-preview">
+    <nav class="nav nav-6">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Play Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 7 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">7</span>
+    <span class="option-title">Bottom Border Active</span>
+  </div>
+  <p class="option-desc">Full-height links with bottom border indicator. Clear active state, professional.</p>
+  <div class="option-tags"><span class="tag">Clear</span><span class="tag">Professional</span><span class="tag">Green Accent</span></div>
+  <div class="nav-preview">
+    <nav class="nav nav-7">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Play Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 8 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">8</span>
+    <span class="option-title">Gradient Border</span>
+  </div>
+  <p class="option-desc">Rainbow gradient bottom border. Eye-catching, playful, memorable.</p>
+  <div class="option-tags"><span class="tag">Colorful</span><span class="tag">Playful</span><span class="tag">Unique</span></div>
+  <div class="nav-preview">
+    <nav class="nav nav-8">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Play Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 9 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">9</span>
+    <span class="option-title">Minimal Clean</span>
+  </div>
+  <p class="option-desc">Ultra minimal with white CTA. High contrast, Apple-inspired simplicity.</p>
+  <div class="option-tags"><span class="tag">Minimal</span><span class="tag">High Contrast</span><span class="tag">Apple-style</span></div>
+  <div class="nav-preview">
+    <nav class="nav nav-9">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Play Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 10 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">10</span>
+    <span class="option-title">Floating Card</span>
+  </div>
+  <p class="option-desc">Nav bar as floating card with border and shadow. Stands out from page content.</p>
+  <div class="option-tags"><span class="tag">Elevated</span><span class="tag">Premium</span><span class="tag">Modern</span></div>
+  <div class="nav-preview nav-10-wrap">
+    <nav class="nav nav-10">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+        <li><a class="nav-link">Leaderboard</a></li>
+        <li><a class="nav-link">Battles</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Play Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 11 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">11</span>
+    <span class="option-title">Centered Logo</span>
+  </div>
+  <p class="option-desc">Logo in center with nav split on sides. Bold, statement-making layout.</p>
+  <div class="option-tags"><span class="tag">Bold</span><span class="tag">Centered</span><span class="tag">Statement</span></div>
+  <div class="nav-preview">
+    <nav class="nav nav-11" style="position: relative;">
+      <ul class="nav-links">
+        <li><a class="nav-link active">Battle</a></li>
+        <li><a class="nav-link">Arena</a></li>
+      </ul>
+      <a class="nav-logo nav-center">Claw<span>Combat</span></a>
+      <div class="nav-auth">
+        <a class="nav-link">Leaderboard</a>
+        <button class="btn-cta">Play Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Design 12 -->
+<div class="option-card">
+  <div class="option-header">
+    <span class="option-badge">12</span>
+    <span class="option-title">Icon + Label</span>
+  </div>
+  <p class="option-desc">Icons above labels for each nav item. Visual recognition, app-like feel.</p>
+  <div class="option-tags"><span class="tag">App-like</span><span class="tag">Visual</span><span class="tag">Recognizable</span></div>
+  <div class="nav-preview">
+    <nav class="nav nav-12">
+      <a class="nav-logo">Claw<span>Combat</span></a>
+      <ul class="nav-links">
+        <li><a class="nav-link active"><span class="nav-icon">⚔️</span>Battle</a></li>
+        <li><a class="nav-link"><span class="nav-icon">🏟️</span>Arena</a></li>
+        <li><a class="nav-link"><span class="nav-icon">🏆</span>Ranks</a></li>
+        <li><a class="nav-link"><span class="nav-icon">📜</span>History</a></li>
+      </ul>
+      <div class="nav-auth">
+        <button class="btn-login">Login</button>
+        <button class="btn-cta">Play Now</button>
+      </div>
+    </nav>
+  </div>
+</div>
+
+<!-- Recommendation -->
+<div class="recommendation">
+  <h3>Recommendation for ClawCombat</h3>
+  <ul>
+    <li><strong>Best for Gaming:</strong> Design <strong>3 (Neon Cyber)</strong> or <strong>4 (Coral Gaming)</strong> - These have the energy and visual impact expected from a battle game.</li>
+    <li><strong>Best for Premium Feel:</strong> Design <strong>2 (Glassmorphism)</strong> or <strong>10 (Floating Card)</strong> - Modern, sophisticated, works great with animated backgrounds.</li>
+    <li><strong>Best for Usability:</strong> Design <strong>5 (Underline Animation)</strong> - Clear active states, subtle but effective micro-interactions.</li>
+    <li><strong>My Top Pick:</strong> Combine <strong>Glassmorphism (2)</strong> + <strong>Coral accent (4)</strong> + <strong>Underline animation (5)</strong> for the perfect ClawCombat nav.</li>
+    <li><strong>Must-have elements:</strong> Logo, Battle/Play CTA, Leaderboard, Arena, Auth buttons. Consider adding notifications bell when logged in.</li>
+  </ul>
+</div>
+
+</body>
+</html>

@@ -1,17 +1,8 @@
 // ============================================
 // SHARED BATTLE UI HELPERS
 // Used by: demo.html, arena.html, replay.html
+// Requires: type-colors.js (must be loaded first)
 // ============================================
-
-// --- Type color map ---
-var TYPE_COLORS = {
-  neutral: '#A8A878', fire: '#F08030', water: '#6890F0',
-  electric: '#F8D030', grass: '#78C850', ice: '#98D8D8',
-  martial: '#C03028', venom: '#A040A0', earth: '#E0C068',
-  air: '#A890F0', psyche: '#F85888', insect: '#A8B820',
-  stone: '#B8A038', ghost: '#705898', dragon: '#7038F8',
-  shadow: '#705848', metal: '#B8B8D0', mystic: '#EE99AC'
-};
 
 // --- Utility ---
 function escapeHtml(str) {

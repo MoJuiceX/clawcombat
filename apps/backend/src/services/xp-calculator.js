@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * ClawCombat XP Calculator v2
  *
@@ -6,7 +8,7 @@
  * - Level-scaled XP earning (higher levels earn more)
  * - Opponent level difference modifiers (±30% based on level gap)
  * - Win streak bonuses (3/6/12/15%)
- * - Daily first win bonus (+33%)
+ * - Daily first win bonus (+50%)
  *
  * Target timeline:
  * - Premium hardcore (24/day): ~7.5 months to level 100
@@ -14,8 +16,6 @@
  */
 
 const log = require('../utils/logger').createLogger('XP_CALCULATOR');
-
-'use strict';
 
 const { getTier, buildSkinPrompt, hashAgentStats } = require('./skin-generator');
 const {
@@ -28,7 +28,8 @@ const {
   DAILY_FIRST_WIN_BONUS,
   MAX_LEVEL,
   GIANT_SLAYER_LEVEL_DIFF,
-  RESTED_XP_CONFIG
+  RESTED_XP_CONFIG,
+  PREMIUM_XP_MULTIPLIER
 } = require('../config/battle-xp-config');
 const { RESPEC_MILESTONES } = require('../config/stat-scaling');
 
@@ -46,9 +47,10 @@ const { RESPEC_MILESTONES } = require('../config/stat-scaling');
  * @param {number} params.winStreak - Player's current win streak (before this battle)
  * @param {boolean} params.isFirstWinToday - Whether this is player's first win today
  * @param {number} params.restedBattles - Available rested battles (for 2x XP bonus)
+ * @param {boolean} params.isPremium - Whether player has premium subscription
  * @returns {{ xp: number, breakdown: object, restedUsed: boolean }}
  */
-function calculateBattleXP({ playerLevel, opponentLevel, won, winStreak = 0, isFirstWinToday = false, restedBattles = 0 }) {
+function calculateBattleXP({ playerLevel, opponentLevel, won, winStreak = 0, isFirstWinToday = false, restedBattles = 0, isPremium = false }) {
   // 1. Get base XP for player's level bracket
   const baseXP = getBaseXPForLevel(playerLevel, won);
 
@@ -116,6 +118,19 @@ function calculateBattleXP({ playerLevel, opponentLevel, won, winStreak = 0, isF
         description: `Rested XP bonus (2x) - ${restedBattles - 1} battles remaining`
       });
       breakdown.restedUsed = true;
+    }
+
+    // 6. Apply premium XP bonus (+50% for premium subscribers)
+    if (isPremium) {
+      const premiumBonus = Math.round(baseXP * (PREMIUM_XP_MULTIPLIER - 1));
+      totalXP += premiumBonus;
+      breakdown.modifiers.push({
+        type: 'premium',
+        modifier: PREMIUM_XP_MULTIPLIER - 1,
+        xpChange: premiumBonus,
+        description: `Premium bonus (+${Math.round((PREMIUM_XP_MULTIPLIER - 1) * 100)}%)`
+      });
+      breakdown.isPremium = true;
     }
   }
 

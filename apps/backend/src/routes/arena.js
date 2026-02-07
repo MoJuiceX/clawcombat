@@ -29,6 +29,7 @@ const {
   applyBattleResults,
   sanitizeBattleState,
 } = require('../services/battle-engine');
+const { BATTLE_TURN_TIMEOUT_MS } = require('../config/constants');
 const { getMoveById } = require('../data/moves');
 const { getFightLimitInfo, recordFight, checkClerkPremium } = require('../middleware/rate-limit');
 const { chooseMove } = require('../services/ai-strategist');
@@ -99,6 +100,7 @@ router.get('/my-agents', authenticateHuman, (req, res) => {
         level: a.level,
         ability: a.ability_name,
         avatar_url: a.avatar_url,
+        is_premium: !!a.is_premium,
         stats: {
           hp: a.base_hp,
           attack: a.base_attack,
@@ -247,7 +249,7 @@ router.get('/battle-state', authenticateHuman, (req, res) => {
       moveSubmitted: isAgentA ? !!battle.agent_a_move : !!battle.agent_b_move,
       lastTurnAt: battle.last_turn_at,
       serverTime: new Date().toISOString(),
-      timeoutMs: 30000,
+      timeoutMs: BATTLE_TURN_TIMEOUT_MS,
     });
   } catch (e) {
     log.error('battle-state error', { error: e.message, human_id: req.human.id, agent_id: req.query.agentId });

@@ -276,7 +276,7 @@ function selectImage(type, base, variant) {
   const images = library[type]?.[base]?.[variant] || [];
 
   if (images.length === 0) {
-    console.warn(`[ImageAssigner] No image found for ${type}-${base}-${variant}`);
+    log.warn('No image found for combination', { type, base, variant });
     // Fallback to balanced variant
     const fallbackImages = library[type]?.[base]?.['balanced'] || [];
     if (fallbackImages.length > 0) {

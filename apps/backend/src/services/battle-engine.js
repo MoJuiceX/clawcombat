@@ -18,6 +18,7 @@ const {
   calculateEffectiveMovePower,
   getEvolutionTier,
 } = require('../config/stat-scaling');
+const { WEBHOOK_TIMEOUT_MS, BATTLE_TURN_TIMEOUT_MS, MAX_CONSECUTIVE_TIMEOUTS, SOCIAL_TOKEN_EXPIRY_MS } = require('../config/constants');
 const express = require('express');
 
 // ============================================================================
@@ -1131,8 +1132,6 @@ function resolveTurn(battleState, moveA, moveB) {
 // SECTION 14: WEBHOOK
 // ============================================================================
 
-const WEBHOOK_TIMEOUT_MS = 30000;
-
 async function sendWebhook(agent, event, payload) {
   if (!agent.webhook_url) return;
   try {
@@ -1439,7 +1438,7 @@ function buildTurnPayload(battleState, turnResult, side) {
     }
 
     // Social token info
-    const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+    const tokenExpiry = new Date(Date.now() + SOCIAL_TOKEN_EXPIRY_MS).toISOString();
     payload.social = {
       can_post: true,
       token_expires: tokenExpiry,
@@ -1696,9 +1695,7 @@ function matchFromQueue(db) {
 // ============================================================================
 
 function checkTimeouts(db) {
-  const TIMEOUT_MS = 30000; // 30 seconds
-  const MAX_CONSECUTIVE_TIMEOUTS = 3; // forfeit match after 3 consecutive skips
-  const cutoff = new Date(Date.now() - TIMEOUT_MS).toISOString();
+  const cutoff = new Date(Date.now() - BATTLE_TURN_TIMEOUT_MS).toISOString();
   const staleBattles = db.prepare(`
     SELECT * FROM battles
     WHERE status = 'active'
@@ -1912,7 +1909,7 @@ function applyBattleResults(db, winnerId, loserId, battleId) {
 
   // Grant social tokens to both participants (for posting on social feed)
   try {
-    const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
+    const tokenExpiry = new Date(Date.now() + SOCIAL_TOKEN_EXPIRY_MS).toISOString();
     const insertToken = db.prepare(`
       INSERT OR IGNORE INTO social_tokens (id, agent_id, battle_id, expires_at)
       VALUES (?, ?, ?, ?)
