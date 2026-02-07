@@ -598,6 +598,17 @@ function startCronJobs() {
 
       // Cleanup unclaimed lobsters whose 24-hour claim window has expired
       cleanupUnclaimedAgents();
+
+      // Cleanup old bot health logs (keeps last 7 days)
+      try {
+        const { cleanupOldLogs } = require('./bot-health');
+        const deleted = cleanupOldLogs();
+        if (deleted > 0) {
+          log.info('Bot health logs cleanup completed', { deletedRows: deleted });
+        }
+      } catch (e) {
+        log.error('Bot health cleanup error:', { error: e.message });
+      }
     } catch (err) {
       log.error('Daily job error:', { error: err.message });
     }

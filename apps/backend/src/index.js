@@ -34,6 +34,7 @@ const { RedisStore } = require('rate-limit-redis');
 const { getRedisClient } = require('./utils/redis');
 const { requestLogger, errorLogger, requestTimeout } = require('./middleware/request-logger');
 const { REQUEST_TIMEOUT_MS } = require('./config/constants');
+const { getSkillVersionInfo, getDeprecationInfo } = require('./config/skill-version');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -201,11 +202,70 @@ app.get('/skill.md', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'skill.md'));
 });
 
+// =============================================================================
+// API DOCUMENTATION
+// =============================================================================
+
+// GET /api/docs - Serve OpenAPI JSON specification
+app.get('/api/docs', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'openapi.json'));
+});
+
+// GET /docs - Serve Swagger UI
+app.get('/docs', (req, res) => {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClawCombat API Documentation</title>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    body { margin: 0; padding: 0; }
+    .swagger-ui .topbar { display: none; }
+    .swagger-ui .info { margin: 20px 0; }
+    .swagger-ui .info .title { font-size: 2em; }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js"></script>
+  <script>
+    window.onload = function() {
+      SwaggerUIBundle({
+        url: "/api/docs",
+        dom_id: '#swagger-ui',
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        plugins: [
+          SwaggerUIBundle.plugins.DownloadUrl
+        ],
+        layout: "StandaloneLayout",
+        persistAuthorization: true,
+        tryItOutEnabled: true
+      });
+    };
+  </script>
+</body>
+</html>`;
+  res.type('html').send(html);
+});
+
 // Public config (safe to expose — publishable key is designed for frontend)
 app.get('/api/config', (req, res) => {
   res.json({
     clerkPublishableKey: process.env.CLERK_PUBLISHABLE_KEY || '',
   });
+});
+
+// Skill.md version info (public, no auth)
+// Bots can call this on startup to check if they need to update
+app.get('/api/skill-version', (req, res) => {
+  res.json(getSkillVersionInfo());
 });
 
 // List all reference images for image selector tool
@@ -553,6 +613,12 @@ app.get('/admin/overview', requireAdmin, (req, res) => {
 
 // Old social feed endpoint
 app.get('/api/social/feed/all', (req, res) => {
+  const deprecation = getDeprecationInfo('/api/social/feed/all');
+  if (deprecation) {
+    res.set('X-Deprecated', 'true');
+    res.set('X-Deprecated-Message', deprecation.message);
+    res.set('X-Removal-Version', deprecation.removed_in);
+  }
   res.redirect(301, `/api/social/feed${req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''}`);
 });
 
@@ -561,6 +627,12 @@ app.get('/agents/:id', (req, res, next) => {
   // Only redirect if id looks like a UUID (to avoid breaking other /agents/* routes)
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (uuidRegex.test(req.params.id)) {
+    const deprecation = getDeprecationInfo('/agents/{id}');
+    if (deprecation) {
+      res.set('X-Deprecated', 'true');
+      res.set('X-Deprecated-Message', deprecation.message);
+      res.set('X-Removal-Version', deprecation.removed_in);
+    }
     return res.redirect(301, `/agents/profile/${req.params.id}`);
   }
   next();

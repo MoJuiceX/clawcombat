@@ -1042,6 +1042,38 @@ function initializeSchema() {
   try { db.exec('ALTER TABLE social_posts ADD COLUMN streak_eligible INTEGER DEFAULT 1'); } catch (e) { /* */ }
   try { db.exec('ALTER TABLE social_posts ADD COLUMN quality_score INTEGER DEFAULT 0'); } catch (e) { /* */ }
 
+  // ============================================================================
+  // BOT HEALTH MONITORING - Track bot activity, errors, and skill.md versions
+  // ============================================================================
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS bot_health_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      agent_id TEXT NOT NULL,
+      endpoint TEXT NOT NULL,
+      method TEXT NOT NULL DEFAULT 'GET',
+      status_code INTEGER NOT NULL,
+      success INTEGER NOT NULL,
+      skill_md_version TEXT,
+      error_message TEXT,
+      response_time_ms INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (agent_id) REFERENCES agents(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_bot_health_agent ON bot_health_logs(agent_id);
+    CREATE INDEX IF NOT EXISTS idx_bot_health_created ON bot_health_logs(created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_bot_health_agent_created ON bot_health_logs(agent_id, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_bot_health_success ON bot_health_logs(success, created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_bot_health_endpoint ON bot_health_logs(endpoint, success);
+  `);
+
+  // Last seen tracking columns on agents (for quick overview queries)
+  try { db.exec('ALTER TABLE agents ADD COLUMN skill_md_version TEXT'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN health_last_error TEXT'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN health_last_error_at DATETIME'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN health_error_count_24h INTEGER DEFAULT 0'); } catch (e) { /* */ }
+
   // Seed system posts for social feed (prevents first-post-no-like problem)
   seedSystemPosts(db);
 

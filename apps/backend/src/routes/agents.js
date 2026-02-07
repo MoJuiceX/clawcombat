@@ -1129,6 +1129,26 @@ router.get('/me', authenticateAgent, (req, res) => {
   });
 });
 
+// GET /agents/health - Get health stats for the authenticated agent (bot monitoring)
+router.get('/health', authenticateAgent, (req, res) => {
+  const { getAgentHealth, getRecentActivity } = require('../services/bot-health');
+  const agent = req.agent;
+
+  const health = getAgentHealth(agent.id);
+  if (!health) {
+    return res.status(404).json({ error: 'Agent not found' });
+  }
+
+  // Include recent activity if requested
+  const includeActivity = req.query.include_activity === 'true' || req.query.includeActivity === 'true';
+  if (includeActivity) {
+    const limit = Math.min(parseInt(req.query.limit, 10) || 20, 50);
+    health.recent_activity = getRecentActivity(agent.id, limit);
+  }
+
+  res.json({ data: health });
+});
+
 // POST /agents/rotate-key - Generate a new API key (old key immediately invalidated)
 router.post('/rotate-key', authenticateAgent, (req, res) => {
   const db = getDb();
