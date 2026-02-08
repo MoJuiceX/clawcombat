@@ -52,14 +52,22 @@ function generateId() {
  * @param {Array|null} userReactions - Pre-fetched user reactions (for batch efficiency)
  */
 function formatPost(post, requestingAgentId = null, reactionCounts = null, userReactions = null) {
+  // Bot identity: use bot_name/bot_avatar if set, otherwise fall back to agent data
+  // The bot is the OpenClaw.ai AI that posts; the agent/lobster is the in-game character
+  const botName = post.bot_name || post.agent_name || 'Unknown Bot';
+  const botAvatarUrl = post.bot_avatar_url || null; // null means use robot emoji in frontend
+
   return {
     id: post.id,
     type: post.parent_id ? 'reply' : 'post',
     parent_id: post.parent_id || null,
     agent: {
       id: post.agent_id,
-      name: post.agent_name || 'Unknown',
-      avatar_url: post.avatar_url || null
+      name: botName,
+      avatar_url: botAvatarUrl,
+      // Also include lobster info for reference
+      lobster_name: post.agent_name || 'Unknown',
+      lobster_avatar_url: post.avatar_url || null
     },
     content: post.content,
     created_at: post.created_at,
@@ -209,7 +217,10 @@ function getBatchUserReactions(db, postIds, agentId) {
 
 /**
  * GET /api/social/feed
- * Get paginated feed of top-level posts (newest first)
+ * Get paginated feed of posts
+ * Query params:
+ *   - sort: 'newest' (default), 'engagement' (replies + reactions)
+ *   - filter: 'all' (default), 'top_level' (no replies)
  */
 router.get('/feed', (req, res) => {
   try {
@@ -217,24 +228,40 @@ router.get('/feed', (req, res) => {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
     const offset = (page - 1) * limit;
+    const sortBy = req.query.sort || 'newest';
+    const filter = req.query.filter || 'all';
 
     // Get requesting agent ID if authenticated (for is_own flag)
     const requestingAgentId = getAgentIdFromAuth(req);
 
+    // Build WHERE clause based on filter
+    const whereClause = filter === 'top_level'
+      ? "WHERE p.parent_id IS NULL AND p.expires_at > datetime('now')"
+      : "WHERE p.expires_at > datetime('now')";
+
+    // Build ORDER BY clause based on sort
+    // engagement = replies_count + total reactions (calculated via subquery)
+    let orderBy;
+    if (sortBy === 'engagement') {
+      orderBy = `(p.replies_count + COALESCE((SELECT COUNT(*) FROM social_reactions sr WHERE sr.post_id = p.id), 0)) DESC, p.created_at DESC`;
+    } else {
+      orderBy = 'p.created_at DESC';
+    }
+
     // Get total count
     const totalResult = db.prepare(`
-      SELECT COUNT(*) as cnt FROM social_posts
-      WHERE parent_id IS NULL AND expires_at > datetime('now')
+      SELECT COUNT(*) as cnt FROM social_posts p
+      ${whereClause}
     `).get();
     const totalPosts = totalResult.cnt;
 
-    // Get posts with agent info
+    // Get posts with agent info (including bot identity)
     const posts = db.prepare(`
-      SELECT p.*, a.name as agent_name, a.avatar_url
+      SELECT p.*, a.name as agent_name, a.avatar_url, a.bot_name, a.bot_avatar_url
       FROM social_posts p
       JOIN agents a ON p.agent_id = a.id
-      WHERE p.parent_id IS NULL AND p.expires_at > datetime('now')
-      ORDER BY p.created_at DESC
+      ${whereClause}
+      ORDER BY ${orderBy}
       LIMIT ? OFFSET ?
     `).all(limit, offset);
 
@@ -278,7 +305,7 @@ router.get('/feed/all', (req, res) => {
     const requestingAgentId = getAgentIdFromAuth(req);
 
     const items = db.prepare(`
-      SELECT p.*, a.name as agent_name, a.avatar_url
+      SELECT p.*, a.name as agent_name, a.avatar_url, a.bot_name, a.bot_avatar_url, a.bot_name, a.bot_avatar_url
       FROM social_posts p
       JOIN agents a ON p.agent_id = a.id
       WHERE p.expires_at > datetime('now')
@@ -330,7 +357,7 @@ router.get('/posts/:id', (req, res) => {
 
     // Get the post
     const post = db.prepare(`
-      SELECT p.*, a.name as agent_name, a.avatar_url
+      SELECT p.*, a.name as agent_name, a.avatar_url, a.bot_name, a.bot_avatar_url
       FROM social_posts p
       JOIN agents a ON p.agent_id = a.id
       WHERE p.id = ? AND p.expires_at > datetime('now')
@@ -342,7 +369,7 @@ router.get('/posts/:id', (req, res) => {
 
     // Get all replies
     const replies = db.prepare(`
-      SELECT p.*, a.name as agent_name, a.avatar_url
+      SELECT p.*, a.name as agent_name, a.avatar_url, a.bot_name, a.bot_avatar_url
       FROM social_posts p
       JOIN agents a ON p.agent_id = a.id
       WHERE p.parent_id = ? AND p.expires_at > datetime('now')
@@ -409,7 +436,7 @@ router.get('/agents/:agent_id/posts', (req, res) => {
 
     // Get posts
     const posts = db.prepare(`
-      SELECT p.*, a.name as agent_name, a.avatar_url
+      SELECT p.*, a.name as agent_name, a.avatar_url, a.bot_name, a.bot_avatar_url
       FROM social_posts p
       JOIN agents a ON p.agent_id = a.id
       WHERE p.agent_id = ? AND p.parent_id IS NULL AND p.expires_at > datetime('now')
@@ -596,7 +623,7 @@ router.get('/search', (req, res) => {
     const searchPattern = `%${escapedQuery}%`;
 
     const posts = db.prepare(`
-      SELECT p.*, a.name as agent_name, a.avatar_url
+      SELECT p.*, a.name as agent_name, a.avatar_url, a.bot_name, a.bot_avatar_url
       FROM social_posts p
       JOIN agents a ON p.agent_id = a.id
       WHERE (p.content LIKE ? OR a.name LIKE ?) AND p.expires_at > datetime('now')
@@ -1266,7 +1293,9 @@ const VALID_SORT_OPTIONS = {
   'most_active': 'post_count DESC, a.level DESC',
   'highest_level': 'a.level DESC, post_count DESC',
   'most_posts': 'total_posts DESC, a.level DESC',
-  'alphabetical': 'a.name ASC'
+  'alphabetical': 'a.name ASC',
+  'highest_winrate': 'win_rate DESC, battles DESC',
+  'newest': 'a.created_at DESC'
 };
 
 /**
@@ -1313,7 +1342,7 @@ router.get('/profiles/search', (req, res) => {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-    // Get profiles with post counts (posts in last 7 days for "most active")
+    // Get profiles with post counts, battle stats, and last post
     const profiles = db.prepare(`
       SELECT
         a.id,
@@ -1321,13 +1350,31 @@ router.get('/profiles/search', (req, res) => {
         a.avatar_url,
         a.ai_type,
         a.level,
+        a.created_at,
         (SELECT COUNT(*) FROM social_posts sp
          WHERE sp.agent_id = a.id
          AND sp.expires_at > datetime('now')) as total_posts,
         (SELECT COUNT(*) FROM social_posts sp
          WHERE sp.agent_id = a.id
          AND sp.created_at > datetime('now', '-7 days')
-         AND sp.expires_at > datetime('now')) as post_count
+         AND sp.expires_at > datetime('now')) as post_count,
+        (SELECT COUNT(*) FROM battles b
+         WHERE (b.agent_a_id = a.id OR b.agent_b_id = a.id)
+         AND b.status = 'completed') as battles,
+        (SELECT COUNT(*) FROM battles b
+         WHERE b.winner_id = a.id
+         AND b.status = 'completed') as wins,
+        CASE
+          WHEN (SELECT COUNT(*) FROM battles b WHERE (b.agent_a_id = a.id OR b.agent_b_id = a.id) AND b.status = 'completed') > 0
+          THEN CAST((SELECT COUNT(*) FROM battles b WHERE b.winner_id = a.id AND b.status = 'completed') AS REAL) /
+               (SELECT COUNT(*) FROM battles b WHERE (b.agent_a_id = a.id OR b.agent_b_id = a.id) AND b.status = 'completed')
+          ELSE 0
+        END as win_rate,
+        (SELECT content FROM social_posts sp
+         WHERE sp.agent_id = a.id
+         AND sp.expires_at > datetime('now')
+         ORDER BY sp.created_at DESC
+         LIMIT 1) as last_post
       FROM agents a
       ${whereClause}
       ORDER BY ${orderBy}
@@ -1350,7 +1397,12 @@ router.get('/profiles/search', (req, res) => {
         type: p.ai_type || 'NEUTRAL',
         level: p.level || 1,
         post_count: p.total_posts || 0,
-        recent_posts: p.post_count || 0
+        recent_posts: p.post_count || 0,
+        battles: p.battles || 0,
+        wins: p.wins || 0,
+        win_rate: p.win_rate || 0,
+        last_post: p.last_post || null,
+        created_at: p.created_at
       })),
       query: query || null,
       type_filter: typeFilter || null,
@@ -1418,6 +1470,123 @@ router.get('/profiles/top-posters', (req, res) => {
   } catch (err) {
     log.error('Top posters error:', { error: err.message });
     res.status(500).json({ error: 'Failed to get top posters' });
+  }
+});
+
+// ============================================================================
+// BOT IDENTITY
+// ============================================================================
+
+/**
+ * PUT /api/social/bot/identity
+ * Set or update the bot's identity (name and avatar)
+ * The bot is the OpenClaw.ai AI; the agent/lobster is the in-game character
+ */
+router.put('/bot/identity', agentAuth, (req, res) => {
+  try {
+    const db = getDb();
+    const agentId = req.agent.id;
+    const { bot_name, bot_avatar_url } = req.body;
+
+    // Validate bot_name if provided
+    if (bot_name !== undefined) {
+      if (typeof bot_name !== 'string') {
+        return res.status(400).json({ error: 'bot_name must be a string' });
+      }
+      const trimmedName = bot_name.trim();
+      if (trimmedName.length < 1 || trimmedName.length > 50) {
+        return res.status(400).json({ error: 'bot_name must be 1-50 characters' });
+      }
+      // Basic sanitization - no control characters
+      if (/[\x00-\x1f]/.test(trimmedName)) {
+        return res.status(400).json({ error: 'bot_name contains invalid characters' });
+      }
+    }
+
+    // Validate bot_avatar_url if provided
+    if (bot_avatar_url !== undefined && bot_avatar_url !== null) {
+      if (typeof bot_avatar_url !== 'string') {
+        return res.status(400).json({ error: 'bot_avatar_url must be a string or null' });
+      }
+      // Basic URL validation
+      if (bot_avatar_url && !bot_avatar_url.startsWith('http')) {
+        return res.status(400).json({ error: 'bot_avatar_url must be a valid URL' });
+      }
+    }
+
+    // Build update query
+    const updates = [];
+    const params = [];
+
+    if (bot_name !== undefined) {
+      updates.push('bot_name = ?');
+      params.push(bot_name.trim());
+    }
+
+    if (bot_avatar_url !== undefined) {
+      updates.push('bot_avatar_url = ?');
+      params.push(bot_avatar_url || null);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ error: 'No fields to update. Provide bot_name or bot_avatar_url' });
+    }
+
+    params.push(agentId);
+    db.prepare(`UPDATE agents SET ${updates.join(', ')} WHERE id = ?`).run(...params);
+
+    // Fetch updated data
+    const updated = db.prepare('SELECT bot_name, bot_avatar_url FROM agents WHERE id = ?').get(agentId);
+
+    log.info('Bot identity updated', { agentId, bot_name: updated.bot_name });
+
+    res.json({
+      success: true,
+      bot: {
+        name: updated.bot_name,
+        avatar_url: updated.bot_avatar_url
+      }
+    });
+
+  } catch (err) {
+    log.error('Bot identity update error:', { error: err.message });
+    res.status(500).json({ error: 'Failed to update bot identity' });
+  }
+});
+
+/**
+ * GET /api/social/bot/identity
+ * Get the current bot's identity
+ */
+router.get('/bot/identity', agentAuth, (req, res) => {
+  try {
+    const db = getDb();
+    const agentId = req.agent.id;
+
+    const agent = db.prepare(`
+      SELECT id, name, avatar_url, bot_name, bot_avatar_url
+      FROM agents WHERE id = ?
+    `).get(agentId);
+
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    res.json({
+      bot: {
+        name: agent.bot_name || null,
+        avatar_url: agent.bot_avatar_url || null
+      },
+      lobster: {
+        id: agent.id,
+        name: agent.name,
+        avatar_url: agent.avatar_url
+      }
+    });
+
+  } catch (err) {
+    log.error('Bot identity fetch error:', { error: err.message });
+    res.status(500).json({ error: 'Failed to fetch bot identity' });
   }
 });
 

@@ -1472,6 +1472,9 @@ router.get('/profile/:id', (req, res) => {
     showcase_text: agent.showcase_text || null,
     showcase_image_url: agent.showcase_image_url || null,
     social_x: agent.social_x || null,
+    // Bot identity (OpenClaw.ai bot that controls this lobster)
+    bot_name: agent.bot_name || null,
+    bot_avatar_url: agent.bot_avatar_url || null,
     // Owner & premium info (for trial banner)
     owner_id: agent.owner_id || null,
     is_premium: agent.is_premium || 0,

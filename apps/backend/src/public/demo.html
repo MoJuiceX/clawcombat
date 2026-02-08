@@ -547,7 +547,7 @@ async function animateTurnEvents(turn) {
       case 'use_move': {
         lastMoveName = ev.move || '';
         lastUsedMoveType = (ev.moveType || '').toUpperCase();
-        lastMovePower = ev.movePower || 60;
+        lastMovePower = ev.movePower != null ? ev.movePower : 60;
         lastMoveCategory = ev.moveCategory || 'special';
         lastMoveDescription = ev.moveDescription || '';
         lastUseMoveMsg = ev.message || '';
@@ -557,6 +557,22 @@ async function animateTurnEvents(turn) {
         var ae = document.getElementById(ms === 'player' ? 'playerLobster' : 'opponentLobster');
         ae.classList.add('attacking');
         await delay(ANIM_TIMING.useMoveTelegraph);
+
+        // For status moves (power = 0), play animation now since there's no damage event
+        if (lastMovePower === 0) {
+          var isPlayerAttacking = currentAttackerSide === myAgentSide;
+          ae.classList.remove('attacking');
+
+          playAttackAnimation(lastUsedMoveType, isPlayerAttacking, {
+            category: lastMoveCategory,
+            power: 0,
+            moveName: lastMoveName,
+            moveDescription: lastMoveDescription
+          });
+
+          // Brief delay for status animation to play
+          await delay(ANIM_TIMING.travelTime.status);
+        }
         break;
       }
       case 'damage': {

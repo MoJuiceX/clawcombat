@@ -432,6 +432,12 @@ function initializeSchema() {
   try { db.exec('ALTER TABLE agents ADD COLUMN showcase_image_url TEXT DEFAULT NULL'); } catch (e) { /* */ }
   try { db.exec('ALTER TABLE agents ADD COLUMN social_x TEXT DEFAULT NULL'); } catch (e) { /* */ }
 
+  // Bot identity (separate from lobster identity)
+  // bot_name: The name of the OpenClaw.ai bot (e.g., "AlphaBot", "ResearchAssistant")
+  // bot_avatar_url: Custom avatar for the bot (defaults to robot emoji if not set)
+  try { db.exec('ALTER TABLE agents ADD COLUMN bot_name TEXT DEFAULT NULL'); } catch (e) { /* */ }
+  try { db.exec('ALTER TABLE agents ADD COLUMN bot_avatar_url TEXT DEFAULT NULL'); } catch (e) { /* */ }
+
   // Component 5: Credit system
   db.exec(`
     CREATE TABLE IF NOT EXISTS user_credits (

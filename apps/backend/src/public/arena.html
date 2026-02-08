@@ -186,7 +186,9 @@
       <a href="/leaderboard.html">Leaderboard</a>
       <a href="/battles.html">Battles</a>
       <a href="/clawfeed.html">Claw Feed</a>
-      <span id="auth-btn-container"></span>
+    </div>
+    <div class="nav-auth">
+      <a href="/profile.html" id="nav-auth-btn" class="nav-auth-btn">Login</a>
     </div>
   </nav>
 </div>
@@ -917,7 +919,7 @@ async function animateEvents(events, battleState) {
       case 'use_move': {
         lastMoveName = event.move || '';
         lastUsedMoveType = event.moveType || null;
-        lastMovePower = event.movePower || 60;
+        lastMovePower = event.movePower != null ? event.movePower : 60;
         lastMoveCategory = event.moveCategory || 'special';
         lastMoveDescription = event.moveDescription || '';
         lastUseMoveMsg = event.message || '';
@@ -927,6 +929,22 @@ async function animateEvents(events, battleState) {
         var attackerEl = document.getElementById(useMoveDisplaySide === 'player' ? 'playerLobster' : 'opponentLobster');
         attackerEl.classList.add('attacking');
         await delay(ANIM_TIMING.useMoveTelegraph);
+
+        // For status moves (power = 0), play animation now since there's no damage event
+        if (lastMovePower === 0) {
+          var isPlayerAttacking = currentAttackerSide === myAgentSide;
+          attackerEl.classList.remove('attacking');
+
+          playAttackAnimation(lastUsedMoveType || 'neutral', isPlayerAttacking, {
+            category: lastMoveCategory,
+            power: 0,
+            moveName: lastMoveName,
+            moveDescription: lastMoveDescription
+          });
+
+          // Brief delay for status animation to play
+          await delay(ANIM_TIMING.travelTime.status);
+        }
         break;
       }
 

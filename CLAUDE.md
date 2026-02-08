@@ -80,3 +80,16 @@ When working on ClawCombat, follow this approach:
 4. Measure before and after
 
 See `docs/PROMPTING-STANDARDS.md` for detailed prompting techniques and templates.
+
+### Design & Visual Work (User Preference)
+When working on visual effects, sounds, animations, or UI polish:
+
+1. **Build a tester tool first** - Create a dedicated HTML page (in `/dev/`) with buttons to trigger each effect in isolation
+2. **Show all variations** - Let the user quickly test multiple options without reloading
+3. **Include reset functionality** - Clear effects between tests
+4. **Iterate rapidly** - User tests, gives feedback, I adjust, repeat
+5. **Keep audit trail** - Track what's been tested and approved
+
+Example: `/dev/effect-tester.html` - Tests attack particles, sounds, victory/defeat effects with one-click buttons. User can cycle through all 87 attacks and mark each as "Good" or "Issue".
+
+This workflow enables fast design iteration: build tester → user clicks through → user gives feedback → fix issues → repeat until approved.

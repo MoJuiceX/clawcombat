@@ -17,16 +17,18 @@ var ANIM_TIMING = {
   // Attack sequence
   useMoveTelegraph: 600,     // How long to show "X used Y!" before attack
   travelTime: {              // How long projectile travels based on pattern
-    beam: 350,
-    slash: 250,
-    arc: 600,
-    charge: 400,
-    wave: 450,
-    projectile: 400,
-    swarm: 500,
-    drain: 450,
-    status: 300,
-    default: 400
+    beam: 700,               // Energy beams (Flamethrower, Ice Beam)
+    slash: 350,              // Melee strikes - attacker lunges to defender (synced with CSS)
+    arc: 900,                // Thrown projectiles (Stone Throw, Draco Meteor)
+    charge: 400,             // Rush attacks - attacker charges into defender (synced with CSS)
+    wave: 800,               // Expanding auras (Shock Wave, Lullaby)
+    projectile: 700,         // Standard ranged (Sludge Shot, Shadow Ball)
+    swarm: 900,              // Multi-hit (Bubble Burst, Hive Strike)
+    drain: 800,              // Life drain (Life Leech, Drain Root)
+    status: 600,             // Status moves (Thunder Wave, Swords Dance)
+    self_aura: 700,          // Self-buff moves (Regenerate, Fortify)
+    status_drift: 700,       // Status on opponent (Will-O-Wisp)
+    default: 700
   },
 
   // Impact and aftermath
@@ -225,10 +227,10 @@ function triggerAttackerMovement(side, pattern) {
 
   if (pattern === 'charge') {
     className = 'charging';
-    duration = 300;
+    duration = 400;
   } else if (pattern === 'slash') {
-    className = 'thrusting';
-    duration = 150;
+    className = 'striking';
+    duration = 350;
   }
 
   if (className) {

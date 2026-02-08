@@ -580,15 +580,24 @@ function applyMove(battleState, attackerSide, moveId) {
     if (result.cantMove) return { log, success: false };
   }
 
-  // Status: sleep check — BALANCED: exactly 2 turns, wake on damage
+  // Status: sleep check — BALANCED: exactly 2 turns, wake on damage (but can't act same turn)
   if (attacker.status === 'sleep') {
     attacker._sleepTurns = (attacker._sleepTurns || 0) + 1;
+
+    // If woken by damage this turn, still can't act (but will be awake next turn)
+    if (attacker._wokeFromDamage) {
+      attacker.status = null;
+      attacker._sleepTurns = 0;
+      attacker._wokeFromDamage = false;
+      // No message - already shown when damage was dealt
+      return { log, success: false };
+    }
+
     const result = STATUS_EFFECTS.sleep.onBeforeMove(attacker);
     log.push({ type: 'status', message: result.message });
     if (result.wake) {
       attacker.status = null;
       attacker._sleepTurns = 0;
-      attacker._wokeFromDamage = false;
     }
     if (result.cantMove) return { log, success: false };
   }

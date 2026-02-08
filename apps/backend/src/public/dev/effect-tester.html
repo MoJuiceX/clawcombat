@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Effect Audit - ClawCombat</title>
+  <link rel="stylesheet" href="/css/arena.css?v=1770492375">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: #0a0a0f;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: #0f1320;
+      border-right: 1px solid #1e293b;
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .logo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #6366f1;
+    }
+    .phase-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      background: #f59e0b;
+      color: #000;
+      font-size: 0.65rem;
+      font-weight: 700;
+      border-radius: 4px;
+      margin-left: 8px;
+    }
+    .phase-badge.audit { background: #22c55e; }
+
+    .progress-bar {
+      height: 8px;
+      background: #1e293b;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      transition: width 0.3s;
+    }
+    .progress-fill.audit { background: linear-gradient(90deg, #22c55e, #4ade80); }
+    .progress-text {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    .move-list {
+      flex: 1;
+      overflow-y: auto;
+      background: #0c1017;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+    }
+    .move-list::-webkit-scrollbar { width: 4px; }
+    .move-list::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .move-item {
+      padding: 8px 10px;
+      font-size: 0.85rem;
+      border-bottom: 1px solid #1e293b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .move-item:hover { background: rgba(99,102,241,0.1); }
+    .move-item.current { background: rgba(99,102,241,0.2); border-left: 3px solid #6366f1; }
+    .move-item.good { color: #4ade80; }
+    .move-item.issue { color: #fbbf24; }
+    .move-item .test-num {
+      font-size: 0.65rem;
+      color: #6366f1;
+      flex-shrink: 0;
+    }
+    .move-item .move-name-text {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .move-item .btn-play-small {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border: none;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      font-size: 0.7rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.7;
+      transition: opacity 0.15s, transform 0.15s;
+    }
+    .move-item .btn-play-small:hover {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+    .move-item .btn-play-small:active {
+      transform: scale(0.95);
+    }
+    .move-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #334155;
+      flex-shrink: 0;
+    }
+    .move-dot.good { background: #22c55e; }
+    .move-dot.issue { background: #f59e0b; }
+    .move-dot.current { background: #6366f1; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    .stats-row {
+      display: flex;
+      gap: 8px;
+    }
+    .stat-box {
+      flex: 1;
+      background: #0c1017;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stat-num { font-size: 1.3rem; font-weight: 700; }
+    .stat-num.good { color: #22c55e; }
+    .stat-num.issue { color: #f59e0b; }
+    .stat-label { font-size: 0.6rem; color: #64748b; text-transform: uppercase; }
+
+    .btn-export {
+      padding: 12px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-export:hover { filter: brightness(1.1); }
+    .btn-export:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-reset {
+      padding: 10px;
+      background: transparent;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #64748b;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    /* Main area */
+    .main {
+      display: flex;
+      flex-direction: column;
+      padding: 12px 20px;
+      gap: 8px;
+      overflow-y: auto;
+    }
+
+    /* Sound Info Panel - Single row compact version */
+    .sound-info {
+      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1));
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      flex-shrink: 0;
+    }
+    .sound-info-header {
+      display: none;
+    }
+    .test-purpose {
+      font-size: 0.8rem;
+      color: #e2e8f0;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .sound-grid {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .sound-card {
+      background: rgba(0,0,0,0.3);
+      border-radius: 5px;
+      padding: 8px 10px;
+      flex: 1;
+    }
+    .sound-card-label {
+      font-size: 0.55rem;
+      color: #64748b;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .sound-card-file {
+      font-size: 0.8rem;
+      color: #fbbf24;
+      font-family: monospace;
+    }
+    .sound-card-pitch {
+      font-size: 0.65rem;
+      color: #94a3b8;
+    }
+    .sound-card-desc {
+      display: none;
+    }
+    .listen-for {
+      flex: 2;
+      padding: 8px 10px;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.3);
+      border-radius: 5px;
+    }
+    .listen-for-label {
+      font-size: 0.55rem;
+      color: #4ade80;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .listen-for-text {
+      font-size: 0.75rem;
+      color: #e2e8f0;
+      line-height: 1.3;
+    }
+
+    /* Arena - match original arena.css exactly (fixed dimensions) */
+    .arena-wrap {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+      padding: 6px;
+    }
+    .arena-wrap .battle-arena {
+      width: 900px;
+      height: 420px;
+      margin: 0;
+      position: relative;
+    }
+    /* Match original lobster sizes exactly */
+    .arena-wrap .lobster {
+      width: 300px;
+    }
+    .arena-wrap .player-lobster {
+      top: 50%;
+      left: 40px;
+      transform: translateY(-50%);
+    }
+    .arena-wrap .opponent-lobster {
+      top: 50%;
+      right: 40px;
+      transform: translateY(-50%) scaleX(-1);
+    }
+    .arena-wrap .lobster-frame {
+      height: 284px;
+    }
+
+    /* Control bar */
+    .control-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: rgba(30,41,59,0.5);
+      border: 1px solid #334155;
+      border-radius: 8px;
+    }
+    .move-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .move-tags {
+      display: flex;
+      gap: 5px;
+    }
+    .tag {
+      padding: 3px 8px;
+      background: #1e293b;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+    .move-counter {
+      margin-left: auto;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    /* Action buttons */
+    .action-row {
+      display: flex;
+      gap: 10px;
+    }
+    .btn-play {
+      flex: 2;
+      padding: 14px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-play:hover { filter: brightness(1.1); }
+    .btn-good {
+      flex: 1;
+      padding: 14px;
+      background: rgba(34,197,94,0.15);
+      border: 2px solid #22c55e;
+      border-radius: 8px;
+      color: #4ade80;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-good:hover { background: rgba(34,197,94,0.3); }
+    .btn-good.selected { background: #22c55e; color: white; }
+    .btn-issue {
+      flex: 1;
+      padding: 14px;
+      background: rgba(245,158,11,0.15);
+      border: 2px solid #f59e0b;
+      border-radius: 8px;
+      color: #fbbf24;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-issue:hover { background: rgba(245,158,11,0.3); }
+    .btn-issue.selected { background: #f59e0b; color: white; }
+    .shortcut {
+      font-size: 0.6rem;
+      padding: 2px 5px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+      margin-left: 5px;
+    }
+
+    /* Issue panel */
+    .issue-panel {
+      display: none;
+      background: rgba(245,158,11,0.08);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    .issue-panel.visible { display: block; }
+    .issue-label {
+      font-size: 0.7rem;
+      color: #fbbf24;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .issue-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .issue-tag {
+      padding: 6px 10px;
+      border: 1px solid #475569;
+      background: transparent;
+      border-radius: 5px;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      cursor: pointer;
+    }
+    .issue-tag:hover { background: #1e293b; color: #e2e8f0; }
+    .issue-tag.selected { background: #f59e0b; border-color: #f59e0b; color: white; }
+    .issue-note {
+      width: 100%;
+      padding: 8px;
+      background: #0c1017;
+      border: 1px solid #334155;
+      border-radius: 5px;
+      color: #e2e8f0;
+      font-size: 0.8rem;
+      resize: none;
+    }
+
+    /* Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal.visible { display: flex; }
+    .modal-box {
+      background: #131825;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 16px;
+    }
+    .modal-section {
+      margin-bottom: 20px;
+    }
+    .modal-section h3 {
+      font-size: 1rem;
+      color: #6366f1;
+      margin-bottom: 10px;
+    }
+    .modal-section p, .modal-section li {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    .sound-file-list {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+    .sound-file {
+      padding: 8px;
+      background: rgba(99,102,241,0.1);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      color: #a5b4fc;
+      text-align: center;
+    }
+    .test-overview {
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 8px;
+      padding: 14px;
+      margin: 16px 0;
+    }
+    .test-overview h4 {
+      color: #fbbf24;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+    .test-overview ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .test-overview li {
+      margin-bottom: 6px;
+    }
+    .btn-start {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-start:hover { filter: brightness(1.1); }
+
+    /* Export modal */
+    .export-text {
+      width: 100%;
+      height: 250px;
+      background: #0c1017;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 12px;
+      color: #e2e8f0;
+      font-family: monospace;
+      font-size: 0.75rem;
+      resize: none;
+    }
+    .btn-copy {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    .btn-close {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #64748b;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    /* Phase complete celebration */
+    .phase-complete {
+      text-align: center;
+      padding: 20px;
+    }
+    .phase-complete-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+    .phase-complete h3 {
+      color: #4ade80;
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+    .phase-complete p {
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+
+    /* Battle Experience Test Panel */
+    .battle-fx-panel {
+      background: linear-gradient(135deg, rgba(251,191,36,0.1), rgba(168,85,247,0.1));
+      border: 1px solid rgba(251,191,36,0.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+    }
+    .battle-fx-title {
+      font-size: 0.75rem;
+      color: #fbbf24;
+      text-transform: uppercase;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    .battle-fx-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-fx {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #475569;
+      border-radius: 6px;
+      background: rgba(0,0,0,0.3);
+      color: #e2e8f0;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-fx:hover {
+      border-color: #6366f1;
+      background: rgba(99,102,241,0.2);
+    }
+    .btn-fx.intro { border-color: #8b5cf6; }
+    .btn-fx.intro:hover { background: rgba(139,92,246,0.3); }
+    .btn-fx.victory { border-color: #22c55e; }
+    .btn-fx.victory:hover { background: rgba(34,197,94,0.3); }
+    .btn-fx.defeat { border-color: #ef4444; }
+    .btn-fx.defeat:hover { background: rgba(239,68,68,0.3); }
+  </style>
+</head>
+<body>
+  <!-- Intro Modal -->
+  <div class="modal visible" id="introModal">
+    <div class="modal-box">
+      <div class="modal-title">Effect & Sound Audit</div>
+
+      <div class="modal-section">
+        <h3>What We're Testing</h3>
+        <p>Every attack has <strong>TWO sounds</strong>:</p>
+        <ol>
+          <li><strong>Attack Sound</strong> - Plays when the animation STARTS (whoosh, zap, slash)</li>
+          <li><strong>Impact Sound</strong> - Plays when the attack HITS the defender (thud, crash)</li>
+        </ol>
+        <p style="margin-top:12px">We have 15 sound files that combine differently based on attack pattern, element type, and power:</p>
+        <div class="sound-file-list">
+          <div class="sound-file">beam.wav</div>
+          <div class="sound-file">charge.wav</div>
+          <div class="sound-file">slash.wav</div>
+          <div class="sound-file">projectile.wav</div>
+          <div class="sound-file">wave.wav</div>
+          <div class="sound-file">drain.wav</div>
+          <div class="sound-file">electric.wav</div>
+          <div class="sound-file">strike.wav</div>
+          <div class="sound-file">hit.wav</div>
+          <div class="sound-file">burst.wav</div>
+          <div class="sound-file">shield.wav</div>
+          <div class="sound-file">status.wav</div>
+        </div>
+      </div>
+
+      <div class="test-overview">
+        <h4>Final Fixes Test (8 attacks)</h4>
+        <p style="margin-bottom:10px">Testing the last remaining issues.</p>
+        <ol>
+          <li><strong>Flamethrower</strong> - Wild flames (not beam), fire roar (1 attack)</li>
+          <li><strong>Wave sounds</strong> - Electric/fire sounds added (3 attacks)</li>
+          <li><strong>Drain sounds</strong> - Super short, ends with particles (4 attacks)</li>
+        </ol>
+      </div>
+
+      <div class="modal-section">
+        <h3>How It Works</h3>
+        <p>For each attack, I'll show you:</p>
+        <ul>
+          <li>What sound files will play</li>
+          <li>What pitch modification is applied</li>
+          <li>Exactly what to listen for</li>
+        </ul>
+        <p style="margin-top:10px">Press <strong>Space</strong> to play, <strong>G</strong> if good, <strong>I</strong> if there's an issue.</p>
+      </div>
+
+      <button class="btn-start" id="btnStart">Start Testing Fixes</button>
+    </div>
+  </div>
+
+  <!-- Phase Complete Modal -->
+  <div class="modal" id="phaseCompleteModal">
+    <div class="modal-box">
+      <div class="phase-complete">
+        <div class="phase-complete-icon">&#9989;</div>
+        <h3>Sound System Test Complete!</h3>
+        <p>All 6 core sound combinations are working correctly.</p>
+        <p>Now you can audit all 87 attacks. The sound info panel will continue to show you what sounds are playing for each attack.</p>
+      </div>
+      <button class="btn-start" id="btnStartAudit">Start Full Audit (87 attacks)</button>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div class="modal" id="exportModal">
+    <div class="modal-box">
+      <div class="modal-title">Audit Results</div>
+      <textarea class="export-text" id="exportText" readonly></textarea>
+      <button class="btn-copy" id="btnCopy">Copy to Clipboard</button>
+      <button class="btn-close" id="btnCloseExport">Close</button>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="logo">Effect Audit <span class="phase-badge" id="phaseBadge">SOUND TEST</span></div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">Test 1 of 6</div>
+
+      <div class="move-list" id="moveList"></div>
+
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-num good" id="statGood">0</div>
+          <div class="stat-label">Good</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num issue" id="statIssues">0</div>
+          <div class="stat-label">Issues</div>
+        </div>
+      </div>
+
+      <button class="btn-export" id="btnExport" disabled>Export Results</button>
+      <button class="btn-export" id="btnSkipToPhase2" style="background: #3b82f6;">Skip to Phase 2</button>
+      <button class="btn-reset" id="btnReset">Start Over</button>
+    </div>
+
+    <!-- Main -->
+    <div class="main">
+      <!-- Battle Experience Test Panel -->
+      <div class="battle-fx-panel">
+        <div class="battle-fx-title">Battle Experience Effects</div>
+        <div class="battle-fx-btns">
+          <button class="btn-fx intro" id="btnIntro">Intro Fog</button>
+          <button class="btn-fx victory" id="btnVictory">Victory (Player)</button>
+          <button class="btn-fx defeat" id="btnDefeat">Loser Fade</button>
+          <button class="btn-fx" id="btnResetFx">Reset</button>
+        </div>
+      </div>
+
+      <!-- Sound Info Panel -->
+      <div class="sound-info" id="soundInfo">
+        <div class="sound-info-header">
+          <span class="sound-info-title">Sound Configuration</span>
+        </div>
+        <div class="test-purpose" id="testPurpose">Testing beam pattern with fire type modifier...</div>
+        <div class="sound-grid">
+          <div class="sound-card">
+            <div class="sound-card-label">Attack Sound</div>
+            <div class="sound-card-file" id="attackSoundFile">beam.wav</div>
+            <div class="sound-card-pitch" id="attackSoundPitch">Pitch: 0.85x (fire = deep)</div>
+            <div class="sound-card-desc" id="attackSoundDesc">Deep, rumbling beam</div>
+          </div>
+          <div class="sound-card">
+            <div class="sound-card-label">Impact Sound</div>
+            <div class="sound-card-file" id="impactSoundFile">burst.wav</div>
+            <div class="sound-card-pitch" id="impactSoundPitch">Pitch: 0.90x (fire)</div>
+            <div class="sound-card-desc" id="impactSoundDesc">Heavy fiery impact</div>
+          </div>
+        </div>
+        <div class="listen-for">
+          <div class="listen-for-label">Listen For</div>
+          <div class="listen-for-text" id="listenFor">Two distinct sounds: a deep whooshing beam, then a heavy thud impact</div>
+        </div>
+      </div>
+
+      <div class="arena-wrap">
+        <div class="battle-arena" id="arena">
+          <div class="arena-circuits"></div>
+          <div class="arena-scanlines"></div>
+          <canvas id="effectCanvas"></canvas>
+
+          <div class="lobster player-lobster" id="playerLobster" style="--frame-color: #F85888;">
+            <div class="frame-glow"></div>
+            <div class="frame-border-outer"></div>
+            <div class="frame-border-inner"></div>
+            <div class="frame-node tl"></div><div class="frame-node tr"></div>
+            <div class="frame-node bl"></div><div class="frame-node br"></div>
+            <div class="frame-accent top"></div><div class="frame-accent bottom"></div>
+            <div class="frame-accent left"></div><div class="frame-accent right"></div>
+            <div class="lobster-frame">
+              <img src="/references/psyche/cadet-balanced.webp" alt="">
+            </div>
+            <div class="hp-container">
+              <div class="hp-label"><span class="hp-name">ATTACKER</span><span class="hp-type" style="background:var(--type-psyche)">PSYCHE</span></div>
+              <div class="hp-bar-bg"><div class="hp-bar" style="width:100%"></div></div>
+              <div class="hp-text">100/100</div>
+            </div>
+            <div class="action-info player-action" id="playerAction"></div>
+          </div>
+
+          <div class="lobster opponent-lobster" id="opponentLobster" style="--frame-color: #705848;">
+            <div class="frame-glow"></div>
+            <div class="frame-border-outer"></div>
+            <div class="frame-border-inner"></div>
+            <div class="frame-node tl"></div><div class="frame-node tr"></div>
+            <div class="frame-node bl"></div><div class="frame-node br"></div>
+            <div class="frame-accent top"></div><div class="frame-accent bottom"></div>
+            <div class="frame-accent left"></div><div class="frame-accent right"></div>
+            <div class="status-icons" id="defenderStatusIcons"></div>
+            <div class="lobster-frame">
+              <img src="/references/shadow/cadet-balanced.webp" alt="">
+            </div>
+            <div class="hp-container">
+              <div class="hp-label"><span class="hp-name">DEFENDER</span><span class="hp-type" style="background:var(--type-shadow)">SHADOW</span></div>
+              <div class="hp-bar-bg"><div class="hp-bar" style="width:100%"></div></div>
+              <div class="hp-text">100/100</div>
+            </div>
+            <div class="action-info opponent-action" id="opponentAction"></div>
+          </div>
+
+          <div class="vs-emblem">VS</div>
+        </div>
+      </div>
+
+      <div class="control-bar">
+        <span class="move-name" id="moveName">Flamethrower</span>
+        <div class="move-tags">
+          <span class="tag" id="movePattern">beam</span>
+          <span class="tag" id="moveType">FIRE</span>
+          <span class="tag" id="movePower">90</span>
+          <span class="tag" id="moveStatus" style="display:none; background:#a855f7; color:white;"></span>
+        </div>
+        <span class="move-counter"><span id="currentNum">1</span> / <span id="totalNum">6</span></span>
+      </div>
+
+      <div class="action-row">
+        <button class="btn-play" id="btnPlay">Play Effect <span class="shortcut">Space</span></button>
+        <button class="btn-good" id="btnGood">Good <span class="shortcut">G</span></button>
+        <button class="btn-issue" id="btnIssue">Issue <span class="shortcut">I</span></button>
+      </div>
+
+      <div class="issue-panel" id="issuePanel">
+        <div class="issue-label">What's wrong?</div>
+        <div class="issue-tags">
+          <button class="issue-tag" data-issue="no-attack-sound">No attack sound</button>
+          <button class="issue-tag" data-issue="no-impact-sound">No impact sound</button>
+          <button class="issue-tag" data-issue="wrong-pitch">Wrong pitch</button>
+          <button class="issue-tag" data-issue="timing-off">Timing off</button>
+          <button class="issue-tag" data-issue="too-quiet">Too quiet</button>
+          <button class="issue-tag" data-issue="sounds-same">Sounds same as previous</button>
+          <button class="issue-tag" data-issue="visual-issue">Visual issue</button>
+          <button class="issue-tag" data-issue="no-status-badge">No status badge</button>
+          <button class="issue-tag" data-issue="wrong-status">Wrong status effect</button>
+        </div>
+        <textarea class="issue-note" id="issueNote" rows="2" placeholder="Additional details..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/type-colors.js"></script>
+  <script src="/js/battle-particles.js?v=1770492445"></script>
+  <script src="/js/battle-audio.js"></script>
+  <script src="/js/battle-ui.js?v=1770492375"></script>
+  <script>
+    // ============================================
+    // ISSUES TO RE-TEST (8 attacks with new fixes)
+    // ============================================
+    var SOUND_TESTS = [
+      // ========== SELF-AURA SOUNDS (5) - now ONLY boost sounds ==========
+      { name: 'Regenerate', pattern: 'self_aura', type: 'neutral', power: 0,
+        listenFor: 'Check: Ascending chimes (low→high) = getting stronger' },
+      { name: 'Store Energy', pattern: 'self_aura', type: 'electric', power: 0,
+        listenFor: 'Check: Power-up crescendo (low→high) = charging up' },
+      { name: 'Ember Ward', pattern: 'self_aura', type: 'fire', power: 0,
+        listenFor: 'Check: Warm ascending chimes = gaining fire shield' },
+      { name: 'Fortify', pattern: 'self_aura', type: 'stone', power: 0,
+        listenFor: 'Check: Solid ascending chimes = armor forming' },
+      { name: 'Steel Skin', pattern: 'self_aura', type: 'metal', power: 0,
+        listenFor: 'Check: Strong ascending chimes = metal plating' }
+    ];
+
+    // ============================================
+    // PHASE 2: FULL AUDIT (all 87 attacks)
+    // ============================================
+    var ALL_MOVES = [
+      // *** ISSUES TO RE-TEST FIRST ***
+      // Charge timing issues (fixed)
+      { name: 'Shadow Assault', pattern: 'charge', type: 'shadow', power: 80 },
+      { name: 'Blazing Charge', pattern: 'charge', type: 'fire', power: 90, statusEffect: 'burn', statusChance: 10 },
+      // Arc sound issues (fixed)
+      { name: 'Curse Throw', pattern: 'arc', type: 'ghost', power: 70 },
+      { name: 'Dust Throw', pattern: 'arc', type: 'earth', power: 60 },
+      { name: 'Web Trap', pattern: 'arc', type: 'insect', power: 50 },
+      // Projectile visual issues (need feedback)
+      { name: 'Hot Coal', pattern: 'projectile', type: 'fire', power: 60, statusEffect: 'burn', statusChance: 10 },
+      { name: 'Splash Shot', pattern: 'projectile', type: 'water', power: 40 },
+      { name: 'Shadow Ball', pattern: 'projectile', type: 'ghost', power: 80 },
+      { name: 'Sludge Shot', pattern: 'projectile', type: 'venom', power: 65, statusEffect: 'poison', statusChance: 30 },
+      { name: 'Life Kiss', pattern: 'projectile', type: 'mystic', power: 50 },
+      // *** END ISSUES TO RE-TEST ***
+
+      // BEAM attacks
+      { name: 'Flamethrower', pattern: 'beam', type: 'fire', power: 90, statusEffect: 'burn', statusChance: 10 },
+      { name: 'Thermal Overload', pattern: 'beam', type: 'fire', power: 110, statusEffect: 'burn', statusChance: 30 },
+      { name: 'Deep Freeze', pattern: 'beam', type: 'ice', power: 90, statusEffect: 'freeze', statusChance: 10 },
+      { name: 'Chill Blast', pattern: 'beam', type: 'ice', power: 75 },
+      { name: 'Volt Cannon', pattern: 'beam', type: 'electric', power: 110, statusEffect: 'paralysis', statusChance: 10 },
+      { name: 'Arc Cannon', pattern: 'beam', type: 'electric', power: 120, statusEffect: 'paralysis', statusChance: 20 },
+      { name: 'Mind Ray', pattern: 'beam', type: 'psyche', power: 90, statusEffect: 'confusion', statusChance: 10 },
+      { name: 'Dragon Pulse', pattern: 'beam', type: 'dragon', power: 85 },
+      { name: 'Flash Cannon', pattern: 'beam', type: 'metal', power: 80 },
+      { name: 'Air Cannon', pattern: 'beam', type: 'air', power: 75 },
+      { name: 'Noxious Burst', pattern: 'beam', type: 'venom', power: 90, statusEffect: 'poison', statusChance: 30 },
+      { name: 'Hex', pattern: 'beam', type: 'ghost', power: 65 },
+      { name: 'Ghost Burn', pattern: 'beam', type: 'ghost', power: 85, statusEffect: 'burn', statusChance: 30 },
+      // PROJECTILE attacks
+      { name: 'Lightning Strike', pattern: 'projectile', type: 'electric', power: 75, statusEffect: 'paralysis', statusChance: 10 },
+      { name: 'Spark', pattern: 'projectile', type: 'electric', power: 40, statusEffect: 'paralysis', statusChance: 30 },
+      { name: 'Wind Puff', pattern: 'projectile', type: 'air', power: 40 },
+      { name: 'Metal Sphere', pattern: 'projectile', type: 'metal', power: 65 },
+      // ARC attacks
+      { name: 'Stone Throw', pattern: 'arc', type: 'stone', power: 50 },
+      { name: 'Tsunami Strike', pattern: 'arc', type: 'water', power: 110 },
+      { name: 'Cosmic Stone', pattern: 'arc', type: 'stone', power: 100 },
+      { name: 'Draco Meteor', pattern: 'arc', type: 'dragon', power: 130 },
+      // CHARGE attacks
+      { name: 'Flame Charge', pattern: 'charge', type: 'fire', power: 50 },
+      { name: 'Thunder Rush', pattern: 'charge', type: 'electric', power: 90, statusEffect: 'paralysis', statusChance: 10 },
+      { name: 'Storm Charge', pattern: 'charge', type: 'electric', power: 110, statusEffect: 'paralysis', statusChance: 30 },
+      { name: 'Tide Rush', pattern: 'charge', type: 'water', power: 90 },
+      { name: 'Ground Slam', pattern: 'charge', type: 'earth', power: 100 },
+      { name: 'Frozen Crush', pattern: 'charge', type: 'ice', power: 85, statusEffect: 'freeze', statusChance: 10 },
+      { name: 'Phantom Strike', pattern: 'charge', type: 'ghost', power: 90 },
+      { name: 'Mental Crush', pattern: 'charge', type: 'psyche', power: 80, statusEffect: 'confusion', statusChance: 20 },
+      { name: 'Rampage', pattern: 'charge', type: 'dragon', power: 120 },
+      // SLASH attacks
+      { name: 'Rapid Jab', pattern: 'slash', type: 'martial', power: 40 },
+      { name: 'Burning Strike', pattern: 'slash', type: 'fire', power: 75, statusEffect: 'burn', statusChance: 10 },
+      { name: 'Iron Fist', pattern: 'slash', type: 'metal', power: 80 },
+      { name: 'Dragon Claw', pattern: 'slash', type: 'dragon', power: 80 },
+      { name: 'Shadow Blade', pattern: 'slash', type: 'shadow', power: 70 },
+      { name: 'Frost Pike', pattern: 'slash', type: 'ice', power: 65, statusEffect: 'freeze', statusChance: 10 },
+      { name: 'Sky Razor', pattern: 'slash', type: 'air', power: 80 },
+      { name: 'Phantom Slash', pattern: 'slash', type: 'ghost', power: 70 },
+      { name: 'Scissor Chop', pattern: 'slash', type: 'insect', power: 80 },
+      { name: 'Stem Strike', pattern: 'slash', type: 'grass', power: 45 },
+      { name: 'Volt Strike', pattern: 'slash', type: 'electric', power: 75, statusEffect: 'paralysis', statusChance: 10 },
+      // WAVE attacks
+      { name: 'Shock Wave', pattern: 'wave', type: 'electric', power: 60, statusEffect: 'paralysis', statusChance: 10 },
+      { name: 'Lava Plume', pattern: 'wave', type: 'fire', power: 80, statusEffect: 'burn', statusChance: 30 },
+      { name: 'Fire Spin', pattern: 'wave', type: 'fire', power: 35, statusEffect: 'burn', statusChance: 100 },
+      { name: 'Snowstorm', pattern: 'wave', type: 'ice', power: 110, statusEffect: 'freeze', statusChance: 10 },
+      { name: 'Cyclone', pattern: 'wave', type: 'air', power: 70 },
+      { name: 'Chi Burst', pattern: 'wave', type: 'martial', power: 75 },
+      { name: 'Venom Dust', pattern: 'wave', type: 'venom', power: 65, statusEffect: 'poison', statusChance: 30 },
+      { name: 'Shadow Wave', pattern: 'wave', type: 'shadow', power: 80 },
+      // PURE STATUS MOVES (0 power, guaranteed status)
+      { name: 'Dream Pollen', pattern: 'wave', type: 'grass', power: 0, statusEffect: 'sleep', statusChance: 100 },
+      { name: 'Spore Cloud', pattern: 'wave', type: 'grass', power: 0, statusEffect: 'sleep', statusChance: 100 },
+      { name: 'Mesmerize', pattern: 'wave', type: 'psyche', power: 0, statusEffect: 'sleep', statusChance: 100 },
+      { name: 'Lullaby', pattern: 'wave', type: 'neutral', power: 0, statusEffect: 'sleep', statusChance: 75 },
+      { name: 'Thunder Wave', pattern: 'wave', type: 'electric', power: 0, statusEffect: 'paralysis', statusChance: 100 },
+      { name: 'Stun Spore', pattern: 'wave', type: 'grass', power: 0, statusEffect: 'paralysis', statusChance: 100 },
+      { name: 'Will-O-Wisp', pattern: 'projectile', type: 'fire', power: 0, statusEffect: 'burn', statusChance: 100 },
+      { name: 'Toxic Cloud', pattern: 'wave', type: 'venom', power: 0, statusEffect: 'poison', statusChance: 100 },
+      { name: 'Poison Powder', pattern: 'wave', type: 'venom', power: 0, statusEffect: 'poison', statusChance: 100 },
+      { name: 'Confuse Ray', pattern: 'projectile', type: 'ghost', power: 0, statusEffect: 'confusion', statusChance: 100 },
+      { name: 'Sweet Kiss', pattern: 'projectile', type: 'mystic', power: 0, statusEffect: 'confusion', statusChance: 75 },
+      // SWARM attacks
+      { name: 'Bubble Burst', pattern: 'swarm', type: 'water', power: 65 },
+      { name: 'Spirit Volley', pattern: 'swarm', type: 'ghost', power: 70 },
+      { name: 'Hive Strike', pattern: 'swarm', type: 'insect', power: 80, statusEffect: 'poison', statusChance: 20 },
+      { name: 'Avalanche', pattern: 'swarm', type: 'ice', power: 60, statusEffect: 'freeze', statusChance: 10 },
+      // DRAIN attacks
+      { name: 'Life Leech', pattern: 'drain', type: 'grass', power: 75 },
+      { name: 'Drain Root', pattern: 'drain', type: 'grass', power: 80 },
+      { name: 'Dream Drain', pattern: 'drain', type: 'psyche', power: 100 },
+      { name: 'Drain Bubble', pattern: 'drain', type: 'water', power: 75 },
+      // SELF BUFF attacks
+      { name: 'Regenerate', pattern: 'self_aura', type: 'neutral', power: 0 },
+      { name: 'Store Energy', pattern: 'self_aura', type: 'electric', power: 0 },
+      { name: 'Ember Ward', pattern: 'self_aura', type: 'fire', power: 0 },
+      { name: 'Fortify', pattern: 'self_aura', type: 'stone', power: 0 },
+      { name: 'Steel Skin', pattern: 'self_aura', type: 'metal', power: 0 },
+      { name: 'Mirror Mind', pattern: 'self_aura', type: 'psyche', power: 0 },
+      { name: 'Serpent Form', pattern: 'self_aura', type: 'dragon', power: 0 },
+      // STATUS DRIFT attacks
+      { name: 'Mock', pattern: 'status_drift', type: 'shadow', power: 0, statusEffect: 'confusion', statusChance: 100 },
+      { name: 'Aggro Dust', pattern: 'status_drift', type: 'insect', power: 0, statusEffect: 'confusion', statusChance: 100 },
+    ];
+
+    // ============================================
+    // SOUND SYSTEM
+    // ============================================
+    var PATTERN_SOUNDS = {
+      beam: { sound: 'beam', rate: 1.0 },
+      projectile: { sound: 'projectile', rate: 1.0 },
+      arc: { sound: 'charge', rate: 0.9 },  // Whooshing throw sound
+      charge: { sound: 'charge', rate: 1.0 },
+      slash: { sound: 'slash', rate: 1.0 },
+      wave: { sound: 'wave', rate: 1.0 },
+      swarm: { sound: 'projectile', rate: 1.4 },
+      drain: { sound: 'drain', rate: 1.0 },
+      self_aura: { sound: 'shield', rate: 1.0 },
+      status_drift: { sound: 'status', rate: 0.9 }
+    };
+
+    var TYPE_ATTACK_MODS = {
+      ELECTRIC: { sound: 'electric', rate: 1.0 },
+      FIRE: { rateBonus: -0.15 },
+      ICE: { rateBonus: 0.2 },
+      WATER: { rateBonus: 0.1 },
+      DRAGON: { rateBonus: -0.25 },
+      SHADOW: { rateBonus: -0.1 },
+      GHOST: { rateBonus: 0.15 },
+      PSYCHE: { rateBonus: 0.1 },
+      METAL: { rateBonus: -0.05 },
+      VENOM: { rateBonus: -0.08 },
+      EARTH: { rateBonus: -0.2 },
+      STONE: { rateBonus: -0.18 },
+      INSECT: { rateBonus: 0.25 },
+      AIR: { rateBonus: 0.15 },
+      GRASS: { rateBonus: 0.05 },
+      MARTIAL: { rateBonus: 0 },
+      MYSTIC: { rateBonus: 0.12 },
+      NEUTRAL: { rateBonus: 0 }
+    };
+
+    var TYPE_IMPACT_MODS = {
+      FIRE: 0.90, WATER: 1.05, ELECTRIC: 1.15, GRASS: 1.00, ICE: 1.10,
+      MARTIAL: 0.95, VENOM: 1.00, EARTH: 0.85, AIR: 1.10, PSYCHE: 1.05,
+      INSECT: 1.10, STONE: 0.80, GHOST: 1.20, DRAGON: 0.85, SHADOW: 0.95,
+      METAL: 0.90, MYSTIC: 1.08, NEUTRAL: 1.00
+    };
+
+    var audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playWavSound(soundName, vol, rate) {
+      fetch('/sounds/' + soundName + '.wav')
+        .then(function(r) { return r.arrayBuffer(); })
+        .then(function(buf) {
+          var ctx = getAudioCtx();
+          return ctx.decodeAudioData(buf).then(function(decoded) {
+            var src = ctx.createBufferSource();
+            src.buffer = decoded;
+            src.playbackRate.value = Math.max(0.5, Math.min(2.0, rate));
+            var g = ctx.createGain();
+            g.gain.value = vol;
+            src.connect(g);
+            g.connect(ctx.destination);
+            src.start(0);
+          });
+        }).catch(function(e) { console.log('Sound error:', e); });
+    }
+
+    function getAttackSoundConfig(pattern, type) {
+      var ps = PATTERN_SOUNDS[pattern] || PATTERN_SOUNDS.projectile;
+      var tm = TYPE_ATTACK_MODS[type.toUpperCase()] || {};
+      var sound = tm.sound || ps.sound;
+      var rate = tm.sound ? (tm.rate || 1.0) : (ps.rate + (tm.rateBonus || 0));
+      return { file: sound + '.wav', pitch: rate };
+    }
+
+    function getImpactSoundConfig(power, type) {
+      var typeRate = TYPE_IMPACT_MODS[type.toUpperCase()] || 1.0;
+      var sound;
+      if (power >= 90) sound = 'burst';
+      else if (power >= 60) sound = 'hit';
+      else if (power > 0) sound = 'strike';
+      else { sound = 'status'; typeRate = 1.0; }
+      return { file: sound + '.wav', pitch: typeRate };
+    }
+
+    function playAttackSound(pattern, type, moveName) {
+      var cfg = getAttackSoundConfig(pattern, type);
+      var typeUpper = type.toUpperCase();
+
+      // Beam attacks: type-specific sounds
+      if (pattern === 'beam') {
+        if (typeUpper === 'FIRE') {
+          // Fire beams: sustained rushing flames (not explosion)
+          playWavSound('charge', 0.28, 0.85);  // Whooshing flames
+        } else if (typeUpper === 'ICE') {
+          // Ice beams: crisp frozen whoosh
+          playWavSound('wave', 0.28, 1.35);  // High-pitched icy
+        } else if (typeUpper === 'ELECTRIC') {
+          playWavSound('electric', 0.30, 1.0);
+        } else if (typeUpper === 'DRAGON') {
+          playWavSound('burst', 0.30, 0.65);  // Deep dragon roar
+        } else {
+          playWavSound('beam', 0.28, cfg.pitch);
+        }
+        return;
+      }
+
+      // Arc attacks: single "swoof" throw sound
+      if (pattern === 'arc') {
+        playWavSound('spin', 0.35, 0.85);
+        return;
+      }
+
+      // Swarm attacks: multiple sounds
+      if (pattern === 'swarm') {
+        // Flamethrower: roaring fire sound
+        if (typeUpper === 'FIRE') {
+          playWavSound('burst', 0.25, 0.7);  // Deep fire roar
+          setTimeout(function() {
+            playWavSound('charge', 0.22, 0.8);  // Sustained flames
+          }, 150);
+          return;
+        }
+        var swarmCount = 6;
+        for (var j = 0; j < swarmCount; j++) {
+          (function(delay) {
+            setTimeout(function() {
+              playWavSound('projectile', 0.18, 1.2 + Math.random() * 0.3);
+            }, delay);
+          })(j * 100 + Math.random() * 50);
+        }
+        return;
+      }
+
+      // Self aura: Single gentle uplifting sound
+      if (pattern === 'self_aura') {
+        playWavSound('heal', 0.25, 1.5);  // Soft, bright, slightly longer
+        return;
+      }
+
+      // Drain: type-specific absorption sounds
+      if (pattern === 'drain') {
+        if (moveName === 'Drain Root') {
+          playWavSound('hit', 0.18, 1.1);  // Deeper root grab sound
+        } else if (typeUpper === 'GRASS') {
+          playWavSound('slash', 0.20, 1.3);  // Vine/nature drain (Life Leech)
+        } else if (typeUpper === 'PSYCHE') {
+          playWavSound('wave', 0.20, 1.4);  // Mystical drain
+        } else if (typeUpper === 'WATER') {
+          playWavSound('wave', 0.18, 1.6);  // Bubble drain
+        } else {
+          playWavSound('status', 0.22, 1.5);  // Default
+        }
+        return;
+      }
+
+      // Wave attacks: type-specific sounds
+      if (pattern === 'wave') {
+        if (typeUpper === 'ELECTRIC') {
+          playWavSound('electric', 0.30, 1.0);  // Electric crackle
+          return;
+        }
+        if (typeUpper === 'FIRE') {
+          playWavSound('burst', 0.28, 0.85);  // Fire whoosh
+          return;
+        }
+        if (typeUpper === 'VENOM') {
+          playWavSound('status', 0.28, 0.85);  // Toxic cloud whoosh
+        } else if (typeUpper === 'GRASS') {
+          playWavSound('wave', 0.25, 1.2);  // Spore/pollen drift
+        } else {
+          playWavSound('wave', 0.28, cfg.pitch);
+        }
+        return;
+      }
+
+      playWavSound(cfg.file.replace('.wav', ''), 0.28, cfg.pitch);
+    }
+
+    function playImpactSound(power, type, pattern, moveName) {
+      var cfg = getImpactSoundConfig(power, type);
+      var typeUpper = type.toUpperCase();
+
+      // Arc impacts: fewer hits for Draco Meteor (only 2-3 big meteors)
+      if (pattern === 'arc') {
+        var hitCount = (moveName === 'Draco Meteor') ? 2 : 4;
+        var interval = (moveName === 'Draco Meteor') ? 120 : 80;
+        for (var i = 0; i < hitCount; i++) {
+          (function(delay, idx) {
+            setTimeout(function() {
+              // Crescendo effect - last hit is loudest
+              var vol = 0.18 + (idx / hitCount) * 0.22;
+              var sound = (moveName === 'Draco Meteor') ? 'burst' : 'strike';
+              playWavSound(sound, vol, 0.85 + Math.random() * 0.15);
+            }, delay);
+          })(i * interval, i);
+        }
+        return;
+      }
+
+      // Swarm impacts: scattered hits
+      if (pattern === 'swarm') {
+        // Fire swarm (Flamethrower): big fire burst
+        if (typeUpper === 'FIRE') {
+          playWavSound('burst', 0.35, 0.75);  // Deep fire explosion
+          return;
+        }
+        var swarmHits = 5;
+        for (var j = 0; j < swarmHits; j++) {
+          (function(delay) {
+            setTimeout(function() {
+              playWavSound('strike', 0.16, 1.0 + Math.random() * 0.3);
+            }, delay);
+          })(j * 80 + Math.random() * 40);
+        }
+        return;
+      }
+
+      // Self aura: type-specific buff completion sounds
+      if (pattern === 'self_aura') {
+        if (typeUpper === 'FIRE') {
+          playWavSound('boost', 0.28, 1.0);  // Warm completion
+        } else if (typeUpper === 'ELECTRIC') {
+          playWavSound('electric', 0.22, 1.4);  // Quick zap
+        } else if (typeUpper === 'PSYCHE') {
+          playWavSound('status', 0.28, 1.2);  // Mental clarity
+        } else if (typeUpper === 'DRAGON') {
+          playWavSound('boost', 0.30, 0.85);  // Deep dragon
+        } else if (typeUpper === 'METAL' || typeUpper === 'STONE') {
+          playWavSound('hit', 0.25, 0.8);  // Solid clank
+        } else {
+          playWavSound('boost', 0.30, 1.15);  // Default chime
+        }
+        return;
+      }
+
+      // Drain: type-specific life gained sounds
+      if (pattern === 'drain') {
+        if (typeUpper === 'GRASS') {
+          playWavSound('heal', 0.22, 1.3);  // Nature healing
+        } else if (typeUpper === 'PSYCHE') {
+          playWavSound('boost', 0.20, 1.5);  // Mind boost
+        } else if (typeUpper === 'WATER') {
+          playWavSound('heal', 0.20, 1.4);  // Refreshing
+        } else {
+          playWavSound('boost', 0.20, 1.8);  // Default chime
+        }
+        return;
+      }
+
+      // Wave for status: soft landing
+      if (pattern === 'wave' && power === 0) {
+        if (typeUpper === 'VENOM') {
+          playWavSound('status', 0.22, 0.9);  // Poison lands
+        } else if (typeUpper === 'GRASS') {
+          playWavSound('status', 0.20, 1.1);  // Spore settles
+        } else {
+          playWavSound('status', 0.22, 1.0);
+        }
+        return;
+      }
+
+      // Status effects: soft mystical sounds
+      if (pattern === 'status_drift' || power === 0) {
+        if (moveName === 'Mock') {
+          playWavSound('status', 0.20, 2.2);  // Very short, quick taunt
+        } else {
+          playWavSound('status', 0.25, 1.0 + Math.random() * 0.2);
+        }
+        return;
+      }
+
+      playWavSound(cfg.file.replace('.wav', ''), power > 0 ? 0.35 : 0.25, cfg.pitch);
+    }
+
+    // ============================================
+    // STATE
+    // ============================================
+    var phase = 'test'; // 'test' or 'audit'
+    var idx = 0;
+    var moves = SOUND_TESTS;
+    var results = {};
+
+    function initResults() {
+      SOUND_TESTS.forEach(function(m) { results[m.name] = { status: null, issues: [], note: '' }; });
+      ALL_MOVES.forEach(function(m) { if (!results[m.name]) results[m.name] = { status: null, issues: [], note: '' }; });
+    }
+    initResults();
+
+    // ============================================
+    // UI UPDATES
+    // ============================================
+    function updateSoundInfo() {
+      var m = moves[idx];
+      if (!m) return;
+
+      if (phase === 'test' && m.purpose) {
+        // Use predefined test info
+        document.getElementById('testPurpose').textContent = m.purpose;
+        document.getElementById('attackSoundFile').textContent = m.attackSound.file;
+        document.getElementById('attackSoundPitch').textContent = 'Pitch: ' + m.attackSound.pitch.toFixed(2) + 'x';
+        document.getElementById('attackSoundDesc').textContent = m.attackSound.desc;
+        document.getElementById('impactSoundFile').textContent = m.impactSound.file;
+        document.getElementById('impactSoundPitch').textContent = 'Pitch: ' + m.impactSound.pitch.toFixed(2) + 'x';
+        document.getElementById('impactSoundDesc').textContent = m.impactSound.desc;
+        document.getElementById('listenFor').textContent = m.listenFor;
+      } else {
+        // Generate info dynamically
+        var atkCfg = getAttackSoundConfig(m.pattern, m.type);
+        var impCfg = getImpactSoundConfig(m.power, m.type);
+        var typeUpper = m.type.toUpperCase();
+
+        document.getElementById('testPurpose').textContent = m.pattern.toUpperCase() + ' pattern + ' + typeUpper + ' type';
+        document.getElementById('attackSoundFile').textContent = atkCfg.file;
+        document.getElementById('attackSoundPitch').textContent = 'Pitch: ' + atkCfg.pitch.toFixed(2) + 'x (' + m.type + ')';
+        document.getElementById('attackSoundDesc').textContent = getAttackDesc(m.pattern, m.type);
+        document.getElementById('impactSoundFile').textContent = impCfg.file;
+        document.getElementById('impactSoundPitch').textContent = 'Pitch: ' + impCfg.pitch.toFixed(2) + 'x (' + m.type + ')';
+        document.getElementById('impactSoundDesc').textContent = getImpactDesc(m.power, m.type);
+        var listenText = 'Listen for the ' + m.pattern + ' sound, then the ' + (m.power >= 90 ? 'heavy' : m.power >= 60 ? 'medium' : m.power > 0 ? 'light' : 'status') + ' impact.';
+        if (m.statusEffect) {
+          listenText += ' Status: ' + m.statusEffect.toUpperCase() + ' badge should appear on defender.';
+        }
+        document.getElementById('listenFor').textContent = listenText;
+      }
+    }
+
+    function getStatusColor(status) {
+      var colors = {
+        burn: '#f97316',
+        poison: '#a855f7',
+        paralysis: '#facc15',
+        freeze: '#22d3ee',
+        sleep: '#64748b',
+        confusion: '#ec4899'
+      };
+      return colors[status] || '#a855f7';
+    }
+
+    function showStatusBadge(statusEffect) {
+      if (!statusEffect) return;
+      var container = document.getElementById('defenderStatusIcons');
+      container.innerHTML = '';
+      var icon = document.createElement('div');
+      icon.className = 'status-icon ' + statusEffect;
+      container.appendChild(icon);
+      // Remove after 3 seconds
+      setTimeout(function() {
+        container.innerHTML = '';
+      }, 3000);
+    }
+
+    function getAttackDesc(pattern, type) {
+      var descs = {
+        beam: 'Energy beam', projectile: 'Traveling projectile', arc: 'Arcing throw',
+        charge: 'Rushing charge', slash: 'Quick slash', wave: 'Expanding wave',
+        swarm: 'Multiple hits', drain: 'Draining energy', self_aura: 'Power up',
+        status_drift: 'Status effect'
+      };
+      return (descs[pattern] || 'Attack') + ' (' + type + ')';
+    }
+
+    function getImpactDesc(power, type) {
+      if (power >= 90) return 'Heavy ' + type + ' impact';
+      if (power >= 60) return 'Medium ' + type + ' impact';
+      if (power > 0) return 'Light ' + type + ' tap';
+      return 'Soft status effect';
+    }
+
+    function render() {
+      var m = moves[idx];
+      if (!m) return;
+      var r = results[m.name];
+
+      // Move info
+      document.getElementById('moveName').textContent = m.name;
+      document.getElementById('movePattern').textContent = m.pattern;
+      document.getElementById('moveType').textContent = m.type.toUpperCase();
+      document.getElementById('movePower').textContent = m.power || 'Status';
+      document.getElementById('currentNum').textContent = idx + 1;
+      document.getElementById('totalNum').textContent = moves.length;
+
+      // Status effect display
+      var statusTag = document.getElementById('moveStatus');
+      if (m.statusEffect) {
+        statusTag.textContent = m.statusEffect.toUpperCase() + (m.statusChance < 100 ? ' (' + m.statusChance + '%)' : '');
+        statusTag.style.display = 'inline';
+        statusTag.style.background = getStatusColor(m.statusEffect);
+      } else {
+        statusTag.style.display = 'none';
+      }
+
+      // Clear any previous status icons
+      document.getElementById('defenderStatusIcons').innerHTML = '';
+
+      // Phase badge
+      var badge = document.getElementById('phaseBadge');
+      badge.textContent = phase === 'test' ? 'SOUND TEST' : 'FULL AUDIT';
+      badge.classList.toggle('audit', phase === 'audit');
+
+      // Progress
+      var progress = document.getElementById('progressFill');
+      progress.style.width = ((idx + 1) / moves.length * 100) + '%';
+      progress.classList.toggle('audit', phase === 'audit');
+      document.getElementById('progressText').textContent = (phase === 'test' ? 'Test ' : 'Move ') + (idx + 1) + ' of ' + moves.length;
+
+      // Buttons
+      document.getElementById('btnGood').classList.toggle('selected', r.status === 'good');
+      document.getElementById('btnIssue').classList.toggle('selected', r.status === 'issue');
+
+      // Issue panel
+      document.getElementById('issuePanel').classList.toggle('visible', r.status === 'issue');
+      document.querySelectorAll('.issue-tag').forEach(function(t) {
+        t.classList.toggle('selected', r.issues.indexOf(t.dataset.issue) >= 0);
+      });
+      document.getElementById('issueNote').value = r.note || '';
+
+      // Sound info
+      updateSoundInfo();
+
+      // Move list
+      renderMoveList();
+
+      // Stats
+      updateStats();
+
+      // Export button - always enabled so user can export progress anytime
+      document.getElementById('btnExport').disabled = false;
+    }
+
+    function renderMoveList() {
+      var html = moves.map(function(m, i) {
+        var r = results[m.name];
+        var cls = 'move-item' + (i === idx ? ' current' : '') + (r.status === 'good' ? ' good' : '') + (r.status === 'issue' ? ' issue' : '');
+        var dotCls = 'move-dot' + (i === idx ? ' current' : '') + (r.status === 'good' ? ' good' : '') + (r.status === 'issue' ? ' issue' : '');
+        var testNum = phase === 'test' ? '<span class="test-num">#' + (i + 1) + '</span>' : '';
+        return '<div class="' + cls + '" data-i="' + i + '">' +
+          testNum +
+          '<span class="move-name-text">' + m.name + '</span>' +
+          '<button class="btn-play-small" data-play="' + i + '" title="Play ' + m.name + '">&#9658;</button>' +
+          '<span class="' + dotCls + '"></span>' +
+        '</div>';
+      }).join('');
+      document.getElementById('moveList').innerHTML = html;
+
+      // Click on move name to select it
+      document.querySelectorAll('.move-item').forEach(function(el) {
+        el.onclick = function(e) {
+          // Don't select if clicking the play button
+          if (e.target.classList.contains('btn-play-small')) return;
+          idx = parseInt(this.dataset.i);
+          render();
+        };
+      });
+
+      // Click on play button to play that effect directly
+      document.querySelectorAll('.btn-play-small').forEach(function(btn) {
+        btn.onclick = function(e) {
+          e.stopPropagation();
+          var playIdx = parseInt(this.dataset.play);
+          playEffectForMove(playIdx);
+        };
+      });
+
+      var cur = document.querySelector('.move-item.current');
+      if (cur) cur.scrollIntoView({ block: 'nearest' });
+    }
+
+    // Play effect for a specific move index (without changing selection)
+    function playEffectForMove(moveIdx) {
+      var m = moves[moveIdx];
+      if (!m) return;
+
+      showActionInfoSimple('player', m.name);
+      var atk = document.getElementById('playerLobster');
+      atk.classList.add('attacking');
+
+      var result = playAttackAnimation(m.type, true, {
+        category: 'special',
+        power: m.power || 60,
+        moveName: m.name,
+        moveDescription: ''
+      });
+      if (result && result.pattern) triggerAttackerMovement('player', result.pattern);
+
+      var pattern = result && result.pattern ? result.pattern : m.pattern;
+      var time = getAnimTravelTime(pattern);
+
+      playAttackSound(pattern, m.type, m.name);
+
+      // Self-aura moves don't affect the defender
+      if (pattern === 'self_aura') {
+        setTimeout(function() { atk.classList.remove('attacking'); }, 600);
+        return;
+      }
+
+      var impactRatio = {
+        beam: 0.35, projectile: 0.75, arc: 0.70, charge: 0.30, slash: 0.34,
+        wave: 0.50, swarm: 0.60, drain: 0.70, self_aura: 0.50, status_drift: 0.55, default: 0.50
+      };
+      // Bubble Burst needs later impact (bubbles are slower)
+      var ratio = (m.name === 'Bubble Burst') ? 0.80 : (impactRatio[pattern] || 0.50);
+      var impactTime = Math.round(time * ratio);
+
+      setTimeout(function() {
+        var def = document.getElementById('opponentLobster');
+        def.classList.add('hit');
+        setTimeout(function() { def.classList.remove('hit'); }, 300);
+        if (m.power >= 60) screenShake();
+        playImpactSound(m.power, m.type, pattern, m.name);
+        if (m.power > 0) showDamageNumber('opponent', Math.round(20 + m.power * 0.5), m.power >= 100);
+        // Show status effect badge if move has one
+        if (m.statusEffect) {
+          showStatusBadge(m.statusEffect);
+        }
+      }, impactTime);
+
+      setTimeout(function() { atk.classList.remove('attacking'); }, time);
+    }
+
+    function updateStats() {
+      var good = 0, issues = 0;
+      moves.forEach(function(m) {
+        var r = results[m.name];
+        if (r.status === 'good') good++;
+        else if (r.status === 'issue') issues++;
+      });
+      document.getElementById('statGood').textContent = good;
+      document.getElementById('statIssues').textContent = issues;
+    }
+
+    // ============================================
+    // ACTIONS
+    // ============================================
+    function playEffect() {
+      var m = moves[idx];
+      if (!m) return;
+
+      showActionInfoSimple('player', m.name);
+      var atk = document.getElementById('playerLobster');
+      atk.classList.add('attacking');
+
+      var result = playAttackAnimation(m.type, true, {
+        category: 'special',
+        power: m.power || 60,
+        moveName: m.name,
+        moveDescription: ''
+      });
+      if (result && result.pattern) triggerAttackerMovement('player', result.pattern);
+
+      var pattern = result && result.pattern ? result.pattern : m.pattern;
+      var time = getAnimTravelTime(pattern);
+
+      // Play attack sound immediately
+      playAttackSound(pattern, m.type, m.name);
+
+      // Self-aura moves don't affect the defender
+      if (pattern === 'self_aura') {
+        setTimeout(function() { atk.classList.remove('attacking'); }, 600);
+        return;
+      }
+
+      // Impact timing
+      var impactRatio = {
+        beam: 0.35, projectile: 0.75, arc: 0.70, charge: 0.30, slash: 0.34,
+        wave: 0.50, swarm: 0.60, drain: 0.70, self_aura: 0.50, status_drift: 0.55, default: 0.50
+      };
+      // Bubble Burst needs later impact (bubbles are slower)
+      var ratio = (m.name === 'Bubble Burst') ? 0.80 : (impactRatio[pattern] || 0.50);
+      var impactTime = Math.round(time * ratio);
+
+      setTimeout(function() {
+        var def = document.getElementById('opponentLobster');
+        def.classList.add('hit');
+        setTimeout(function() { def.classList.remove('hit'); }, 300);
+        if (m.power >= 60) screenShake();
+        playImpactSound(m.power, m.type, pattern, m.name);
+        if (m.power > 0) showDamageNumber('opponent', Math.round(20 + m.power * 0.5), m.power >= 100);
+        // Show status effect badge if move has one
+        if (m.statusEffect) {
+          showStatusBadge(m.statusEffect);
+        }
+      }, impactTime);
+
+      setTimeout(function() { atk.classList.remove('attacking'); }, time);
+    }
+
+    function markGood() {
+      var m = moves[idx];
+      if (!m) return;
+      results[m.name] = { status: 'good', issues: [], note: '' };
+      saveProgress();
+      render();
+      setTimeout(advance, 200);
+    }
+
+    function markIssue() {
+      var m = moves[idx];
+      if (!m) return;
+      if (results[m.name].status === 'issue') {
+        results[m.name] = { status: null, issues: [], note: '' };
+      } else {
+        results[m.name].status = 'issue';
+      }
+      saveProgress();
+      render();
+    }
+
+    function saveIssues() {
+      var m = moves[idx];
+      if (!m) return;
+      results[m.name].issues = [];
+      document.querySelectorAll('.issue-tag.selected').forEach(function(t) {
+        results[m.name].issues.push(t.dataset.issue);
+      });
+      saveProgress();
+    }
+
+    function advance() {
+      if (idx < moves.length - 1) {
+        idx++;
+        render();
+      } else if (phase === 'test') {
+        // Check if all tests passed
+        var allGood = SOUND_TESTS.every(function(m) { return results[m.name].status === 'good'; });
+        if (allGood) {
+          document.getElementById('phaseCompleteModal').classList.add('visible');
+        } else {
+          // Find first non-good test
+          for (var i = 0; i < SOUND_TESTS.length; i++) {
+            if (results[SOUND_TESTS[i].name].status !== 'good') {
+              idx = i;
+              render();
+              break;
+            }
+          }
+        }
+      } else {
+        showExport();
+      }
+    }
+
+    function startAuditPhase() {
+      phase = 'audit';
+      moves = ALL_MOVES;
+      idx = 0;
+      document.getElementById('phaseCompleteModal').classList.remove('visible');
+      render();
+    }
+
+    function showExport() {
+      var lines = ['# EFFECT AUDIT RESULTS', 'Date: ' + new Date().toLocaleString(), ''];
+
+      // Combine SOUND_TESTS and ALL_MOVES, avoiding duplicates
+      var allMoves = SOUND_TESTS.slice();
+      ALL_MOVES.forEach(function(m) {
+        if (!allMoves.some(function(s) { return s.name === m.name; })) {
+          allMoves.push(m);
+        }
+      });
+
+      var good = 0, issues = 0;
+      allMoves.forEach(function(m) {
+        var r = results[m.name];
+        if (r && r.status === 'good') good++;
+        else if (r && r.status === 'issue') issues++;
+      });
+
+      lines.push('## SUMMARY');
+      lines.push('- Good: ' + good);
+      lines.push('- Issues: ' + issues);
+      lines.push('- Not reviewed: ' + (allMoves.length - good - issues));
+      lines.push('');
+
+      if (issues > 0) {
+        lines.push('## ISSUES FOUND');
+        lines.push('');
+        allMoves.forEach(function(m) {
+          var r = results[m.name];
+          if (r && r.status === 'issue') {
+            lines.push('### ' + m.name + ' (' + m.pattern + ', ' + m.type + ', power ' + m.power + ')');
+            if (r.issues.length) lines.push('- Problems: ' + r.issues.join(', '));
+            if (r.note) lines.push('- Note: ' + r.note);
+            lines.push('');
+          }
+        });
+      }
+
+      // Also show good moves for reference
+      if (good > 0) {
+        lines.push('## VERIFIED GOOD');
+        lines.push('');
+        allMoves.forEach(function(m) {
+          var r = results[m.name];
+          if (r && r.status === 'good') {
+            lines.push('- ' + m.name + ' (' + m.pattern + ', ' + m.type + ')');
+          }
+        });
+        lines.push('');
+      }
+
+      document.getElementById('exportText').value = lines.join('\n');
+      document.getElementById('exportModal').classList.add('visible');
+    }
+
+    function resetAll() {
+      if (!confirm('Reset everything and start over?')) return;
+      phase = 'test';
+      moves = SOUND_TESTS;
+      idx = 0;
+      initResults();
+      localStorage.removeItem('effectTesterProgress');
+      render();
+    }
+
+    // ============================================
+    // LOCAL STORAGE PERSISTENCE
+    // ============================================
+    function saveProgress() {
+      var data = {
+        phase: phase,
+        idx: idx,
+        results: results
+      };
+      localStorage.setItem('effectTesterProgress', JSON.stringify(data));
+    }
+
+    function loadProgress() {
+      try {
+        var saved = localStorage.getItem('effectTesterProgress');
+        if (saved) {
+          var data = JSON.parse(saved);
+          if (data.results) {
+            results = data.results;
+          }
+          if (data.phase) {
+            phase = data.phase;
+            moves = phase === 'test' ? SOUND_TESTS : ALL_MOVES;
+          }
+          if (typeof data.idx === 'number') {
+            idx = Math.min(data.idx, moves.length - 1);
+          }
+          return true;
+        }
+      } catch (e) {
+        console.warn('Could not load saved progress:', e);
+      }
+      return false;
+    }
+
+    // ============================================
+    // SETUP
+    // ============================================
+    function init() {
+      initCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      // Clear old progress since we changed the test list (v5 = 8 remaining issues)
+      var testVersion = 'v5-final-8';
+      var savedVersion = localStorage.getItem('effectTesterVersion');
+      if (savedVersion !== testVersion) {
+        localStorage.removeItem('effectTesterProgress');
+        localStorage.setItem('effectTesterVersion', testVersion);
+      }
+      var hadProgress = loadProgress();
+
+      document.getElementById('btnStart').onclick = function() {
+        document.getElementById('introModal').classList.remove('visible');
+      };
+
+      // If we have saved progress, skip the intro modal
+      if (hadProgress) {
+        document.getElementById('introModal').classList.remove('visible');
+      }
+
+      document.getElementById('btnStartAudit').onclick = startAuditPhase;
+
+      document.getElementById('btnPlay').onclick = playEffect;
+      document.getElementById('btnGood').onclick = markGood;
+      document.getElementById('btnIssue').onclick = markIssue;
+
+      document.querySelectorAll('.issue-tag').forEach(function(t) {
+        t.onclick = function() {
+          this.classList.toggle('selected');
+          saveIssues();
+        };
+      });
+
+      document.getElementById('issueNote').oninput = function() {
+        var m = moves[idx];
+        if (m) {
+          results[m.name].note = this.value;
+          saveProgress();
+        }
+      };
+
+      document.getElementById('btnExport').onclick = showExport;
+      document.getElementById('btnCopy').onclick = function() {
+        document.getElementById('exportText').select();
+        document.execCommand('copy');
+        this.textContent = 'Copied!';
+        setTimeout(function() { document.getElementById('btnCopy').textContent = 'Copy to Clipboard'; }, 2000);
+      };
+      document.getElementById('btnCloseExport').onclick = function() {
+        document.getElementById('exportModal').classList.remove('visible');
+      };
+
+      document.getElementById('btnReset').onclick = resetAll;
+      document.getElementById('btnSkipToPhase2').onclick = startAuditPhase;
+
+      // Battle experience effect test buttons
+      document.getElementById('btnIntro').onclick = function() {
+        if (typeof spawnIntroFog === 'function') spawnIntroFog();
+      };
+      document.getElementById('btnVictory').onclick = function() {
+        // No sound - just confetti visuals (we don't have proper victory audio)
+        if (typeof playVictoryEffect === 'function') playVictoryEffect(true);
+      };
+      document.getElementById('btnDefeat').onclick = function() {
+        // Just fade the loser - no particles, no sound
+        var player = document.getElementById('playerLobster');
+        if (player) player.classList.add('loser-fade');
+      };
+      document.getElementById('btnResetFx').onclick = function() {
+        // Remove all effect classes
+        var player = document.getElementById('playerLobster');
+        var opponent = document.getElementById('opponentLobster');
+        if (player) player.classList.remove('winner-glow', 'loser-fade');
+        if (opponent) opponent.classList.remove('winner-glow', 'loser-fade');
+      };
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        if (document.querySelector('.modal.visible')) return;
+        if (e.target.tagName === 'TEXTAREA') return;
+        if (e.code === 'Space') { e.preventDefault(); playEffect(); }
+        if (e.code === 'KeyG') markGood();
+        if (e.code === 'KeyI') markIssue();
+        if (e.code === 'Enter') advance();
+      });
+
+      render();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

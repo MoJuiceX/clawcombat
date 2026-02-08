@@ -188,7 +188,9 @@
       <a href="/leaderboard.html">Leaderboard</a>
       <a href="/battles.html">Battles</a>
       <a href="/clawfeed.html">Claw Feed</a>
-      <span id="auth-btn-container"></span>
+    </div>
+    <div class="nav-auth">
+      <a href="/profile.html" id="nav-auth-btn" class="nav-auth-btn">Login</a>
     </div>
   </nav>
 </div>
@@ -423,7 +425,6 @@ function parseEvents(turn) {
     }
     $('header-subtitle').textContent = nameA + ' vs ' + nameB;
 
-    initCanvas();
     setupArena();
     setupControls();
     buildLog();
@@ -432,6 +433,10 @@ function parseEvents(turn) {
 
     $('loading-state').classList.add('hidden');
     $('arena-wrapper').classList.add('active');
+
+    // Initialize canvas AFTER arena is visible so it gets proper dimensions
+    initCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
     // Remove intro class after animation
     setTimeout(function() { $('arena').classList.remove('intro'); }, 1500);
@@ -646,6 +651,7 @@ async function playTurnEvents(turnIndex) {
   var lastMoveName = '';
   var lastMovePower = 60;
   var lastMoveCategory = 'special';
+  var lastMoveDescription = '';
 
   // Track HP from the previous turn to animate transitions
   var prevHpA = turnIndex <= 1 ? maxHpA : Math.max(0, turns[turnIndex - 2].agentAHP != null ? turns[turnIndex - 2].agentAHP : maxHpA);
@@ -669,16 +675,18 @@ async function playTurnEvents(turnIndex) {
       // Use moveType from event if available (Fix 2), else fall back to agent move lookup
       lastMoveName = ev.move || '';
       lastMoveType = ev.moveType || (agentA.type || 'NEUTRAL');
-      lastMovePower = ev.movePower || 60;
+      lastMovePower = ev.movePower != null ? ev.movePower : 60;
       lastMoveCategory = ev.moveCategory || 'special';
+      lastMoveDescription = ev.moveDescription || '';
       if (!ev.moveType) {
         var moveSrc = side === 'a' ? agentA : agentB;
         if (moveSrc && moveSrc.moves) {
           for (var m = 0; m < moveSrc.moves.length; m++) {
             if (moveSrc.moves[m].name === ev.move) {
               lastMoveType = moveSrc.moves[m].type || lastMoveType;
-              lastMovePower = moveSrc.moves[m].power || lastMovePower;
+              lastMovePower = moveSrc.moves[m].power != null ? moveSrc.moves[m].power : lastMovePower;
               lastMoveCategory = moveSrc.moves[m].category || lastMoveCategory;
+              lastMoveDescription = moveSrc.moves[m].description || lastMoveDescription;
               break;
             }
           }
@@ -692,6 +700,23 @@ async function playTurnEvents(turnIndex) {
       var atkEl = $(side === 'a' ? 'playerLobster' : 'opponentLobster');
       atkEl.classList.add('attacking');
       await delay(ANIM_TIMING.useMoveTelegraph);
+
+      // For status moves (power = 0), play animation now since there's no damage event
+      if (lastMovePower === 0) {
+        var isAAttacking = side === 'a';
+        var attackerDisplaySide = isAAttacking ? 'player' : 'opponent';
+        atkEl.classList.remove('attacking');
+
+        playAttackAnimation(lastMoveType, isAAttacking, {
+          category: lastMoveCategory,
+          power: 0,
+          moveName: lastMoveName,
+          moveDescription: lastMoveDescription
+        });
+
+        // Brief delay for status animation to play
+        await delay(ANIM_TIMING.travelTime.status);
+      }
       continue;
     }
 
