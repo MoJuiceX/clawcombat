@@ -20,22 +20,32 @@ function cleanupDatabase() {
       size_mb: (sizeBefore / 1024 / 1024).toFixed(2)
     });
 
-    // Temporarily disable foreign keys for bulk delete
-    db.pragma('foreign_keys = OFF');
+    // Delete old battles and their dependencies
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-    try {
-      // Delete battles older than 1 day (keep only very recent ones for disk space)
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const deleted = db.prepare(`
-        DELETE FROM battles
-        WHERE created_at < ?
-        AND status = 'finished'
-      `).run(oneDayAgo);
+    // Get IDs of battles to delete
+    const oldBattleIds = db.prepare(`
+      SELECT id FROM battles
+      WHERE created_at < ?
+      AND status = 'finished'
+      LIMIT 100
+    `).all(oneDayAgo).map(b => b.id);
 
+    if (oldBattleIds.length > 0) {
+      const placeholders = oldBattleIds.map(() => '?').join(',');
+
+      // Delete dependent records first (social posts referencing battles)
+      try {
+        db.prepare(`DELETE FROM social_posts WHERE battle_id IN (${placeholders})`).run(...oldBattleIds);
+      } catch (e) {
+        log.warn('Could not delete social posts:', e.message);
+      }
+
+      // Now delete the battles
+      const deleted = db.prepare(`DELETE FROM battles WHERE id IN (${placeholders})`).run(...oldBattleIds);
       log.info('Deleted old battles', { count: deleted.changes });
-    } finally {
-      // Re-enable foreign keys
-      db.pragma('foreign_keys = ON');
+    } else {
+      log.info('No old battles to delete');
     }
 
     // Delete old battle logs (keep last 1000 battles worth) - if table exists
