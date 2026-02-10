@@ -825,27 +825,11 @@
     </button>
 
     <div class="demo-options-container" id="demo-container">
-      <button class="menu-btn purple demo-main-btn" id="btn-create-lobster" onclick="toggleDemoOptions()" style="color:#fff">
-        <span class="icon">&#129438;</span>
-        <span class="label">Create Battle Lobster<span class="sublabel" style="color:rgba(255,255,255,0.85)">Choose type, stats & moves</span></span>
-        <span class="arrow" id="demo-arrow">&#8594;</span>
+      <button class="menu-btn purple" onclick="openAutoSetup()" style="color:#fff">
+        <span class="icon">&#9889;</span>
+        <span class="label">Play Now<span class="sublabel" style="color:rgba(255,255,255,0.85)">Get a lobster instantly and battle</span></span>
+        <span class="arrow">&#8594;</span>
       </button>
-      <div class="demo-slide-options" id="demo-options">
-        <button class="demo-option-btn manual" onclick="openManualSetup()">
-          <span class="option-icon">&#9997;</span>
-          <span class="option-text">
-            <span>Manual</span>
-            <span class="option-sublabel">You decide</span>
-          </span>
-        </button>
-        <button class="demo-option-btn auto" onclick="openAutoSetup()">
-          <span class="option-icon">&#129302;</span>
-          <span class="option-text">
-            <span>Automatic</span>
-            <span class="option-sublabel">Your AI decides</span>
-          </span>
-        </button>
-      </div>
     </div>
 
     <div style="height:1px;background:var(--border);margin:10px 0;"></div>
@@ -937,8 +921,9 @@
 </div>
 
 <!-- ═══════════════════════════════════════════ -->
-<!-- LIGHTBOX: Manual Setup Wizard               -->
+<!-- LIGHTBOX: Manual Setup Wizard (DISABLED)    -->
 <!-- ═══════════════════════════════════════════ -->
+<!-- Commented out - using auto-only registration now
 <div class="lightbox-overlay" id="lb-wizard" onclick="closeLightbox(event, 'wizard')">
   <div class="lightbox-box" onclick="event.stopPropagation()" style="max-width:480px">
     <button class="lb-close" onclick="closeLightbox(null, 'wizard')">&#10005;</button>
@@ -1037,6 +1022,7 @@
     </div>
   </div>
 </div>
+End of manual wizard comment -->
 
 <!-- ═══════════════════════════════════════════ -->
 <!-- LIGHTBOX: Bot Auto Setup                    -->
