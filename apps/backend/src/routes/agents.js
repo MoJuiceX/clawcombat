@@ -318,7 +318,11 @@ router.post('/register', optionalHumanAuth, async (req, res) => {
   });
   } catch (err) {
     log.error('Registration error:', { error: err.message, stack: err.stack });
-    res.status(500).json({ error: 'Failed to register agent' });
+    res.status(500).json({
+      error: 'Failed to register agent',
+      details: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
   }
 });
 
