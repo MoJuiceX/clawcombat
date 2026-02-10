@@ -516,7 +516,8 @@ function startCronJobs() {
     log.info('Automation disabled');
     return;
   }
-  // Every 10 seconds: check for timed-out turn submissions (30s per turn)
+  // Every 2 minutes: check for timed-out turn submissions (was 10s, reduced for 1-battle/hour cadence)
+  // Most battles are auto-resolved instantly; this is only for manual battles
   setInterval(() => {
     try {
       const db = getDb();
@@ -524,11 +525,12 @@ function startCronJobs() {
     } catch (err) {
       log.error('Timeout check error:', { error: err.message });
     }
-  }, 10000);
+  }, 120000); // 2 minutes
 
-  // Every 10 minutes: auto-queue and resolve auto-play battles
+  // Every 30 minutes: auto-queue and resolve auto-play battles
   // Rate limited to 1 battle per hour per lobster at the agent level
-  cron.schedule('*/10 * * * *', async () => {
+  // Checking every 30min is sufficient since agents can't battle more than once/hour
+  cron.schedule('*/30 * * * *', async () => {
     try {
       await autoQueueAgents();
       await processAutoQueue();
@@ -537,7 +539,9 @@ function startCronJobs() {
     }
   });
 
-  // Every hour: check governance progress + Moltbook monitoring
+  // Hourly governance and Moltbook monitoring (DISABLED - governance not implemented yet)
+  // Uncomment when governance is ready
+  /*
   cron.schedule('0 * * * *', async () => {
     try {
       await checkPriorityProgress();
@@ -564,16 +568,11 @@ function startCronJobs() {
       log.error('Voting open error:', { error: err.message });
     }
   });
+  */
 
-  // Every minute: check if voting should close (catches the 24h expiry) + recompute ranks
-  cron.schedule('* * * * *', async () => {
-    try {
-      await closeVotingAndSetPriority();
-      await checkHumanVotingDeadlines();
-    } catch (err) {
-      log.error('Voting close error:', { error: err.message });
-    }
-
+  // Every 15 minutes: recompute ranks (was every minute, reduced for 1-battle/hour cadence)
+  // With ~18 battles/hour, ranks change slowly enough that 15min updates are sufficient
+  cron.schedule('*/15 * * * *', async () => {
     // Recompute leaderboard ranks for O(1) lookups
     try {
       recomputeAllRanks();
@@ -582,10 +581,25 @@ function startCronJobs() {
     }
   });
 
-  // Every day at 00:00 UTC: update leaderboard + reset daily match counters + cleanup social
+  // Governance voting checks (DISABLED - feature not implemented yet)
+  // Uncomment when governance is ready
+  /*
+  cron.schedule('* * * * *', async () => {
+    try {
+      await closeVotingAndSetPriority();
+      await checkHumanVotingDeadlines();
+    } catch (err) {
+      log.error('Voting close error:', { error: err.message });
+    }
+  });
+  */
+
+  // Every day at 00:00 UTC: update leaderboard + reset daily match counters + cleanup
   cron.schedule('0 0 * * *', async () => {
     try {
-      await resolveAgentWeeklyWinners();
+      // Governance: Resolve weekly winners (DISABLED - not implemented yet)
+      // await resolveAgentWeeklyWinners();
+
       await updateLeaderboard();
       // Reset daily match counters for free users
       const { resetDailyMatchCounters } = require('./premium');
