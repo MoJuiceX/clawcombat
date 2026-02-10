@@ -219,131 +219,6 @@
     box-shadow: 0 6px 25px rgba(249, 115, 22, 0.4);
   }
 
-  /* ═══════════════════════════════════════════ */
-  /* CREATE LOBSTER SLIDE-IN OPTIONS             */
-  /* ═══════════════════════════════════════════ */
-  .demo-options-container {
-    position: relative;
-    width: 100%;
-    height: 68px;
-    margin-bottom: 10px;
-  }
-  .demo-main-btn {
-    width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    margin-bottom: 0;
-    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
-  }
-  .demo-main-btn.hidden {
-    transform: translateX(-110%);
-    opacity: 0;
-    pointer-events: none;
-  }
-  .demo-slide-options {
-    display: flex;
-    gap: 10px;
-    width: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    transform: translateX(110%);
-    opacity: 0;
-    pointer-events: none;
-    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
-  }
-  .demo-slide-options.visible {
-    transform: translateX(0);
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .demo-option-btn {
-    flex: 1;
-    height: 68px;
-    padding: 0 16px;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.25s;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    font-family: inherit;
-    position: relative;
-    overflow: hidden;
-    box-sizing: border-box;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  }
-  .demo-option-btn::before {
-    content: ''; position: absolute; top: 0; left: -100%;
-    width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-    transition: left 0.5s;
-  }
-  .demo-option-btn:hover::before { left: 100%; }
-  .demo-option-btn .option-icon {
-    font-size: 22px;
-    flex-shrink: 0;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
-  }
-  .demo-option-btn .option-text {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-  }
-  .demo-option-btn .option-sublabel {
-    font-size: 12px;
-    font-weight: 500;
-    opacity: 0.85;
-    white-space: nowrap;
-  }
-  .demo-option-btn.manual {
-    background: linear-gradient(145deg, #34d399 0%, #10b981 50%, #059669 100%);
-    color: #fff;
-    box-shadow:
-      0 4px 15px rgba(16, 185, 129, 0.4),
-      inset 0 1px 0 rgba(255,255,255,0.2),
-      inset 0 -2px 0 rgba(0,0,0,0.1);
-  }
-  .demo-option-btn.manual:hover {
-    background: linear-gradient(145deg, #6ee7b7 0%, #34d399 50%, #10b981 100%);
-    box-shadow:
-      0 8px 25px rgba(16, 185, 129, 0.5),
-      inset 0 1px 0 rgba(255,255,255,0.25),
-      inset 0 -2px 0 rgba(0,0,0,0.1);
-    transform: translateY(-3px);
-  }
-  .demo-option-btn.auto {
-    background: linear-gradient(145deg, #fca5a5 0%, #f87171 50%, #ef4444 100%);
-    color: #fff;
-    box-shadow:
-      0 4px 15px rgba(239, 68, 68, 0.4),
-      inset 0 1px 0 rgba(255,255,255,0.2),
-      inset 0 -2px 0 rgba(0,0,0,0.1);
-  }
-  .demo-option-btn.auto:hover {
-    background: linear-gradient(145deg, #fecaca 0%, #fca5a5 50%, #f87171 100%);
-    box-shadow:
-      0 8px 25px rgba(239, 68, 68, 0.5),
-      inset 0 1px 0 rgba(255,255,255,0.25),
-      inset 0 -2px 0 rgba(0,0,0,0.1);
-    transform: translateY(-3px);
-  }
-
-  @media (max-width: 480px) {
-    .demo-options-container { height: 66px; }
-    .demo-option-btn { height: 66px; padding: 0 14px; font-size: 16px; gap: 10px; }
-    .demo-option-btn .option-icon { font-size: 22px; }
-    .demo-option-btn .option-sublabel { font-size: 11px; }
-  }
 
   /* ═══════════════════════════════════════════ */
   /* WIZARD MODAL                                */
@@ -818,19 +693,11 @@
 
   <!-- Panel: Main Actions -->
   <div class="panel">
-    <button class="menu-btn primary" id="btn-play-now" onclick="playNow()" style="color:#fff">
+    <button class="menu-btn purple" onclick="openAutoSetup()" style="color:#fff">
       <span class="icon">&#9889;</span>
-      <span class="label">Play Now<span class="sublabel" style="color:rgba(255,255,255,0.7)">Get a lobster instantly and battle</span></span>
+      <span class="label">Play Now<span class="sublabel" style="color:rgba(255,255,255,0.85)">Get a lobster instantly and battle</span></span>
       <span class="arrow">&#8594;</span>
     </button>
-
-    <div class="demo-options-container" id="demo-container">
-      <button class="menu-btn purple" onclick="openAutoSetup()" style="color:#fff">
-        <span class="icon">&#9889;</span>
-        <span class="label">Play Now<span class="sublabel" style="color:rgba(255,255,255,0.85)">Get a lobster instantly and battle</span></span>
-        <span class="arrow">&#8594;</span>
-      </button>
-    </div>
 
     <div style="height:1px;background:var(--border);margin:10px 0;"></div>
 
@@ -1302,30 +1169,8 @@ End of manual wizard comment -->
   // ═══════════════════════════════════════════
   // DEMO OPTIONS SLIDE-IN
   // ═══════════════════════════════════════════
-  var demoOptionsVisible = false;
-
-  window.toggleDemoOptions = function() {
-    demoOptionsVisible = !demoOptionsVisible;
-    var mainBtn = document.getElementById('btn-create-lobster');
-    var options = document.getElementById('demo-options');
-
-    if (demoOptionsVisible) {
-      mainBtn.classList.add('hidden');
-      options.classList.add('visible');
-    } else {
-      mainBtn.classList.remove('hidden');
-      options.classList.remove('visible');
-    }
-  };
-
-  window.openManualSetup = function() {
-    toggleDemoOptions();
-    initWizard();
-    openLightbox('wizard');
-  };
-
+  // Simplified: Auto-only setup (manual wizard removed)
   window.openAutoSetup = function() {
-    toggleDemoOptions();
     openLightbox('bot');
   };
 
@@ -1618,52 +1463,6 @@ End of manual wizard comment -->
 
     document.getElementById('bot-prompt-content').style.display = option === 'prompt' ? 'block' : 'none';
     document.getElementById('bot-skill-content').style.display = option === 'skill' ? 'block' : 'none';
-  };
-
-  // ── Play Now: One-click lobster creation ──
-  window.playNow = function() {
-    var btn = document.getElementById('btn-play-now');
-    var originalHTML = btn.innerHTML;
-
-    // Show loading state
-    btn.disabled = true;
-    btn.innerHTML = '<span class="icon" style="animation:spin 1s linear infinite">&#9881;</span>' +
-      '<span class="label">Creating your lobster...<span class="sublabel" style="color:rgba(255,255,255,0.7)">Please wait</span></span>';
-
-    fetch('/onboard/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mode: 'operator' })
-    })
-    .then(function(r) {
-      if (!r.ok) throw new Error('Failed to create lobster');
-      return r.json();
-    })
-    .then(function(data) {
-      if (data.session_token) {
-        // Store session info for later claim
-        try {
-          localStorage.setItem('clawcombat_session', JSON.stringify({
-            token: data.session_token,
-            agent_id: data.agent_id,
-            api_key: data.api_key,
-            lobster_name: data.lobster.name,
-            created_at: new Date().toISOString()
-          }));
-        } catch (e) {}
-
-        // Redirect to play page
-        window.location.href = '/play.html?session=' + data.session_token;
-      } else {
-        throw new Error('No session token received');
-      }
-    })
-    .catch(function(err) {
-      console.error('Play Now error:', err);
-      btn.innerHTML = originalHTML;
-      btn.disabled = false;
-      alert('Failed to create lobster. Please try again.');
-    });
   };
 
   // ── Init ──
