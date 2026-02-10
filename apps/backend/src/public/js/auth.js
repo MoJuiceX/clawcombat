@@ -15,8 +15,9 @@
       script.onload = function() {
         var Clerk = window.Clerk;
         if (!Clerk) { reject(new Error('Clerk SDK failed to load')); return; }
-        Clerk.load({ publishableKey: publishableKey }).then(function() {
-          resolve(Clerk);
+        var clerkInstance = new Clerk(publishableKey);
+        clerkInstance.load().then(function() {
+          resolve(clerkInstance);
         }).catch(reject);
       };
       script.onerror = function() { reject(new Error('Failed to load Clerk script')); };
