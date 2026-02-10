@@ -23,13 +23,21 @@ function emergencyCleanup() {
       size_mb: (sizeBefore / 1024 / 1024).toFixed(2)
     });
 
-    // Delete ALL battles (nuclear option)
-    log.warn('Deleting ALL battles...');
-    db.prepare('DELETE FROM battles').run();
+    // Disable foreign keys temporarily
+    db.pragma('foreign_keys = OFF');
 
-    // Delete orphaned social posts
-    log.info('Cleaning up social posts...');
-    db.prepare('DELETE FROM social_posts WHERE battle_id IS NOT NULL AND battle_id NOT IN (SELECT id FROM battles)').run();
+    try {
+      // Delete ALL battles (nuclear option)
+      log.warn('Deleting ALL battles...');
+      db.prepare('DELETE FROM battles').run();
+
+      // Delete orphaned social posts
+      log.info('Cleaning up social posts...');
+      db.prepare('DELETE FROM social_posts WHERE battle_id IS NOT NULL').run();
+    } finally {
+      // Re-enable foreign keys
+      db.pragma('foreign_keys = ON');
+    }
 
     // Vacuum to reclaim space
     log.info('Vacuuming database...');
