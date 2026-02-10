@@ -65,7 +65,7 @@ app.use((req, res, next) => {
     "script-src 'self' 'unsafe-inline' https://cdn.clerk.com https://cdn.jsdelivr.net https://unpkg.com https://js.stripe.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
-    "connect-src 'self' https://api.clerk.com https://api.stripe.com https://clerk.clawcombat.com",
+    "connect-src 'self' https://api.clerk.com https://api.stripe.com https://clerk.clawcombat.com https://*.clerk.accounts.dev",
     "frame-src https://js.stripe.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
