@@ -1,0 +1,2848 @@
+{
+  "NEUTRAL": [
+    {
+      "id": "poke_normal_pound",
+      "pokeapi_id": 1,
+      "name": "Pummel",
+      "type": "NEUTRAL",
+      "category": "physical",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 35,
+      "effect": null,
+      "description": "Pounds with fore\u00ad legs or tail.",
+      "priority": 0
+    },
+    {
+      "id": "poke_normal_pay-day",
+      "pokeapi_id": 6,
+      "name": "Lucky Strike",
+      "type": "NEUTRAL",
+      "category": "physical",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": null,
+      "description": "Throws coins. Gets them back later.",
+      "priority": 0
+    },
+    {
+      "id": "poke_normal_quick-attack",
+      "pokeapi_id": 98,
+      "name": "Rapid Jab",
+      "type": "NEUTRAL",
+      "category": "physical",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "Lets the user get in the first hit.",
+      "priority": 1
+    },
+    {
+      "id": "poke_normal_sing",
+      "pokeapi_id": 47,
+      "name": "Lullaby",
+      "type": "NEUTRAL",
+      "category": "special",
+      "power": 0,
+      "accuracy": 55,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "sleep",
+        "chance": 100
+      },
+      "description": "May cause the foe to fall asleep.",
+      "priority": 0
+    },
+    {
+      "id": "poke_normal_supersonic",
+      "pokeapi_id": 48,
+      "name": "Dissonance",
+      "type": "NEUTRAL",
+      "category": "special",
+      "power": 0,
+      "accuracy": 55,
+      "pp": 20,
+      "effect": {
+        "type": "status",
+        "status": "confusion",
+        "chance": 100
+      },
+      "description": "Sound waves that cause confusion.",
+      "priority": 0
+    },
+    {
+      "id": "poke_normal_recover",
+      "pokeapi_id": 105,
+      "name": "Regenerate",
+      "type": "NEUTRAL",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": {
+        "type": "heal",
+        "percent": 50
+      },
+      "description": "Recovers up to half the user\u2019s maximum HP.",
+      "priority": 0
+    },
+    {
+      "id": "poke_normal_swords-dance",
+      "pokeapi_id": 14,
+      "name": "War Posture",
+      "type": "NEUTRAL",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "attack",
+        "stages": 2
+      },
+      "description": "A dance that in\u00ad creases ATTACK.",
+      "priority": 0
+    },
+    {
+      "id": "poke_normal_tail-whip",
+      "pokeapi_id": 39,
+      "name": "Mock",
+      "type": "NEUTRAL",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 30,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "defense",
+        "stages": 1,
+        "chance": 100
+      },
+      "description": "Lowers the foe's DEFENSE.",
+      "priority": 0
+    },
+    {
+      "id": "poke_normal_double-edge",
+      "pokeapi_id": 38,
+      "name": "Reckless Charge",
+      "type": "NEUTRAL",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "recoil",
+        "percent": 33
+      },
+      "description": "A tackle that also hurts the user.",
+      "priority": 0
+    }
+  ],
+  "FIRE": [
+    {
+      "id": "poke_fire_flare-blitz",
+      "pokeapi_id": 394,
+      "name": "Blazing Charge",
+      "type": "FIRE",
+      "category": "physical",
+      "power": 120,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "recoil",
+        "percent": 33
+      },
+      "description": "The user cloaks itself in fire and charges at the foe. The user sustains serious damage, too.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fire_fire-punch",
+      "pokeapi_id": 7,
+      "name": "Burning Strike",
+      "type": "FIRE",
+      "category": "physical",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "burned",
+        "chance": 10
+      },
+      "description": "A fiery punch. May cause a burn.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fire_ember",
+      "pokeapi_id": 52,
+      "name": "Hot Coal",
+      "type": "FIRE",
+      "category": "special",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 25,
+      "effect": {
+        "type": "status",
+        "status": "burned",
+        "chance": 10
+      },
+      "description": "The foe is attacked with small flames. The foe may suffer a burn.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fire_burning-bulwark",
+      "pokeapi_id": 908,
+      "name": "Ember Ward",
+      "type": "FIRE",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "The user's intensely hot fur protects it from attacks and also burns any attacker that makes direct contact with it.",
+      "priority": 4
+    },
+    {
+      "id": "poke_fire_will-o-wisp",
+      "pokeapi_id": 261,
+      "name": "Ghost Burn",
+      "type": "FIRE",
+      "category": "special",
+      "power": 0,
+      "accuracy": 85,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "burned",
+        "chance": 100
+      },
+      "description": "Inflicts a burn on the foe with intense fire.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fire_overheat",
+      "pokeapi_id": 315,
+      "name": "Thermal Overload",
+      "type": "FIRE",
+      "category": "special",
+      "power": 110,
+      "accuracy": 90,
+      "pp": 5,
+      "effect": {
+        "type": "stat_drop",
+        "target": "self",
+        "stat": "sp_atk",
+        "stages": 2,
+        "chance": 100
+      },
+      "description": "Allows a full-power attack, but sharply lowers SP. ATK.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fire_flamethrower",
+      "pokeapi_id": 53,
+      "name": "Flamethrower",
+      "type": "FIRE",
+      "category": "special",
+      "power": 90,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "burn",
+        "chance": 10
+      },
+      "description": "A powerful stream of fire. May cause a burn.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fire_flame-charge",
+      "pokeapi_id": 488,
+      "name": "Flame Charge",
+      "type": "FIRE",
+      "category": "physical",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "speed",
+        "stages": 1
+      },
+      "description": "Cloaked in flame, the user attacks. Boosts Speed.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fire_lava-plume",
+      "pokeapi_id": 436,
+      "name": "Lava Plume",
+      "type": "FIRE",
+      "category": "special",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "burn",
+        "chance": 30
+      },
+      "description": "Scarlet flames engulf the foe. High burn chance.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fire_fire-spin",
+      "pokeapi_id": 83,
+      "name": "Fire Spin",
+      "type": "FIRE",
+      "category": "special",
+      "power": 40,
+      "accuracy": 85,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "burn",
+        "chance": 10
+      },
+      "description": "Traps the foe in a ring of fire.",
+      "priority": 0
+    }
+  ],
+  "WATER": [
+    {
+      "id": "poke_water_wave-crash",
+      "pokeapi_id": 834,
+      "name": "Tsunami Strike",
+      "type": "WATER",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "The user shrouds itself in water and slams into the target with its whole body to inflict damage. This also damages the user and raises the user\u2019s action speed.",
+      "priority": 0
+    },
+    {
+      "id": "poke_water_water-gun",
+      "pokeapi_id": 55,
+      "name": "Splash Shot",
+      "type": "WATER",
+      "category": "special",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 25,
+      "effect": null,
+      "description": "Squirts water to attack.",
+      "priority": 0
+    },
+    {
+      "id": "poke_water_bubble-beam",
+      "pokeapi_id": 61,
+      "name": "Bubble Burst",
+      "type": "WATER",
+      "category": "special",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "speed",
+        "stages": 1,
+        "chance": 10
+      },
+      "description": "An attack that may lower SPEED.",
+      "priority": 0
+    },
+    {
+      "id": "poke_water_aqua-jet",
+      "pokeapi_id": 453,
+      "name": "Tide Rush",
+      "type": "WATER",
+      "category": "physical",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "The user lunges at the foe at a speed that makes it almost invisible. It is sure to strike first.",
+      "priority": 1
+    },
+    {
+      "id": "poke_water_bouncy-bubble",
+      "pokeapi_id": 733,
+      "name": "Drain Bubble",
+      "type": "WATER",
+      "category": "special",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "drain",
+        "percent": 100
+      },
+      "description": "The user attacks by shooting water bubbles at the target. It then absorbs water and restores its HP by half the damage taken by the target.",
+      "priority": 0
+    },
+    {
+      "id": "poke_water_withdraw",
+      "pokeapi_id": 110,
+      "name": "Fortify",
+      "type": "WATER",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 40,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "defense",
+        "stages": 1
+      },
+      "description": "Heightens the user's DEFENSE.",
+      "priority": 0
+    },
+    {
+      "id": "poke_water_waterfall",
+      "pokeapi_id": 127,
+      "name": "Rapids Charge",
+      "type": "WATER",
+      "category": "physical",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "flinch",
+        "chance": 20
+      },
+      "description": "An aquatic charge attack.",
+      "priority": 0
+    },
+    {
+      "id": "poke_water_crabhammer",
+      "pokeapi_id": 152,
+      "name": "Claw Crusher",
+      "type": "WATER",
+      "category": "physical",
+      "power": 100,
+      "accuracy": 90,
+      "pp": 10,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "Has a high criti\u00ad cal hit ratio.",
+      "priority": 0
+    }
+  ],
+  "ELECTRIC": [
+    {
+      "id": "poke_electric_bolt-strike",
+      "pokeapi_id": 550,
+      "name": "Storm Charge",
+      "type": "ELECTRIC",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 85,
+      "pp": 5,
+      "effect": {
+        "type": "status",
+        "status": "paralysis",
+        "chance": 20
+      },
+      "description": "The user charges its target, surrounding itself with a great amount of electricity. It may leave the target with paralysis.",
+      "priority": 0
+    },
+    {
+      "id": "poke_electric_electro-shot",
+      "pokeapi_id": 905,
+      "name": "Volt Cannon",
+      "type": "ELECTRIC",
+      "category": "special",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "The user gathers electricity on the first turn, boosting its Claw stat, then fires a high-voltage shot on the next turn. The shot will be fired immediately in rain.",
+      "priority": 0
+    },
+    {
+      "id": "poke_electric_zap-cannon",
+      "pokeapi_id": 192,
+      "name": "Arc Cannon",
+      "type": "ELECTRIC",
+      "category": "special",
+      "power": 120,
+      "accuracy": 50,
+      "pp": 5,
+      "effect": {
+        "type": "status",
+        "status": "paralysis",
+        "chance": 100
+      },
+      "description": "An attack that always paralyzes.",
+      "priority": 0
+    },
+    {
+      "id": "poke_electric_thunder-punch",
+      "pokeapi_id": 9,
+      "name": "Lightning Strike",
+      "type": "ELECTRIC",
+      "category": "physical",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "paralysis",
+        "chance": 10
+      },
+      "description": "An electric punch. It may paralyze.",
+      "priority": 0
+    },
+    {
+      "id": "poke_electric_thunder-shock",
+      "pokeapi_id": 84,
+      "name": "Spark",
+      "type": "ELECTRIC",
+      "category": "special",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "effect": {
+        "type": "status",
+        "status": "paralysis",
+        "chance": 10
+      },
+      "description": "An electrical attack that may paralyze the foe.",
+      "priority": 0
+    },
+    {
+      "id": "poke_electric_zippy-zap",
+      "pokeapi_id": 729,
+      "name": "Instant Jolt",
+      "type": "ELECTRIC",
+      "category": "physical",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "The user attacks the target with bursts of electricity at high speed. This move always goes first and results in a critical hit.",
+      "priority": 2
+    },
+    {
+      "id": "poke_electric_thunder-wave",
+      "pokeapi_id": 86,
+      "name": "Shock Wave",
+      "type": "ELECTRIC",
+      "category": "special",
+      "power": 0,
+      "accuracy": 90,
+      "pp": 20,
+      "effect": {
+        "type": "status",
+        "status": "paralysis",
+        "chance": 100
+      },
+      "description": "A move that may cause paralysis.",
+      "priority": 0
+    },
+    {
+      "id": "poke_electric_charge",
+      "pokeapi_id": 268,
+      "name": "Store Energy",
+      "type": "ELECTRIC",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "sp_def",
+        "stages": 1
+      },
+      "description": "Charges power to boost the electric move used next.",
+      "priority": 0
+    },
+    {
+      "id": "poke_electric_eerie-impulse",
+      "pokeapi_id": 598,
+      "name": "Static Field",
+      "type": "ELECTRIC",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "sp_atk",
+        "stages": 2,
+        "chance": 100
+      },
+      "description": "The user\u2019s body generates an eerie impulse. Exposing the target to it harshly lowers the target\u2019s Claw stat.",
+      "priority": 0
+    },
+    {
+      "id": "poke_electric_volt-tackle",
+      "pokeapi_id": 344,
+      "name": "Thunder Rush",
+      "type": "ELECTRIC",
+      "category": "physical",
+      "power": 120,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "recoil",
+        "percent": 33
+      },
+      "description": "A life-risking tackle that slightly hurts the user.",
+      "priority": 0
+    },
+    {
+      "id": "poke_electric_zing-zap",
+      "pokeapi_id": 716,
+      "name": "Volt Strike",
+      "type": "ELECTRIC",
+      "category": "physical",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "flinch",
+        "chance": 30
+      },
+      "description": "A strong electric blast crashes down on the target, giving it an electric shock. This may also make the target flinch.",
+      "priority": 0
+    }
+  ],
+  "GRASS": [
+    {
+      "id": "poke_grass_solar-blade",
+      "pokeapi_id": 669,
+      "name": "Radiant Edge",
+      "type": "GRASS",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "In this two-turn attack, the user gathers light and fills a blade with the light\u2019s energy, attacking the target on the next turn.",
+      "priority": 0
+    },
+    {
+      "id": "poke_grass_vine-whip",
+      "pokeapi_id": 22,
+      "name": "Stem Strike",
+      "type": "GRASS",
+      "category": "physical",
+      "power": 45,
+      "accuracy": 100,
+      "pp": 25,
+      "effect": null,
+      "description": "Whips the foe with slender vines.",
+      "priority": 0
+    },
+    {
+      "id": "poke_grass_mega-drain",
+      "pokeapi_id": 72,
+      "name": "Life Leech",
+      "type": "GRASS",
+      "category": "special",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "drain",
+        "percent": 50
+      },
+      "description": "Steals 1/2 of the damage inflicted.",
+      "priority": 0
+    },
+    {
+      "id": "poke_grass_spiky-shield",
+      "pokeapi_id": 596,
+      "name": "Thorn Guard",
+      "type": "GRASS",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "In addition to protecting the user from attacks, this move also damages any attacker who makes direct contact.",
+      "priority": 4
+    },
+    {
+      "id": "poke_grass_stun-spore",
+      "pokeapi_id": 78,
+      "name": "Spore Shock",
+      "type": "GRASS",
+      "category": "special",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 30,
+      "effect": {
+        "type": "status",
+        "status": "paralysis",
+        "chance": 100
+      },
+      "description": "A move that may paralyze the foe.",
+      "priority": 0
+    },
+    {
+      "id": "poke_grass_sleep-powder",
+      "pokeapi_id": 79,
+      "name": "Dream Pollen",
+      "type": "GRASS",
+      "category": "special",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "sleep",
+        "chance": 100
+      },
+      "description": "May cause the foe to fall asleep.",
+      "priority": 0
+    },
+    {
+      "id": "poke_grass_absorb",
+      "pokeapi_id": 71,
+      "name": "Drain Root",
+      "type": "GRASS",
+      "category": "special",
+      "power": 20,
+      "accuracy": 100,
+      "pp": 25,
+      "effect": {
+        "type": "drain",
+        "percent": 50
+      },
+      "description": "Steals 1/2 of the damage inflicted.",
+      "priority": 0
+    },
+    {
+      "id": "poke_grass_cotton-guard",
+      "pokeapi_id": 538,
+      "name": "Fiber Shield",
+      "type": "GRASS",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "defense",
+        "stages": 3
+      },
+      "description": "The user protects itself by wrapping its body in soft cotton, drastically raising the user\u2019s Defense stat.",
+      "priority": 0
+    },
+    {
+      "id": "poke_grass_cotton-spore",
+      "pokeapi_id": 178,
+      "name": "Fiber Cloud",
+      "type": "GRASS",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 40,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "speed",
+        "stages": 2,
+        "chance": 100
+      },
+      "description": "Sharply reduces the foe's SPEED.",
+      "priority": 0
+    },
+    {
+      "id": "poke_grass_wood-hammer",
+      "pokeapi_id": 452,
+      "name": "Branch Breaker",
+      "type": "GRASS",
+      "category": "physical",
+      "power": 120,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "recoil",
+        "percent": 33
+      },
+      "description": "The user slams its rugged body into the foe to attack. The user also sustains serious damage.",
+      "priority": 0
+    }
+  ],
+  "ICE": [
+    {
+      "id": "poke_ice_glacial-lance",
+      "pokeapi_id": 824,
+      "name": "Frost Pike",
+      "type": "ICE",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": null,
+      "description": "The user attacks by hurling a blizzard-cloaked icicle lance at opposing Pok\u00e9mon.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ice_ice-punch",
+      "pokeapi_id": 8,
+      "name": "Frozen Knuckle",
+      "type": "ICE",
+      "category": "physical",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "freeze",
+        "chance": 10
+      },
+      "description": "An icy punch. May cause freezing.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ice_aurora-beam",
+      "pokeapi_id": 62,
+      "name": "Northern Light",
+      "type": "ICE",
+      "category": "special",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "attack",
+        "stages": 1,
+        "chance": 10
+      },
+      "description": "An attack that may lower ATTACK.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ice_ice-shard",
+      "pokeapi_id": 420,
+      "name": "Quick Freeze",
+      "type": "ICE",
+      "category": "physical",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "The user flash freezes chunks of ice and hurls them. This move always goes first.",
+      "priority": 1
+    },
+    {
+      "id": "poke_ice_sheer-cold",
+      "pokeapi_id": 329,
+      "name": "Deep Freeze",
+      "type": "ICE",
+      "category": "special",
+      "power": 200,
+      "accuracy": 30,
+      "pp": 5,
+      "effect": null,
+      "description": "An extremely powerful but inaccurate chilling attack.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ice_icicle-crash",
+      "pokeapi_id": 556,
+      "name": "Frozen Crush",
+      "type": "ICE",
+      "category": "physical",
+      "power": 85,
+      "accuracy": 90,
+      "pp": 10,
+      "effect": {
+        "type": "flinch",
+        "chance": 30
+      },
+      "description": "The user attacks by harshly dropping an icicle onto the target. It may also make the target flinch.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ice_frost-breath",
+      "pokeapi_id": 524,
+      "name": "Chill Blast",
+      "type": "ICE",
+      "category": "special",
+      "power": 60,
+      "accuracy": 90,
+      "pp": 10,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 87.5
+      },
+      "description": "The user blows a cold breath on the target. This attack always results in a critical hit.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ice_blizzard",
+      "pokeapi_id": 59,
+      "name": "Snowstorm",
+      "type": "ICE",
+      "category": "special",
+      "power": 110,
+      "accuracy": 70,
+      "pp": 5,
+      "effect": {
+        "type": "status",
+        "status": "freeze",
+        "chance": 10
+      },
+      "description": "An attack that may freeze the foe.",
+      "priority": 0
+    }
+  ],
+  "MARTIAL": [
+    {
+      "id": "poke_fighting_focus-blast",
+      "pokeapi_id": 411,
+      "name": "Chi Burst",
+      "type": "MARTIAL",
+      "category": "special",
+      "power": 120,
+      "accuracy": 70,
+      "pp": 5,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "sp_def",
+        "stages": 1,
+        "chance": 10
+      },
+      "description": "The user heightens its mental focus and unleashes its power. It may also lower the target\u2019s Shell.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fighting_karate-chop",
+      "pokeapi_id": 2,
+      "name": "Edge Strike",
+      "type": "MARTIAL",
+      "category": "physical",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 25,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "Has a high criti\u00ad cal hit ratio.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fighting_mach-punch",
+      "pokeapi_id": 183,
+      "name": "Blitz Punch",
+      "type": "MARTIAL",
+      "category": "physical",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "A fast punch that lands first.",
+      "priority": 1
+    },
+    {
+      "id": "poke_fighting_detect",
+      "pokeapi_id": 197,
+      "name": "Anticipate",
+      "type": "MARTIAL",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "Evades attack that turn. It may fail.",
+      "priority": 4
+    },
+    {
+      "id": "poke_fighting_drain-punch",
+      "pokeapi_id": 409,
+      "name": "Vitality Punch",
+      "type": "MARTIAL",
+      "category": "physical",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "drain",
+        "percent": 50
+      },
+      "description": "An energy-draining punch. The user\u2019s HP is restored by half the damage taken by the target.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fighting_bulk-up",
+      "pokeapi_id": 339,
+      "name": "Power Stance",
+      "type": "MARTIAL",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "attack",
+        "stages": 1,
+        "stat2": "defense",
+        "stages2": 1
+      },
+      "description": "Bulks up the body to boost both ATTACK and DEFENSE.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fighting_rolling-kick",
+      "pokeapi_id": 27,
+      "name": "Spin Kick",
+      "type": "MARTIAL",
+      "category": "physical",
+      "power": 60,
+      "accuracy": 85,
+      "pp": 15,
+      "effect": {
+        "type": "flinch",
+        "chance": 30
+      },
+      "description": "A fast, spinning kick.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fighting_cross-chop",
+      "pokeapi_id": 238,
+      "name": "Scissor Chop",
+      "type": "MARTIAL",
+      "category": "physical",
+      "power": 100,
+      "accuracy": 80,
+      "pp": 5,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "Has a high criti\u00ad cal hit ratio.",
+      "priority": 0
+    }
+  ],
+  "VENOM": [
+    {
+      "id": "poke_poison_gunk-shot",
+      "pokeapi_id": 441,
+      "name": "Toxin Blast",
+      "type": "VENOM",
+      "category": "physical",
+      "power": 120,
+      "accuracy": 80,
+      "pp": 5,
+      "effect": {
+        "type": "status",
+        "status": "poison",
+        "chance": 30
+      },
+      "description": "The user shoots filthy garbage at the foe to attack. It may also poison the target.",
+      "priority": 0
+    },
+    {
+      "id": "poke_poison_belch",
+      "pokeapi_id": 562,
+      "name": "Noxious Burst",
+      "type": "VENOM",
+      "category": "special",
+      "power": 120,
+      "accuracy": 90,
+      "pp": 10,
+      "effect": null,
+      "description": "The user lets out a damaging belch at the target. The user must eat a held Berry to use this move.",
+      "priority": 0
+    },
+    {
+      "id": "poke_poison_noxious-torque",
+      "pokeapi_id": 898,
+      "name": "Poison Wheel",
+      "type": "VENOM",
+      "category": "physical",
+      "power": 100,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "noxious-torque",
+      "priority": 0
+    },
+    {
+      "id": "poke_poison_acid",
+      "pokeapi_id": 51,
+      "name": "Corrosive",
+      "type": "VENOM",
+      "category": "special",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "sp_def",
+        "stages": 1,
+        "chance": 10
+      },
+      "description": "An attack that may lower DEFENSE.",
+      "priority": 0
+    },
+    {
+      "id": "poke_poison_sludge",
+      "pokeapi_id": 124,
+      "name": "Sludge Shot",
+      "type": "VENOM",
+      "category": "special",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "status",
+        "status": "poison",
+        "chance": 30
+      },
+      "description": "An attack that may poison the foe.",
+      "priority": 0
+    },
+    {
+      "id": "poke_poison_baneful-bunker",
+      "pokeapi_id": 661,
+      "name": "Toxic Shield",
+      "type": "VENOM",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "In addition to protecting the user from attacks, this move also poisons any attacker that makes direct contact.",
+      "priority": 4
+    },
+    {
+      "id": "poke_poison_poison-powder",
+      "pokeapi_id": 77,
+      "name": "Venom Dust",
+      "type": "VENOM",
+      "category": "special",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 35,
+      "effect": {
+        "type": "status",
+        "status": "poison",
+        "chance": 100
+      },
+      "description": "A move that may poison the foe.",
+      "priority": 0
+    },
+    {
+      "id": "poke_poison_toxic",
+      "pokeapi_id": 92,
+      "name": "Deadly Dose",
+      "type": "VENOM",
+      "category": "special",
+      "power": 0,
+      "accuracy": 90,
+      "pp": 10,
+      "effect": {
+        "type": "status",
+        "status": "poison",
+        "chance": 100
+      },
+      "description": "A poison move with increasing damage.",
+      "priority": 0
+    },
+    {
+      "id": "poke_poison_purify",
+      "pokeapi_id": 685,
+      "name": "Detoxify",
+      "type": "VENOM",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "heal",
+        "percent": 50
+      },
+      "description": "The user heals the target\u2019s status condition. If the move succeeds, it also restores the user\u2019s own HP.",
+      "priority": 0
+    },
+    {
+      "id": "poke_poison_acid-armor",
+      "pokeapi_id": 151,
+      "name": "Slime Coat",
+      "type": "VENOM",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "defense",
+        "stages": 2
+      },
+      "description": "Sharply raises the user's DEFENSE.",
+      "priority": 0
+    },
+    {
+      "id": "poke_poison_venom-drench",
+      "pokeapi_id": 599,
+      "name": "Toxin Spray",
+      "type": "VENOM",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "attack",
+        "stages": 1,
+        "chance": 100,
+        "stat2": "sp_atk",
+        "stages2": 1
+      },
+      "description": "Opposing Pok\u00e9mon are drenched in an odd poisonous liquid. This lowers the Attack, Claw, and Speed stats of a poisoned target.",
+      "priority": 0
+    }
+  ],
+  "EARTH": [
+    {
+      "id": "poke_ground_precipice-blades",
+      "pokeapi_id": 619,
+      "name": "Earth Cleaver",
+      "type": "EARTH",
+      "category": "physical",
+      "power": 120,
+      "accuracy": 85,
+      "pp": 10,
+      "effect": null,
+      "description": "The user attacks opposing Pok\u00e9mon by manifesting the power of the land in fearsome blades of stone.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ground_sandsear-storm",
+      "pokeapi_id": 848,
+      "name": "Desert Fury",
+      "type": "EARTH",
+      "category": "special",
+      "power": 100,
+      "accuracy": 80,
+      "pp": 10,
+      "effect": null,
+      "description": "The user attacks by wrapping the target in fierce winds and searingly hot sand. This also leaves the target with a burn.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ground_headlong-rush",
+      "pokeapi_id": 838,
+      "name": "Ground Slam",
+      "type": "EARTH",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": null,
+      "description": "The user smashes into the target in a full-body tackle. This also lowers the user\u2019s defensive stats.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ground_stomping-tantrum",
+      "pokeapi_id": 707,
+      "name": "Earth Stomp",
+      "type": "EARTH",
+      "category": "physical",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "Driven by frustration, the user attacks the target. If the user\u2019s previous move has failed, the power of this move doubles.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ground_scorching-sands",
+      "pokeapi_id": 815,
+      "name": "Burning Dunes",
+      "type": "EARTH",
+      "category": "special",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "status",
+        "status": "burned",
+        "chance": 30
+      },
+      "description": "The user throws scorching sand at the target to attack. This may also leave the target with a burn.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ground_shore-up",
+      "pokeapi_id": 659,
+      "name": "Dust Recovery",
+      "type": "EARTH",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": {
+        "type": "heal",
+        "percent": 50
+      },
+      "description": "The user regains up to half of its max HP. It restores more HP in a sandstorm.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ground_sand-attack",
+      "pokeapi_id": 28,
+      "name": "Dust Throw",
+      "type": "EARTH",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "accuracy",
+        "stages": 1,
+        "chance": 100
+      },
+      "description": "Reduces accuracy by throwing sand.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ground_fissure",
+      "pokeapi_id": 90,
+      "name": "Earth Splitter",
+      "type": "EARTH",
+      "category": "physical",
+      "power": 200,
+      "accuracy": 30,
+      "pp": 5,
+      "effect": null,
+      "description": "An extremely powerful but inaccurate seismic attack.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ground_bone-club",
+      "pokeapi_id": 125,
+      "name": "Club Strike",
+      "type": "EARTH",
+      "category": "physical",
+      "power": 65,
+      "accuracy": 85,
+      "pp": 20,
+      "effect": {
+        "type": "flinch",
+        "chance": 10
+      },
+      "description": "An attack that may cause flinching.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ground_drill-run",
+      "pokeapi_id": 529,
+      "name": "Dig Attack",
+      "type": "EARTH",
+      "category": "physical",
+      "power": 80,
+      "accuracy": 95,
+      "pp": 10,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "The user crashes into its target while rotating its body like a drill. Critical hits land more easily.",
+      "priority": 0
+    }
+  ],
+  "AIR": [
+    {
+      "id": "poke_flying_hurricane",
+      "pokeapi_id": 542,
+      "name": "Cyclone",
+      "type": "AIR",
+      "category": "special",
+      "power": 110,
+      "accuracy": 70,
+      "pp": 10,
+      "effect": {
+        "type": "status",
+        "status": "confusion",
+        "chance": 30
+      },
+      "description": "The user attacks by wrapping its opponent in a fierce wind that flies up into the sky. It may also confuse the target.",
+      "priority": 0
+    },
+    {
+      "id": "poke_flying_brave-bird",
+      "pokeapi_id": 413,
+      "name": "Reckless Swoop",
+      "type": "AIR",
+      "category": "physical",
+      "power": 120,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "recoil",
+        "percent": 33
+      },
+      "description": "The user tucks in its wings and charges from a low altitude. The user also takes serious damage.",
+      "priority": 0
+    },
+    {
+      "id": "poke_flying_gust",
+      "pokeapi_id": 16,
+      "name": "Wind Puff",
+      "type": "AIR",
+      "category": "special",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 35,
+      "effect": null,
+      "description": "Whips up a strong gust of wind.",
+      "priority": 0
+    },
+    {
+      "id": "poke_flying_wing-attack",
+      "pokeapi_id": 17,
+      "name": "Sky Strike",
+      "type": "AIR",
+      "category": "physical",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 35,
+      "effect": null,
+      "description": "Strikes the target with wings.",
+      "priority": 0
+    },
+    {
+      "id": "poke_flying_roost",
+      "pokeapi_id": 355,
+      "name": "Perch",
+      "type": "AIR",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": {
+        "type": "heal",
+        "percent": 50
+      },
+      "description": "The user lands and rests its body. It restores the user\u2019s HP by up to half of its max HP.",
+      "priority": 0
+    },
+    {
+      "id": "poke_flying_feather-dance",
+      "pokeapi_id": 297,
+      "name": "Downdraft",
+      "type": "AIR",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "attack",
+        "stages": 2,
+        "chance": 100
+      },
+      "description": "Envelops the foe with down to sharply reduce ATTACK.",
+      "priority": 0
+    },
+    {
+      "id": "poke_flying_air-slash",
+      "pokeapi_id": 403,
+      "name": "Sky Razor",
+      "type": "AIR",
+      "category": "special",
+      "power": 75,
+      "accuracy": 95,
+      "pp": 15,
+      "effect": {
+        "type": "flinch",
+        "chance": 30
+      },
+      "description": "The user attacks with a blade of air that slices even the sky. It may also make the target flinch.",
+      "priority": 0
+    },
+    {
+      "id": "poke_flying_aeroblast",
+      "pokeapi_id": 177,
+      "name": "Air Cannon",
+      "type": "AIR",
+      "category": "special",
+      "power": 100,
+      "accuracy": 95,
+      "pp": 5,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "Has a high criti\u00ad cal hit ratio.",
+      "priority": 0
+    },
+    {
+      "id": "poke_flying_dragon-ascent",
+      "pokeapi_id": 620,
+      "name": "Heaven Charge",
+      "type": "AIR",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "defense",
+        "stages": 1,
+        "chance": 100,
+        "stat2": "sp_def",
+        "stages2": 1
+      },
+      "description": "After soaring upward, the user attacks its target by dropping out of the sky at high speeds, although it lowers its own Defense and Shell in the process.",
+      "priority": 0
+    }
+  ],
+  "PSYCHE": [
+    {
+      "id": "poke_psychic_psychic-fangs",
+      "pokeapi_id": 706,
+      "name": "Mental Crush",
+      "type": "PSYCHE",
+      "category": "physical",
+      "power": 85,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "The user bites the target with its psychic capabilities. This can also destroy Light Screen and Reflect.",
+      "priority": 0
+    },
+    {
+      "id": "poke_psychic_future-sight",
+      "pokeapi_id": 248,
+      "name": "Fate Strike",
+      "type": "PSYCHE",
+      "category": "special",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "An attack that hits on 3rd turn.",
+      "priority": 0
+    },
+    {
+      "id": "poke_psychic_psybeam",
+      "pokeapi_id": 60,
+      "name": "Mind Ray",
+      "type": "PSYCHE",
+      "category": "special",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "status",
+        "status": "confusion",
+        "chance": 10
+      },
+      "description": "An attack that may confuse the foe.",
+      "priority": 0
+    },
+    {
+      "id": "poke_psychic_confusion",
+      "pokeapi_id": 93,
+      "name": "Perplex",
+      "type": "PSYCHE",
+      "category": "special",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 25,
+      "effect": {
+        "type": "status",
+        "status": "confusion",
+        "chance": 10
+      },
+      "description": "The foe is hit by a weak telekinetic force. It may also leave the foe confused.",
+      "priority": 0
+    },
+    {
+      "id": "poke_psychic_magic-coat",
+      "pokeapi_id": 277,
+      "name": "Mirror Mind",
+      "type": "PSYCHE",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "Reflects special effects back to the attacker.",
+      "priority": 4
+    },
+    {
+      "id": "poke_psychic_hypnosis",
+      "pokeapi_id": 95,
+      "name": "Mesmerize",
+      "type": "PSYCHE",
+      "category": "special",
+      "power": 0,
+      "accuracy": 60,
+      "pp": 20,
+      "effect": {
+        "type": "status",
+        "status": "sleep",
+        "chance": 100
+      },
+      "description": "May put the foe to sleep.",
+      "priority": 0
+    },
+    {
+      "id": "poke_psychic_dream-eater",
+      "pokeapi_id": 138,
+      "name": "Dream Drain",
+      "type": "PSYCHE",
+      "category": "special",
+      "power": 100,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "drain",
+        "percent": 50
+      },
+      "description": "Steals HP from a sleeping victim.",
+      "priority": 0
+    },
+    {
+      "id": "poke_psychic_meditate",
+      "pokeapi_id": 96,
+      "name": "Concentrate",
+      "type": "PSYCHE",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 40,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "attack",
+        "stages": 1
+      },
+      "description": "Raises the user's ATTACK.",
+      "priority": 0
+    },
+    {
+      "id": "poke_psychic_kinesis",
+      "pokeapi_id": 134,
+      "name": "Mind Bend",
+      "type": "PSYCHE",
+      "category": "special",
+      "power": 0,
+      "accuracy": 80,
+      "pp": 15,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "accuracy",
+        "stages": 1,
+        "chance": 100
+      },
+      "description": "Reduces the foe's accuracy.",
+      "priority": 0
+    },
+    {
+      "id": "poke_psychic_extrasensory",
+      "pokeapi_id": 326,
+      "name": "Sixth Sense",
+      "type": "PSYCHE",
+      "category": "special",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "flinch",
+        "chance": 10
+      },
+      "description": "Attacks with a peculiar power. May cause flinching.",
+      "priority": 0
+    },
+    {
+      "id": "poke_psychic_psycho-cut",
+      "pokeapi_id": 427,
+      "name": "Thought Edge",
+      "type": "PSYCHE",
+      "category": "physical",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "The user tears at the foe with blades formed by psychic power. It has a high critical-hit ratio.",
+      "priority": 0
+    }
+  ],
+  "INSECT": [
+    {
+      "id": "poke_bug_megahorn",
+      "pokeapi_id": 224,
+      "name": "Exo Lance",
+      "type": "INSECT",
+      "category": "physical",
+      "power": 120,
+      "accuracy": 85,
+      "pp": 10,
+      "effect": null,
+      "description": "A powerful charge attack.",
+      "priority": 0
+    },
+    {
+      "id": "poke_bug_bug-buzz",
+      "pokeapi_id": 405,
+      "name": "Insect Wail",
+      "type": "INSECT",
+      "category": "special",
+      "power": 90,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "sp_def",
+        "stages": 1,
+        "chance": 10
+      },
+      "description": "The user vibrates its wings to generate a damaging sound wave. It may also lower the foe\u2019s Shell stat.",
+      "priority": 0
+    },
+    {
+      "id": "poke_bug_attack-order",
+      "pokeapi_id": 454,
+      "name": "Hive Strike",
+      "type": "INSECT",
+      "category": "physical",
+      "power": 90,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "The user calls out its underlings to pummel the target. Critical hits land more easily.",
+      "priority": 0
+    },
+    {
+      "id": "poke_bug_silver-wind",
+      "pokeapi_id": 318,
+      "name": "Glitter Breeze",
+      "type": "INSECT",
+      "category": "special",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "attack",
+        "stages": 1,
+        "stat2": "defense",
+        "stages2": 1
+      },
+      "description": "A powdery attack that may raise abilities.",
+      "priority": 0
+    },
+    {
+      "id": "poke_bug_signal-beam",
+      "pokeapi_id": 324,
+      "name": "Beacon Blast",
+      "type": "INSECT",
+      "category": "special",
+      "power": 75,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "confusion",
+        "chance": 10
+      },
+      "description": "A strange beam attack that may confuse the foe.",
+      "priority": 0
+    },
+    {
+      "id": "poke_bug_rage-powder",
+      "pokeapi_id": 476,
+      "name": "Aggro Dust",
+      "type": "INSECT",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "The user scatters a cloud of irritating powder to draw attention to itself. Opponents aim only at the user.",
+      "priority": 2
+    },
+    {
+      "id": "poke_bug_leech-life",
+      "pokeapi_id": 141,
+      "name": "Life Drain",
+      "type": "INSECT",
+      "category": "physical",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "drain",
+        "percent": 50
+      },
+      "description": "Steals 1/2 of the damage inflicted.",
+      "priority": 0
+    },
+    {
+      "id": "poke_bug_tail-glow",
+      "pokeapi_id": 294,
+      "name": "Bioluminescence",
+      "type": "INSECT",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "sp_atk",
+        "stages": 3
+      },
+      "description": "Flashes a light that sharply raises SP. ATK.",
+      "priority": 0
+    },
+    {
+      "id": "poke_bug_string-shot",
+      "pokeapi_id": 81,
+      "name": "Web Trap",
+      "type": "INSECT",
+      "category": "special",
+      "power": 0,
+      "accuracy": 95,
+      "pp": 40,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "speed",
+        "stages": 2,
+        "chance": 100
+      },
+      "description": "A move that lowers the foe's SPEED.",
+      "priority": 0
+    },
+    {
+      "id": "poke_bug_steamroller",
+      "pokeapi_id": 537,
+      "name": "Exo Slam",
+      "type": "INSECT",
+      "category": "physical",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "flinch",
+        "chance": 30
+      },
+      "description": "The user crushes its targets by rolling over them with its rolled-up body. This attack may make the target flinch.",
+      "priority": 0
+    }
+  ],
+  "STONE": [
+    {
+      "id": "poke_rock_meteor-beam",
+      "pokeapi_id": 800,
+      "name": "Cosmic Stone",
+      "type": "STONE",
+      "category": "special",
+      "power": 120,
+      "accuracy": 90,
+      "pp": 10,
+      "effect": null,
+      "description": "In this two-turn attack, the user gathers space power and boosts its Claw stat, then attacks the target on the next turn.",
+      "priority": 0
+    },
+    {
+      "id": "poke_rock_ancient-power",
+      "pokeapi_id": 246,
+      "name": "Primal Force",
+      "type": "STONE",
+      "category": "special",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "attack",
+        "stages": 1,
+        "stat2": "defense",
+        "stages2": 1
+      },
+      "description": "An attack that may raise all stats.",
+      "priority": 0
+    },
+    {
+      "id": "poke_rock_smack-down",
+      "pokeapi_id": 479,
+      "name": "Stone Throw",
+      "type": "STONE",
+      "category": "physical",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": null,
+      "description": "The user throws a stone or projectile to attack an opponent. A flying Pok\u00e9mon will fall to the ground when hit.",
+      "priority": 0
+    },
+    {
+      "id": "poke_rock_wide-guard",
+      "pokeapi_id": 469,
+      "name": "Geo Barrier",
+      "type": "STONE",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "The user and its allies are protected from wide-ranging attacks for one turn. If used in succession, its chance of failing rises.",
+      "priority": 3
+    },
+    {
+      "id": "poke_rock_rock-polish",
+      "pokeapi_id": 397,
+      "name": "Stone Sharpen",
+      "type": "STONE",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "speed",
+        "stages": 2
+      },
+      "description": "The user polishes its body to reduce drag. It can sharply raise the Speed stat. ",
+      "priority": 0
+    },
+    {
+      "id": "poke_rock_tar-shot",
+      "pokeapi_id": 749,
+      "name": "Crude Coat",
+      "type": "STONE",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "speed",
+        "stages": 1,
+        "chance": 100
+      },
+      "description": "The user pours sticky tar over the target, lowering the target\u2019s Speed stat. The target becomes weaker to Fire-type moves.",
+      "priority": 0
+    },
+    {
+      "id": "poke_rock_rock-slide",
+      "pokeapi_id": 157,
+      "name": "Avalanche",
+      "type": "STONE",
+      "category": "physical",
+      "power": 75,
+      "accuracy": 90,
+      "pp": 10,
+      "effect": {
+        "type": "flinch",
+        "chance": 30
+      },
+      "description": "An attack that may cause flinching.",
+      "priority": 0
+    },
+    {
+      "id": "poke_rock_stone-edge",
+      "pokeapi_id": 444,
+      "name": "Mineral Blade",
+      "type": "STONE",
+      "category": "physical",
+      "power": 100,
+      "accuracy": 80,
+      "pp": 5,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "The user stabs the foe with a sharpened stone. It has a high critical-hit ratio. ",
+      "priority": 0
+    }
+  ],
+  "GHOST": [
+    {
+      "id": "poke_ghost_shadow-force",
+      "pokeapi_id": 467,
+      "name": "Phantom Strike",
+      "type": "GHOST",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": null,
+      "description": "The user disappears, then strikes the foe on the second turn. It hits even if the foe used Protect.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ghost_astral-barrage",
+      "pokeapi_id": 825,
+      "name": "Spirit Volley",
+      "type": "GHOST",
+      "category": "special",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": null,
+      "description": "The user attacks by sending a frightful amount of small ghosts at opposing Pok\u00e9mon.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ghost_poltergeist",
+      "pokeapi_id": 809,
+      "name": "Curse Throw",
+      "type": "GHOST",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 90,
+      "pp": 5,
+      "effect": null,
+      "description": "The user attacks the target by controlling the target\u2019s item. The move fails if the target doesn\u2019t have an item.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ghost_shadow-punch",
+      "pokeapi_id": 325,
+      "name": "Phantom Fist",
+      "type": "GHOST",
+      "category": "physical",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": null,
+      "description": "An unavoidable punch that is thrown from shadows.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ghost_shadow-claw",
+      "pokeapi_id": 421,
+      "name": "Phantom Slash",
+      "type": "GHOST",
+      "category": "physical",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "The user slashes with a sharp claw made from shadows. It has a high critical-hit ratio.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ghost_shadow-sneak",
+      "pokeapi_id": 425,
+      "name": "Ghost Rush",
+      "type": "GHOST",
+      "category": "physical",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "The user extends its shadow and attacks the foe from behind. This move always goes first.",
+      "priority": 1
+    },
+    {
+      "id": "poke_ghost_confuse-ray",
+      "pokeapi_id": 109,
+      "name": "Bewilderment",
+      "type": "GHOST",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "status",
+        "status": "confusion",
+        "chance": 100
+      },
+      "description": "A move that causes confusion.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ghost_shadow-ball",
+      "pokeapi_id": 247,
+      "name": "Shadow Ball",
+      "type": "GHOST",
+      "category": "special",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "sp_def",
+        "stages": 1,
+        "chance": 20
+      },
+      "description": "Hurls a shadowy blob. May lower Shell.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ghost_hex",
+      "pokeapi_id": 506,
+      "name": "Hex",
+      "type": "GHOST",
+      "category": "special",
+      "power": 65,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "Relentlessly attacks. More powerful against statused foes.",
+      "priority": 0
+    },
+    {
+      "id": "poke_ghost_curse",
+      "pokeapi_id": 174,
+      "name": "Curse",
+      "type": "GHOST",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "status",
+        "status": "burn",
+        "chance": 100
+      },
+      "description": "Sacrifices HP to place a curse on the foe. Deals damage each turn.",
+      "priority": 0
+    }
+  ],
+  "DRAGON": [
+    {
+      "id": "poke_dragon_outrage",
+      "pokeapi_id": 200,
+      "name": "Rampage",
+      "type": "DRAGON",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "Works 2-3 turns and confuses user.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dragon_dragon-breath",
+      "pokeapi_id": 225,
+      "name": "Serpent Fume",
+      "type": "DRAGON",
+      "category": "special",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "status",
+        "status": "paralysis",
+        "chance": 30
+      },
+      "description": "A strong breath attack.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dragon_twister",
+      "pokeapi_id": 239,
+      "name": "Vortex",
+      "type": "DRAGON",
+      "category": "special",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "flinch",
+        "chance": 20
+      },
+      "description": "Whips up a tornado to attack.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dragon_dragon-dance",
+      "pokeapi_id": 349,
+      "name": "Serpent Form",
+      "type": "DRAGON",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "attack",
+        "stages": 1,
+        "stat2": "speed",
+        "stages2": 1
+      },
+      "description": "A mystical dance that ups ATTACK and SPEED.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dragon_dragon-rush",
+      "pokeapi_id": 407,
+      "name": "Serpent Tackle",
+      "type": "DRAGON",
+      "category": "physical",
+      "power": 100,
+      "accuracy": 75,
+      "pp": 10,
+      "effect": {
+        "type": "flinch",
+        "chance": 20
+      },
+      "description": "The user tackles the foe while exhibiting overwhelming menace. It may also make the target flinch.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dragon_spacial-rend",
+      "pokeapi_id": 460,
+      "name": "Reality Rip",
+      "type": "DRAGON",
+      "category": "special",
+      "power": 100,
+      "accuracy": 95,
+      "pp": 5,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "The user tears the foe along with the space around it. This move has a high critical-hit ratio.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dragon_dragon-claw",
+      "pokeapi_id": 337,
+      "name": "Dragon Claw",
+      "type": "DRAGON",
+      "category": "physical",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": null,
+      "description": "Sharp claws slash the foe. A reliable dragon attack.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dragon_dragon-pulse",
+      "pokeapi_id": 406,
+      "name": "Dragon Pulse",
+      "type": "DRAGON",
+      "category": "special",
+      "power": 85,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "A shockwave generated by the mouth. Reliable special attack.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dragon_draco-meteor",
+      "pokeapi_id": 434,
+      "name": "Draco Meteor",
+      "type": "DRAGON",
+      "category": "special",
+      "power": 110,
+      "accuracy": 90,
+      "pp": 5,
+      "effect": {
+        "type": "stat_drop",
+        "target": "self",
+        "stat": "sp_atk",
+        "stages": 2
+      },
+      "description": "Calls down meteors. Harshly lowers Claw after use.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dragon_dragon-tail",
+      "pokeapi_id": 525,
+      "name": "Dragon Tail",
+      "type": "DRAGON",
+      "category": "physical",
+      "power": 60,
+      "accuracy": 90,
+      "pp": 10,
+      "effect": {
+        "type": "flinch",
+        "chance": 20
+      },
+      "description": "Strikes with a hard tail. May cause flinching.",
+      "priority": 0
+    }
+  ],
+  "SHADOW": [
+    {
+      "id": "poke_dark_hyperspace-fury",
+      "pokeapi_id": 621,
+      "name": "Shadow Assault",
+      "type": "SHADOW",
+      "category": "physical",
+      "power": 100,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "defense",
+        "stages": 1,
+        "chance": 100
+      },
+      "description": "Using its many arms, the user unleashes a barrage of attacks that ignore the effects of moves like Protect and Detect. This attack lowers the user\u2019s Defense.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dark_fiery-wrath",
+      "pokeapi_id": 822,
+      "name": "Burning Rage",
+      "type": "SHADOW",
+      "category": "special",
+      "power": 90,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "flinch",
+        "chance": 20
+      },
+      "description": "The user transforms its wrath into a fire-like aura to attack. This may also make opposing Pok\u00e9mon flinch.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dark_foul-play",
+      "pokeapi_id": 492,
+      "name": "Dirty Trick",
+      "type": "SHADOW",
+      "category": "physical",
+      "power": 95,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": null,
+      "description": "The user turns the target\u2019s power against it. The higher the target\u2019s Attack stat, the greater the damage.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dark_bite",
+      "pokeapi_id": 44,
+      "name": "Gnash",
+      "type": "SHADOW",
+      "category": "physical",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 25,
+      "effect": {
+        "type": "flinch",
+        "chance": 30
+      },
+      "description": "An attack that may cause flinching.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dark_thief",
+      "pokeapi_id": 168,
+      "name": "Swipe",
+      "type": "SHADOW",
+      "category": "physical",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 25,
+      "effect": null,
+      "description": "While attacking, it may steal the foe\u2019s held item.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dark_snatch",
+      "pokeapi_id": 289,
+      "name": "Hijack",
+      "type": "SHADOW",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "Steals the effects of the move the foe uses next.",
+      "priority": 4
+    },
+    {
+      "id": "poke_dark_flatter",
+      "pokeapi_id": 260,
+      "name": "Deceive",
+      "type": "SHADOW",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "status",
+        "status": "confusion",
+        "chance": 100
+      },
+      "description": "Confuses the foe, but raises its SP. ATK.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dark_dark-void",
+      "pokeapi_id": 464,
+      "name": "Void Sleep",
+      "type": "SHADOW",
+      "category": "special",
+      "power": 0,
+      "accuracy": 50,
+      "pp": 10,
+      "effect": {
+        "type": "status",
+        "status": "sleep",
+        "chance": 100
+      },
+      "description": "The foe is dragged into a world of total darkness that puts it to sleep. ",
+      "priority": 0
+    },
+    {
+      "id": "poke_dark_nasty-plot",
+      "pokeapi_id": 417,
+      "name": "Malicious Intent",
+      "type": "SHADOW",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "sp_atk",
+        "stages": 2
+      },
+      "description": "The user stimulates its brain by thinking bad thoughts. It sharply raises the user\u2019s Claw.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dark_memento",
+      "pokeapi_id": 262,
+      "name": "Final Curse",
+      "type": "SHADOW",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "attack",
+        "stages": 2,
+        "chance": 100,
+        "stat2": "sp_atk",
+        "stages2": 2
+      },
+      "description": "The user faints and lowers the foe\u2019s abilities.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dark_dark-pulse",
+      "pokeapi_id": 399,
+      "name": "Shadow Wave",
+      "type": "SHADOW",
+      "category": "special",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "flinch",
+        "chance": 20
+      },
+      "description": "The user releases a horrible aura imbued with dark thoughts. It may also make the target flinch.",
+      "priority": 0
+    },
+    {
+      "id": "poke_dark_night-slash",
+      "pokeapi_id": 400,
+      "name": "Shadow Blade",
+      "type": "SHADOW",
+      "category": "physical",
+      "power": 70,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "high_crit",
+        "crit_rate": 25
+      },
+      "description": "The user slashes the foe the instant an opportunity arises. It has a high critical-hit ratio.",
+      "priority": 0
+    }
+  ],
+  "METAL": [
+    {
+      "id": "poke_steel_steel-roller",
+      "pokeapi_id": 798,
+      "name": "Metal Grinder",
+      "type": "METAL",
+      "category": "physical",
+      "power": 110,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": null,
+      "description": "The user attacks while destroying the terrain. This move fails when the ground hasn\u2019t turned into a terrain.",
+      "priority": 0
+    },
+    {
+      "id": "poke_steel_bullet-punch",
+      "pokeapi_id": 418,
+      "name": "Iron Fist",
+      "type": "METAL",
+      "category": "physical",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 30,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "The user strikes with a tough punch as fast as a bullet. This move always goes first.",
+      "priority": 1
+    },
+    {
+      "id": "poke_steel_magnet-bomb",
+      "pokeapi_id": 443,
+      "name": "Metal Sphere",
+      "type": "METAL",
+      "category": "physical",
+      "power": 60,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": null,
+      "description": "The user launches a steel bomb that sticks to the target. This attack will not miss.",
+      "priority": 0
+    },
+    {
+      "id": "poke_steel_kings-shield",
+      "pokeapi_id": 588,
+      "name": "Royal Guard",
+      "type": "METAL",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "The user takes a defensive stance while it protects itself from damage. It also harshly lowers the Attack stat of any attacker who makes direct contact.",
+      "priority": 4
+    },
+    {
+      "id": "poke_steel_iron-defense",
+      "pokeapi_id": 334,
+      "name": "Steel Skin",
+      "type": "METAL",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "defense",
+        "stages": 2
+      },
+      "description": "Hardens the body\u2019s surface to sharply raise DEFENSE.",
+      "priority": 0
+    },
+    {
+      "id": "poke_steel_metal-sound",
+      "pokeapi_id": 319,
+      "name": "Iron Wail",
+      "type": "METAL",
+      "category": "special",
+      "power": 0,
+      "accuracy": 85,
+      "pp": 40,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "sp_def",
+        "stages": 2,
+        "chance": 100
+      },
+      "description": "Emits a horrible screech that sharply lowers SP. DEF.",
+      "priority": 0
+    },
+    {
+      "id": "poke_steel_iron-head",
+      "pokeapi_id": 442,
+      "name": "Metal Skull",
+      "type": "METAL",
+      "category": "physical",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": {
+        "type": "flinch",
+        "chance": 30
+      },
+      "description": "The foe slams the target with its steel-hard head. It may also make the target flinch.",
+      "priority": 0
+    },
+    {
+      "id": "poke_steel_flash-cannon",
+      "pokeapi_id": 430,
+      "name": "Flash Cannon",
+      "type": "METAL",
+      "category": "special",
+      "power": 80,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "sp_def",
+        "stages": 1,
+        "chance": 10
+      },
+      "description": "Gathers light energy and fires it. May lower Shell.",
+      "priority": 0
+    },
+    {
+      "id": "poke_steel_metal-claw",
+      "pokeapi_id": 232,
+      "name": "Metal Claw",
+      "type": "METAL",
+      "category": "physical",
+      "power": 50,
+      "accuracy": 95,
+      "pp": 35,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "attack",
+        "stages": 1
+      },
+      "description": "Strikes with metallic claws. May raise Attack.",
+      "priority": 0
+    },
+    {
+      "id": "poke_steel_steel-wing",
+      "pokeapi_id": 211,
+      "name": "Steel Wing",
+      "type": "METAL",
+      "category": "physical",
+      "power": 70,
+      "accuracy": 90,
+      "pp": 25,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "defense",
+        "stages": 1
+      },
+      "description": "Wings turn to steel and strike. May raise Defense.",
+      "priority": 0
+    }
+  ],
+  "MYSTIC": [
+    {
+      "id": "poke_fairy_magical-torque",
+      "pokeapi_id": 900,
+      "name": "Mystic Wheel",
+      "type": "MYSTIC",
+      "category": "physical",
+      "power": 100,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": null,
+      "description": "magical-torque",
+      "priority": 0
+    },
+    {
+      "id": "poke_fairy_fleur-cannon",
+      "pokeapi_id": 705,
+      "name": "Bloom Blast",
+      "type": "MYSTIC",
+      "category": "special",
+      "power": 110,
+      "accuracy": 90,
+      "pp": 5,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "sp_atk",
+        "stages": 2,
+        "chance": 100
+      },
+      "description": "The user unleashes a strong beam. The attack\u2019s recoil harshly lowers the user\u2019s Claw stat.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fairy_disarming-voice",
+      "pokeapi_id": 574,
+      "name": "Soothing Cry",
+      "type": "MYSTIC",
+      "category": "special",
+      "power": 40,
+      "accuracy": 100,
+      "pp": 15,
+      "effect": null,
+      "description": "Letting out a charming cry, the user does emotional damage to opposing Pok\u00e9mon. This attack never misses.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fairy_draining-kiss",
+      "pokeapi_id": 577,
+      "name": "Life Kiss",
+      "type": "MYSTIC",
+      "category": "special",
+      "power": 50,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "drain",
+        "percent": 75
+      },
+      "description": "The user steals the target\u2019s energy with a kiss. The user\u2019s HP is restored by over half of the damage taken by the target.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fairy_crafty-shield",
+      "pokeapi_id": 578,
+      "name": "Trick Guard",
+      "type": "MYSTIC",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "priority"
+      },
+      "description": "The user protects itself and its allies from status moves with a mysterious power. This does not stop moves that do damage.",
+      "priority": 3
+    },
+    {
+      "id": "poke_fairy_sweet-kiss",
+      "pokeapi_id": 186,
+      "name": "Addling Kiss",
+      "type": "MYSTIC",
+      "category": "special",
+      "power": 0,
+      "accuracy": 75,
+      "pp": 10,
+      "effect": {
+        "type": "status",
+        "status": "confusion",
+        "chance": 100
+      },
+      "description": "A move that causes confusion.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fairy_moonlight",
+      "pokeapi_id": 236,
+      "name": "Lunar Glow",
+      "type": "MYSTIC",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 5,
+      "effect": {
+        "type": "heal",
+        "percent": 50
+      },
+      "description": "Restores HP (varies by time).",
+      "priority": 0
+    },
+    {
+      "id": "poke_fairy_geomancy",
+      "pokeapi_id": 601,
+      "name": "Earth Magic",
+      "type": "MYSTIC",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 10,
+      "effect": {
+        "type": "stat_boost",
+        "target": "self",
+        "stat": "sp_atk",
+        "stages": 2,
+        "stat2": "sp_def",
+        "stages2": 2
+      },
+      "description": "The user absorbs energy and sharply raises its Claw, Shell, and Speed stats on the next turn.",
+      "priority": 0
+    },
+    {
+      "id": "poke_fairy_charm",
+      "pokeapi_id": 204,
+      "name": "Captivate",
+      "type": "MYSTIC",
+      "category": "special",
+      "power": 0,
+      "accuracy": 100,
+      "pp": 20,
+      "effect": {
+        "type": "stat_drop",
+        "target": "opponent",
+        "stat": "attack",
+        "stages": 2,
+        "chance": 100
+      },
+      "description": "Sharply lowers the foe's ATTACK.",
+      "priority": 0
+    }
+  ]
+}

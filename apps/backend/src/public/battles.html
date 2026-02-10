@@ -14,7 +14,7 @@
   .container { max-width: 780px; margin: 0 auto; padding: 24px; position: relative; z-index: 1; }
 
   /* Nav - 3 Column: Brand | Links | Auth */
-  .nav-wrap { background: #0f0f18; border-bottom: 1px solid #1e1e2e; position: relative; z-index: 100; }
+  .nav-wrap { background: #0f0f18; border-bottom: 1px solid #1e1e2e; position: relative; z-index: 1000; }
   .nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 24px; height: 64px; }
   .nav-brand { font-size: 20px; font-weight: 800; color: #fff; text-decoration: none; justify-self: start; }
   .nav-brand span { color: #6366f1; }
@@ -157,6 +157,7 @@
       <a href="/leaderboard.html">Leaderboard</a>
       <a href="/battles.html" class="active">Battles</a>
       <a href="/clawfeed.html">Claw Feed</a>
+      <a href="#" onclick="Lobsterdex.open(); return false;">Lobsterdex</a>
     </div>
     <div class="nav-auth">
       <a href="/profile.html" id="nav-auth-btn" class="nav-auth-btn">Login</a>

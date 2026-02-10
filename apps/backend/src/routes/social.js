@@ -25,6 +25,7 @@ const { sanitizePostContent } = require('../utils/sanitize');
 const { SOCIAL_POST_EXPIRY_MS } = require('../config/constants');
 const streakService = require('../services/streak-service');
 const { MAX_STREAK, STREAK_MILESTONES, formatStreakDisplay } = require('../config/streak-config');
+const { moderatePost } = require('../utils/content-moderation');
 
 // Character limit for posts/comments (increased from 280)
 const CHARACTER_LIMIT = 300;
@@ -228,8 +229,16 @@ router.get('/feed', (req, res) => {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
     const offset = (page - 1) * limit;
-    const sortBy = req.query.sort || 'newest';
-    const filter = req.query.filter || 'all';
+
+    // Whitelist allowed sort parameters to prevent SQL injection
+    const sortParam = req.query.sort || 'newest';
+    const allowedSorts = ['newest', 'engagement'];
+    const sortBy = allowedSorts.includes(sortParam) ? sortParam : 'newest';
+
+    // Whitelist allowed filter parameters
+    const filterParam = req.query.filter || 'all';
+    const allowedFilters = ['all', 'top_level'];
+    const filter = allowedFilters.includes(filterParam) ? filterParam : 'all';
 
     // Get requesting agent ID if authenticated (for is_own flag)
     const requestingAgentId = getAgentIdFromAuth(req);
@@ -672,7 +681,7 @@ router.get('/search', (req, res) => {
  * POST /api/social/posts
  * Create a new post (requires social token + mandatory like)
  */
-router.post('/posts', agentAuth, (req, res) => {
+router.post('/posts', agentAuth, async (req, res) => {
   try {
     const db = getDb();
     const { battle_id, like_post_id } = req.body;
@@ -689,6 +698,21 @@ router.post('/posts', agentAuth, (req, res) => {
     }
     if (!battle_id) {
       return res.status(400).json({ error: 'battle_id is required' });
+    }
+
+    // Moderate content (hybrid: local + API)
+    const moderationResult = await moderatePost(content);
+    if (!moderationResult.allowed) {
+      log.warn('Post blocked by moderation', {
+        agentId: agent.id,
+        battleId: battle_id,
+        reason: moderationResult.reason,
+        blockedBy: moderationResult.blocked_by
+      });
+      return res.status(400).json({
+        error: 'Content violates community guidelines',
+        reason: moderationResult.reason
+      });
     }
 
     // Check if feed is empty (first post problem - skip like requirement)
@@ -795,7 +819,7 @@ router.post('/posts', agentAuth, (req, res) => {
  * POST /api/social/posts/:parent_id/replies
  * Create a reply to a post (requires social token + mandatory like)
  */
-router.post('/posts/:parent_id/replies', agentAuth, (req, res) => {
+router.post('/posts/:parent_id/replies', agentAuth, async (req, res) => {
   try {
     const db = getDb();
     const { parent_id } = req.params;
@@ -823,6 +847,22 @@ router.post('/posts/:parent_id/replies', agentAuth, (req, res) => {
     }
     if (!like_post_id) {
       return res.status(400).json({ error: 'like_post_id is required - you must like another post' });
+    }
+
+    // Moderate content (hybrid: local + API)
+    const moderationResult = await moderatePost(content);
+    if (!moderationResult.allowed) {
+      log.warn('Reply blocked by moderation', {
+        agentId: agent.id,
+        battleId: battle_id,
+        parentId: parent_id,
+        reason: moderationResult.reason,
+        blockedBy: moderationResult.blocked_by
+      });
+      return res.status(400).json({
+        error: 'Content violates community guidelines',
+        reason: moderationResult.reason
+      });
     }
 
     // Validate social token
@@ -1497,9 +1537,14 @@ router.put('/bot/identity', agentAuth, (req, res) => {
       if (trimmedName.length < 1 || trimmedName.length > 50) {
         return res.status(400).json({ error: 'bot_name must be 1-50 characters' });
       }
-      // Basic sanitization - no control characters
-      if (/[\x00-\x1f]/.test(trimmedName)) {
-        return res.status(400).json({ error: 'bot_name contains invalid characters' });
+      // Enhanced sanitization - no control characters, HTML tags, or script injection
+      if (/[\x00-\x1f<>]/.test(trimmedName)) {
+        return res.status(400).json({ error: 'bot_name contains invalid characters (no HTML tags allowed)' });
+      }
+      // Block common XSS patterns
+      const lowerName = trimmedName.toLowerCase();
+      if (lowerName.includes('script') || lowerName.includes('javascript:') || lowerName.includes('onerror')) {
+        return res.status(400).json({ error: 'bot_name contains prohibited content' });
       }
     }
 
@@ -1508,9 +1553,16 @@ router.put('/bot/identity', agentAuth, (req, res) => {
       if (typeof bot_avatar_url !== 'string') {
         return res.status(400).json({ error: 'bot_avatar_url must be a string or null' });
       }
-      // Basic URL validation
-      if (bot_avatar_url && !bot_avatar_url.startsWith('http')) {
-        return res.status(400).json({ error: 'bot_avatar_url must be a valid URL' });
+      // Enhanced URL validation - must be http/https, no javascript: or data: URIs
+      if (bot_avatar_url) {
+        if (!bot_avatar_url.startsWith('https://') && !bot_avatar_url.startsWith('http://')) {
+          return res.status(400).json({ error: 'bot_avatar_url must be a valid HTTP/HTTPS URL' });
+        }
+        // Block javascript: and data: URIs for XSS prevention
+        const lowerUrl = bot_avatar_url.toLowerCase();
+        if (lowerUrl.includes('javascript:') || lowerUrl.includes('data:')) {
+          return res.status(400).json({ error: 'bot_avatar_url contains prohibited protocol' });
+        }
       }
     }
 

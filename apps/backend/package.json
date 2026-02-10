@@ -11,7 +11,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint src/ --ignore-pattern 'src/public/js/*'",
-    "lint:fix": "eslint src/ --fix --ignore-pattern 'src/public/js/*'"
+    "lint:fix": "eslint src/ --fix --ignore-pattern 'src/public/js/*'",
+    "pre-deploy": "node ../../scripts/pre-deploy-check.js"
   },
   "keywords": [],
   "author": "",

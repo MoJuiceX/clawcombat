@@ -1,0 +1,272 @@
+{
+  "poke_normal_pound": {
+    "strategy": "Basic neutral damage with no drawbacks.",
+    "combos": "Use after War Posture for boosted damage.",
+    "counters": "Ghost types are completely immune.",
+    "competitiveTip": "Outclassed by stronger moves, but reliable early game."
+  },
+  "poke_normal_quick-attack": {
+    "strategy": "Priority move that always goes first. Great for finishing low HP opponents.",
+    "combos": "Perfect after setting up Attack boosts.",
+    "counters": "Low power means it won't break bulky defenders.",
+    "competitiveTip": "Essential for revenge killing and bypassing speed disadvantage."
+  },
+  "poke_normal_swords-dance": {
+    "strategy": "Sharply raises Attack (+2 stages). One of the best setup moves in the game.",
+    "combos": "Follow with strong physical attacks for devastating sweeps.",
+    "counters": "Status moves like paralysis or confusion disrupt setup.",
+    "competitiveTip": "The premier physical setup move. One boost often enough to sweep."
+  },
+  "poke_normal_double-edge": {
+    "strategy": "Massive neutral damage but hurts you too. High risk, high reward.",
+    "combos": "Use when you're about to faint anyway for maximum value.",
+    "counters": "Recoil damage adds up quickly. Ghost types immune.",
+    "competitiveTip": "Best saved for late-game when recoil won't matter."
+  },
+  "poke_normal_recover": {
+    "strategy": "Heals 50% of max HP. Essential for sustain strategies.",
+    "combos": "Use behind defensive boosts for maximum longevity.",
+    "counters": "High damage attackers can out-pace healing.",
+    "competitiveTip": "Core move for stall and balanced teams."
+  },
+  "poke_fire_flare-blitz": {
+    "strategy": "The strongest physical Fire move. Recoil is painful but damage is immense.",
+    "combos": "Best on high HP attackers who can absorb recoil.",
+    "counters": "Water, Earth, and Stone types resist and hit back hard.",
+    "competitiveTip": "Signature move for physical Fire sweepers."
+  },
+  "poke_fire_flamethrower": {
+    "strategy": "Reliable special Fire STAB with burn chance. The go-to Fire move.",
+    "combos": "Burns cripple physical attackers, reducing their damage by 50%.",
+    "counters": "Flash Fire absorbers turn this into a boost for them.",
+    "competitiveTip": "Standard special Fire option. Consistent and powerful."
+  },
+  "poke_fire_will-o-wisp": {
+    "strategy": "Guaranteed burn on hit. Cripples physical attackers completely.",
+    "combos": "Use against physical threats to halve their Attack.",
+    "counters": "Fire types and those immune to burn are unaffected.",
+    "competitiveTip": "Essential utility for defensive Fire types."
+  },
+  "poke_fire_overheat": {
+    "strategy": "Nuclear option - massive damage but drops your Special Attack by 2 stages.",
+    "combos": "Use as a nuke then switch out to reset stats.",
+    "counters": "Can only use once effectively before needing to switch.",
+    "competitiveTip": "Hit-and-run move. Devastating first hit."
+  },
+  "poke_fire_lava-plume": {
+    "strategy": "Strong Fire move with 30% burn chance. Balanced power and utility.",
+    "combos": "High burn rate makes it excellent against physical teams.",
+    "counters": "Slightly weaker than Flamethrower but more likely to burn.",
+    "competitiveTip": "Preferred on defensive Fire types for status spreading."
+  },
+  "poke_water_wave-crash": {
+    "strategy": "Strongest physical Water move. Pure power for aggressive Water types.",
+    "combos": "Rain boosts Water moves even further.",
+    "counters": "Grass and Dragon types resist. High cost move.",
+    "competitiveTip": "Go-to physical Water STAB for offensive builds."
+  },
+  "poke_water_aqua-jet": {
+    "strategy": "Priority Water move. Essential for picking off weakened foes.",
+    "combos": "After Swords Dance, becomes a dangerous priority threat.",
+    "counters": "Low base power limits effectiveness against healthy targets.",
+    "competitiveTip": "Revenge killing tool for Water sweepers."
+  },
+  "poke_water_crabhammer": {
+    "strategy": "High crit rate Water physical. Risk vs reward gameplay.",
+    "combos": "Critical hits ignore the opponent's Defense boosts.",
+    "counters": "90% accuracy means occasional misses at crucial moments.",
+    "competitiveTip": "Signature Lobster move. Thematic and powerful."
+  },
+  "poke_water_waterfall": {
+    "strategy": "Reliable physical Water with flinch chance. Solid all-around option.",
+    "combos": "Flinch chance pairs well with speed advantage.",
+    "counters": "Grass and Dragon resistances limit coverage.",
+    "competitiveTip": "Standard physical Water STAB with utility."
+  },
+  "poke_electric_volt-tackle": {
+    "strategy": "Maximum Electric physical damage with heavy recoil. Glass cannon move.",
+    "combos": "Paralysis from other moves helps ensure you move first.",
+    "counters": "Recoil damage adds up. Earth types immune.",
+    "competitiveTip": "High risk, high reward. Best for fast, frail attackers."
+  },
+  "poke_electric_zippy-zap": {
+    "strategy": "Priority Electric move with high power. Extremely dangerous.",
+    "combos": "Always goes first AND always crits - devastating combo.",
+    "counters": "Earth immunity shuts it down completely.",
+    "competitiveTip": "One of the best priority moves in the game."
+  },
+  "poke_electric_thunder-wave": {
+    "strategy": "Guaranteed paralysis on hit. Speed control for your whole team.",
+    "combos": "Paralyze fast threats, then outspeed with your sweepers.",
+    "counters": "Ground types immune. Electric types resist paralysis.",
+    "competitiveTip": "Core support move. Changes speed dynamics of battles."
+  },
+  "poke_grass_solar-blade": {
+    "strategy": "Powerful physical Grass STAB. Two-turn charging limits utility.",
+    "combos": "Sunny weather allows instant use.",
+    "counters": "Charging turn allows opponent to switch or set up.",
+    "competitiveTip": "Best in sun teams. Risky otherwise."
+  },
+  "poke_grass_mega-drain": {
+    "strategy": "Drains HP equal to half damage dealt. Sustain in a box.",
+    "combos": "Stacks well with recovery items and abilities.",
+    "counters": "Low base power limits damage output.",
+    "competitiveTip": "Survival tool for Grass types. Outlast opponents."
+  },
+  "poke_grass_spiky-shield": {
+    "strategy": "Priority protection that damages attackers on contact.",
+    "combos": "Scout opponent's moves while dealing chip damage.",
+    "counters": "Non-contact moves bypass the damage effect.",
+    "competitiveTip": "Excellent for mind games and stalling."
+  },
+  "poke_grass_stun-spore": {
+    "strategy": "Spreads paralysis to slow down threats. Accuracy is shaky.",
+    "combos": "Paralyze faster opponents to give your team speed advantage.",
+    "counters": "75% accuracy means it can miss at bad times.",
+    "competitiveTip": "Speed control option for Grass types."
+  },
+  "poke_ice_freeze-dry": {
+    "strategy": "Super effective against Water types despite being Ice. Unique coverage.",
+    "combos": "Hits Water/Ground types for 4x damage.",
+    "counters": "Lower power than other Ice options.",
+    "competitiveTip": "Invaluable for hitting Water types that usually resist Ice."
+  },
+  "poke_ice_ice-beam": {
+    "strategy": "Reliable special Ice STAB with freeze chance. Standard Ice option.",
+    "combos": "Freeze completely disables the opponent.",
+    "counters": "Water, Ice, Fire, and Metal resist.",
+    "competitiveTip": "Go-to Ice move for special attackers."
+  },
+  "poke_martial_close-combat": {
+    "strategy": "Maximum Fighting damage but drops your defenses. Glass cannon move.",
+    "combos": "Use after setup or when you're about to faint anyway.",
+    "counters": "Defense drops leave you vulnerable to priority.",
+    "competitiveTip": "Premier Fighting STAB. The best offensive option."
+  },
+  "poke_martial_mach-punch": {
+    "strategy": "Priority Fighting move. Revenge killing tool.",
+    "combos": "After Iron Fist boost or Attack boosts, becomes deadly.",
+    "counters": "Low power struggles against bulky targets.",
+    "competitiveTip": "Essential for picking off weakened threats."
+  },
+  "poke_venom_toxic": {
+    "strategy": "Inflicts badly poisoned status. Damage doubles each turn.",
+    "combos": "Stall with protection moves while poison damage stacks.",
+    "counters": "Metal types immune. Venom types can't be poisoned.",
+    "competitiveTip": "Core move for stall strategies. Wears down walls."
+  },
+  "poke_venom_sludge-bomb": {
+    "strategy": "Strong special Poison STAB with 30% poison chance.",
+    "combos": "Hits Mystic types super effectively.",
+    "counters": "Metal immunity blocks all Poison damage.",
+    "competitiveTip": "Primary Venom STAB for special attackers."
+  },
+  "poke_earth_earthquake": {
+    "strategy": "The definitive Ground move. High power, perfect accuracy, hits 5 types super effectively.",
+    "combos": "Pair with Air partners who are immune to it.",
+    "counters": "Air types are completely immune.",
+    "competitiveTip": "One of the best moves in the game. Essential coverage."
+  },
+  "poke_air_hurricane": {
+    "strategy": "Strong Air STAB with confusion chance. Devastating in rain.",
+    "combos": "Rain makes Hurricane never miss.",
+    "counters": "70% accuracy outside rain is unreliable.",
+    "competitiveTip": "Best on rain teams. Risk vs reward otherwise."
+  },
+  "poke_air_brave-bird": {
+    "strategy": "Maximum Air physical power with recoil. The Flying equivalent of Flare Blitz.",
+    "combos": "High-risk finisher for Air sweepers.",
+    "counters": "Recoil damage limits longevity.",
+    "competitiveTip": "Premier physical Air STAB."
+  },
+  "poke_psyche_psychic": {
+    "strategy": "Standard Psyche STAB with Special Defense drop chance.",
+    "combos": "SpDef drops help special attackers break through.",
+    "counters": "Shadow types are immune. Metal resists.",
+    "competitiveTip": "Reliable Psyche option for special attackers."
+  },
+  "poke_psyche_calm-mind": {
+    "strategy": "Boosts Special Attack AND Special Defense. Fantastic setup move.",
+    "combos": "Multiple boosts make you both stronger and bulkier.",
+    "counters": "Physical attackers bypass the SpDef boost.",
+    "competitiveTip": "Premier special setup move. Transforms battles."
+  },
+  "poke_insect_u-turn": {
+    "strategy": "Deals damage then switches out. Maintains momentum.",
+    "combos": "Scout opponent's switch-in while dealing chip damage.",
+    "counters": "Entry hazards punish repeated switching.",
+    "competitiveTip": "Essential for pivot-heavy teams."
+  },
+  "poke_stone_stone-edge": {
+    "strategy": "High power Stone STAB with boosted crit rate. Risk vs reward.",
+    "combos": "Crits ignore Defense boosts.",
+    "counters": "80% accuracy means occasional costly misses.",
+    "competitiveTip": "Standard Stone STAB. High variance."
+  },
+  "poke_stone_stealth-rock": {
+    "strategy": "Entry hazard that damages foes when they switch in. Chips away health.",
+    "combos": "Forces unfavorable switches and chip damage over time.",
+    "counters": "Rapid Spin or Defog clears hazards.",
+    "competitiveTip": "One of the most influential moves in competitive play."
+  },
+  "poke_ghost_shadow-ball": {
+    "strategy": "Standard Ghost STAB with SpDef drop chance. Reliable and powerful.",
+    "combos": "SpDef drops snowball into easy KOs.",
+    "counters": "Normal types are immune.",
+    "competitiveTip": "Go-to Ghost move for special attackers."
+  },
+  "poke_ghost_shadow-sneak": {
+    "strategy": "Priority Ghost move. Picks off weakened foes.",
+    "combos": "After Swords Dance, becomes a priority nuke.",
+    "counters": "Low power limits effectiveness against healthy targets.",
+    "competitiveTip": "Essential for Ghost sweepers."
+  },
+  "poke_dragon_outrage": {
+    "strategy": "Locked into this move for 2-3 turns but deals massive damage.",
+    "combos": "Best used late-game when counters are eliminated.",
+    "counters": "Mystic types are immune. Confusion after ends.",
+    "competitiveTip": "High risk, high reward. Clean up with it."
+  },
+  "poke_dragon_dragon-dance": {
+    "strategy": "Boosts Attack AND Speed. The most dangerous setup move.",
+    "combos": "One boost often enough to sweep entire teams.",
+    "counters": "Priority moves, status, or Mystic types.",
+    "competitiveTip": "Game-winning setup move. Respect it."
+  },
+  "poke_shadow_knock-off": {
+    "strategy": "Deals damage and removes opponent's held item. Utility king.",
+    "combos": "Removing items cripples defensive strategies.",
+    "counters": "Already itemless opponents take reduced damage.",
+    "competitiveTip": "One of the best utility moves. Always useful."
+  },
+  "poke_shadow_sucker-punch": {
+    "strategy": "Priority but only works if opponent is attacking.",
+    "combos": "Mind games - predict attacking moves.",
+    "counters": "Fails if opponent uses status or switches.",
+    "competitiveTip": "High reward but requires prediction."
+  },
+  "poke_metal_iron-head": {
+    "strategy": "Reliable Metal physical STAB with flinch chance.",
+    "combos": "Speed advantage makes flinch more likely.",
+    "counters": "Fire, Water, and Electric resist.",
+    "competitiveTip": "Standard physical Metal option."
+  },
+  "poke_metal_flash-cannon": {
+    "strategy": "Standard special Metal STAB with SpDef drop chance.",
+    "combos": "Hits Mystic types super effectively.",
+    "counters": "Fire, Water, and Electric resist.",
+    "competitiveTip": "Go-to Metal STAB for special attackers."
+  },
+  "poke_mystic_moonblast": {
+    "strategy": "Strong Mystic STAB with SpAtk drop chance. Reliable and powerful.",
+    "combos": "SpAtk drops cripple special attackers.",
+    "counters": "Fire, Venom, and Metal resist.",
+    "competitiveTip": "Premier Mystic STAB for special attackers."
+  },
+  "poke_mystic_play-rough": {
+    "strategy": "Physical Mystic STAB with Attack drop chance.",
+    "combos": "Hits Dragon, Shadow, and Martial super effectively.",
+    "counters": "90% accuracy occasionally misses.",
+    "competitiveTip": "Best physical Mystic option."
+  }
+}

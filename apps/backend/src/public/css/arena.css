@@ -29,7 +29,7 @@ a { text-decoration: none; }
 /* ============================================ */
 /* NAV BAR - 3 Column: Brand | Links | Auth    */
 /* ============================================ */
-.nav-wrap { background: #0f0f18; border-bottom: 1px solid #1e1e2e; position: relative; z-index: 100; }
+.nav-wrap { background: #0f0f18; border-bottom: 1px solid #1e1e2e; position: relative; z-index: 1000; }
 .nav {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -69,7 +69,7 @@ a { text-decoration: none; }
   transition: all 0.2s;
 }
 .nav-auth-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
-.nav-audio { position: fixed; top: 18px; right: 16px; display: flex; align-items: center; gap: 4px; z-index: 200; }
+.nav-audio { position: fixed; top: 18px; right: 16px; display: flex; align-items: center; gap: 4px; z-index: 1000; }
 
 /* ============================================ */
 /* BATTLE ARENA CONTAINER                      */
