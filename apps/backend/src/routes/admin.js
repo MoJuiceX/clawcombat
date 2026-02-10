@@ -244,4 +244,54 @@ router.post('/emergency-cleanup', requireAdmin, (req, res) => {
   }
 });
 
+/**
+ * POST /admin/nuclear-cleanup
+ * Deletes social posts first, then ALL battles (respects foreign keys)
+ * Does NOT vacuum - run /admin/vacuum-database separately
+ */
+router.post('/nuclear-cleanup', requireAdmin, (req, res) => {
+  try {
+    const { nuclearCleanup } = require('../scripts/nuclear-cleanup');
+    const result = nuclearCleanup();
+    res.json({
+      success: true,
+      warning: 'ALL BATTLES AND BATTLE POSTS DELETED',
+      ...result
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Nuclear cleanup failed',
+      message: err.message
+    });
+  }
+});
+
+/**
+ * POST /admin/vacuum-database
+ * Runs VACUUM to reclaim disk space after deleting records
+ * WARNING: Can take time and lock database
+ */
+router.post('/vacuum-database', requireAdmin, (req, res) => {
+  try {
+    const { getDb } = require('../db/schema');
+    const db = getDb();
+
+    const sizeBefore = db.pragma('page_count')[0].page_count * db.pragma('page_size')[0].page_size;
+    db.pragma('vacuum');
+    const sizeAfter = db.pragma('page_count')[0].page_count * db.pragma('page_size')[0].page_size;
+
+    res.json({
+      success: true,
+      size_before_mb: (sizeBefore / 1024 / 1024).toFixed(2),
+      size_after_mb: (sizeAfter / 1024 / 1024).toFixed(2),
+      freed_mb: ((sizeBefore - sizeAfter) / 1024 / 1024).toFixed(2)
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Vacuum failed',
+      message: err.message
+    });
+  }
+});
+
 module.exports = router;
