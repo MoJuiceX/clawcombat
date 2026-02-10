@@ -10,7 +10,7 @@
     return new Promise(function(resolve, reject) {
       if (window.Clerk) { resolve(window.Clerk); return; }
       var script = document.createElement('script');
-      script.src = 'https://cdn.clerk.com/clerk.browser.js';
+      script.src = '/js/clerk.browser.js';  // Self-hosted (no CDN dependency)
       script.crossOrigin = 'anonymous';
       script.onload = function() {
         var Clerk = window.Clerk;
