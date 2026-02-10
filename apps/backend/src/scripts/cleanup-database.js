@@ -20,13 +20,13 @@ function cleanupDatabase() {
       size_mb: (sizeBefore / 1024 / 1024).toFixed(2)
     });
 
-    // Delete battles older than 7 days (keep recent ones)
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    // Delete battles older than 1 day (keep only very recent ones for disk space)
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const deleted = db.prepare(`
       DELETE FROM battles
       WHERE created_at < ?
       AND status = 'finished'
-    `).run(sevenDaysAgo);
+    `).run(oneDayAgo);
 
     log.info('Deleted old battles', { count: deleted.changes });
 
