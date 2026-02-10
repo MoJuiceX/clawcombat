@@ -316,4 +316,25 @@ router.post('/reset-database', requireAdmin, (req, res) => {
   }
 });
 
+/**
+ * POST /admin/seed-bots
+ * Creates 18 fun-named bots (one per type), all level 1
+ */
+router.post('/seed-bots', requireAdmin, (req, res) => {
+  try {
+    const { seedBots } = require('../scripts/seed-bots-v2');
+    const result = seedBots();
+    res.json({
+      success: true,
+      message: `Created ${result.created} bots`,
+      ...result
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Seed bots failed',
+      message: err.message
+    });
+  }
+});
+
 module.exports = router;
