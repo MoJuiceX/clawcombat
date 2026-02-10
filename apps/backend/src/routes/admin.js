@@ -222,4 +222,26 @@ router.post('/cleanup-database', requireAdmin, (req, res) => {
   }
 });
 
+/**
+ * POST /admin/emergency-cleanup
+ * NUCLEAR OPTION: Deletes ALL battles to free up disk space immediately
+ * Use only when disk is completely full and normal cleanup fails
+ */
+router.post('/emergency-cleanup', requireAdmin, (req, res) => {
+  try {
+    const { emergencyCleanup } = require('../scripts/emergency-cleanup');
+    const result = emergencyCleanup();
+    res.json({
+      success: true,
+      warning: 'ALL BATTLES DELETED',
+      ...result
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Emergency cleanup failed',
+      message: err.message
+    });
+  }
+});
+
 module.exports = router;
