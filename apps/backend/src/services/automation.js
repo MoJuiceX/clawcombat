@@ -244,6 +244,7 @@ async function autoQueueAgents() {
   const db = getDb();
   log.info('Auto-queuing auto-play agents');
 
+  // Only queue agents that haven't battled in the last hour (rate limit: 1 battle/hour per lobster)
   const autoAgents = db.prepare(`
     SELECT id FROM agents
     WHERE status = 'active'
@@ -254,10 +255,14 @@ async function autoQueueAgents() {
       UNION
       SELECT agent_b_id FROM battles WHERE status IN ('active', 'pending')
     )
+    AND (
+      last_fight_at IS NULL
+      OR last_fight_at < datetime('now', '-1 hour')
+    )
   `).all();
 
   if (autoAgents.length === 0) {
-    log.info('No auto-play agents available to queue');
+    log.info('No auto-play agents available to queue (all rate-limited or already in queue)');
     return 0;
   }
 
@@ -277,7 +282,7 @@ async function autoQueueAgents() {
   });
   queueAll();
 
-  log.info('Auto-play agents queued', { count: queued });
+  log.info('Auto-play agents queued', { count: queued, eligible: autoAgents.length });
   return queued;
 }
 
@@ -372,6 +377,7 @@ async function processAutoQueue() {
   const LEVEL_RANGES = [5, 10, 20, Infinity]; // Expanding ranges
 
   // Greedy matching: try tight ranges first, widen if needed
+  // Note: Rate limiting happens at agent level (1 battle/hour), not per-run
   for (const maxDiff of LEVEL_RANGES) {
     for (let i = 0; i < queue.length; i++) {
       if (matched.has(queue[i].agent_id)) continue;
@@ -520,8 +526,9 @@ function startCronJobs() {
     }
   }, 10000);
 
-  // Every 5 minutes: auto-queue and resolve auto-play battles
-  cron.schedule('*/5 * * * *', async () => {
+  // Every 10 minutes: auto-queue and resolve auto-play battles
+  // Rate limited to 1 battle per hour per lobster at the agent level
+  cron.schedule('*/10 * * * *', async () => {
     try {
       await autoQueueAgents();
       await processAutoQueue();
@@ -608,6 +615,37 @@ function startCronJobs() {
         }
       } catch (e) {
         log.error('Bot health cleanup error:', { error: e.message });
+      }
+
+      // Cleanup old battles (keep only last 7 days to prevent disk from filling)
+      try {
+        const battlesBefore = db.prepare('SELECT COUNT(*) as count FROM battles').get().count;
+
+        // Delete battles older than 7 days
+        const deletedBattles = db.prepare(`
+          DELETE FROM battles
+          WHERE created_at < datetime('now', '-7 days')
+        `).run();
+
+        // Also delete orphaned battle turns
+        const deletedTurns = db.prepare(`
+          DELETE FROM battle_turns
+          WHERE battle_id NOT IN (SELECT id FROM battles)
+        `).run();
+
+        if (deletedBattles.changes > 0) {
+          log.info('Old battles cleanup completed', {
+            deleted: deletedBattles.changes,
+            remaining: battlesBefore - deletedBattles.changes,
+            turns_deleted: deletedTurns.changes
+          });
+        }
+
+        // Checkpoint WAL to reclaim disk space
+        db.pragma('wal_checkpoint(TRUNCATE)');
+        log.info('WAL checkpoint completed');
+      } catch (e) {
+        log.error('Battle cleanup error:', { error: e.message });
       }
     } catch (err) {
       log.error('Daily job error:', { error: err.message });
