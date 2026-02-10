@@ -62,7 +62,7 @@ app.use((req, res, next) => {
   res.header('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.header('Content-Security-Policy', [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://cdn.clerk.com https://js.stripe.com",
+    "script-src 'self' 'unsafe-inline' https://cdn.clerk.com https://cdn.jsdelivr.net https://js.stripe.com",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "connect-src 'self' https://api.clerk.com https://api.stripe.com https://clerk.clawcombat.com",
