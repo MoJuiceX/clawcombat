@@ -20,15 +20,23 @@ function cleanupDatabase() {
       size_mb: (sizeBefore / 1024 / 1024).toFixed(2)
     });
 
-    // Delete battles older than 1 day (keep only very recent ones for disk space)
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const deleted = db.prepare(`
-      DELETE FROM battles
-      WHERE created_at < ?
-      AND status = 'finished'
-    `).run(oneDayAgo);
+    // Temporarily disable foreign keys for bulk delete
+    db.pragma('foreign_keys = OFF');
 
-    log.info('Deleted old battles', { count: deleted.changes });
+    try {
+      // Delete battles older than 1 day (keep only very recent ones for disk space)
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const deleted = db.prepare(`
+        DELETE FROM battles
+        WHERE created_at < ?
+        AND status = 'finished'
+      `).run(oneDayAgo);
+
+      log.info('Deleted old battles', { count: deleted.changes });
+    } finally {
+      // Re-enable foreign keys
+      db.pragma('foreign_keys = ON');
+    }
 
     // Delete old battle logs (keep last 1000 battles worth) - if table exists
     try {
