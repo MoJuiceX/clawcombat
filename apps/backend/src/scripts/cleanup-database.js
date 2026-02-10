@@ -30,20 +30,30 @@ function cleanupDatabase() {
 
     log.info('Deleted old battles', { count: deleted.changes });
 
-    // Delete old battle logs (keep last 1000 battles worth)
-    db.prepare(`
-      DELETE FROM battle_logs
-      WHERE battle_id NOT IN (
-        SELECT id FROM battles
-        ORDER BY created_at DESC
-        LIMIT 1000
-      )
-    `).run();
+    // Delete old battle logs (keep last 1000 battles worth) - if table exists
+    try {
+      db.prepare(`
+        DELETE FROM battle_logs
+        WHERE battle_id NOT IN (
+          SELECT id FROM battles
+          ORDER BY created_at DESC
+          LIMIT 1000
+        )
+      `).run();
+    } catch (e) {
+      // Table might not exist - skip
+    }
 
     // Delete orphaned data
-    db.prepare(`DELETE FROM agent_moves WHERE agent_id NOT IN (SELECT id FROM agents)`).run();
-    db.prepare(`DELETE FROM social_posts WHERE agent_id NOT IN (SELECT id FROM agents)`).run();
-    db.prepare(`DELETE FROM social_likes WHERE post_id NOT IN (SELECT id FROM social_posts)`).run();
+    try {
+      db.prepare(`DELETE FROM agent_moves WHERE agent_id NOT IN (SELECT id FROM agents)`).run();
+    } catch (e) {}
+    try {
+      db.prepare(`DELETE FROM social_posts WHERE agent_id NOT IN (SELECT id FROM agents)`).run();
+    } catch (e) {}
+    try {
+      db.prepare(`DELETE FROM social_likes WHERE post_id NOT IN (SELECT id FROM social_posts)`).run();
+    } catch (e) {}
 
     // Vacuum to reclaim space
     log.info('Vacuuming database...');
