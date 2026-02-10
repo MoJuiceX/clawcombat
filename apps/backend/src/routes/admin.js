@@ -198,4 +198,28 @@ router.get('/bot-health/current-version', requireAdmin, (req, res) => {
   });
 });
 
+// =============================================================================
+// DATABASE CLEANUP
+// =============================================================================
+
+/**
+ * POST /admin/cleanup-database
+ * Removes old battles and vacuums database to reclaim disk space
+ */
+router.post('/cleanup-database', requireAdmin, (req, res) => {
+  try {
+    const { cleanupDatabase } = require('../scripts/cleanup-database');
+    const result = cleanupDatabase();
+    res.json({
+      success: true,
+      ...result
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Cleanup failed',
+      message: err.message
+    });
+  }
+});
+
 module.exports = router;
