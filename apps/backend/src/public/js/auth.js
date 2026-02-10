@@ -10,7 +10,7 @@
     return new Promise(function(resolve, reject) {
       if (window.Clerk) { resolve(window.Clerk); return; }
       var script = document.createElement('script');
-      script.src = 'https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
+      script.src = 'https://unpkg.com/@clerk/clerk-js@latest/dist/clerk.browser.js';
       script.crossOrigin = 'anonymous';
       script.onload = function() {
         var Clerk = window.Clerk;
