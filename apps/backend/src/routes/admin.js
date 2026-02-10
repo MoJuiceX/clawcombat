@@ -294,4 +294,26 @@ router.post('/vacuum-database', requireAdmin, (req, res) => {
   }
 });
 
+/**
+ * POST /admin/reset-database
+ * DANGER: Deletes ALL data from ALL tables, starts fresh like day zero
+ * WARNING: This is irreversible! All battles, agents, and history will be lost.
+ */
+router.post('/reset-database', requireAdmin, (req, res) => {
+  try {
+    const { resetDatabase } = require('../scripts/reset-database');
+    const result = resetDatabase();
+    res.json({
+      success: true,
+      warning: 'ALL DATA DELETED - DATABASE RESET TO DAY ZERO',
+      ...result
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Database reset failed',
+      message: err.message
+    });
+  }
+});
+
 module.exports = router;
