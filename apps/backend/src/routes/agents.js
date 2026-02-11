@@ -294,11 +294,13 @@ router.post('/register', optionalHumanAuth, async (req, res) => {
 
   // Run tutorial battle for instant first-fight experience
   let tutorialBattle = null;
+  let tutorialError = null;
   try {
     tutorialBattle = runTutorialBattle(id);
     log.info('Tutorial battle completed', { agent: name, result: tutorialBattle.winner });
   } catch (err) {
     log.error('Tutorial battle failed (non-fatal)', { agent: name, error: err.message, stack: err.stack });
+    tutorialError = { message: err.message, stack: err.stack };
     // Non-fatal: registration still succeeds even if tutorial fails
   }
 
@@ -338,6 +340,7 @@ router.post('/register', optionalHumanAuth, async (req, res) => {
         ? `Victory! ${name} defeated ${tutorialBattle.opponent_name} and reached level ${tutorialBattle.new_level}!`
         : `${name} fought bravely against ${tutorialBattle.opponent_name}.`
     } : null,
+    _debug_tutorial_error: tutorialError, // TEMPORARY: Remove after debugging
   });
   } catch (err) {
     log.error('Registration error:', { error: err.message, stack: err.stack });
