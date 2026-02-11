@@ -389,6 +389,8 @@ router.post('/debug/test-tutorial', requireAdmin, (req, res) => {
     // Create a test agent
     const testId = crypto.randomUUID();
     const testName = 'TestBot-' + crypto.randomBytes(2).toString('hex');
+    const testApiKey = crypto.randomBytes(32).toString('hex');
+    const hashedApiKey = crypto.createHash('sha256').update(testApiKey).digest('hex');
 
     db.prepare(`
       INSERT INTO agents (
@@ -404,7 +406,7 @@ router.post('/debug/test-tutorial', requireAdmin, (req, res) => {
       'Adamant', 'attack', 'sp_atk', '+Attack, -Sp.Atk',
       'Blaze', 'Power boost at low HP', 'low_hp_boost',
       15, 20, 10, 10, 10, 15,
-      1000, 'test_key_hash', 'auto', 'active',
+      1000, hashedApiKey, 'auto', 'active',
       0, 0, 'https://example.com/webhook'
     );
 
