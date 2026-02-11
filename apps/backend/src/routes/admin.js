@@ -405,7 +405,7 @@ router.post('/debug/test-tutorial', requireAdmin, (req, res) => {
       'Blaze', 'Power boost at low HP', 'low_hp_boost',
       15, 20, 10, 10, 10, 15,
       1000, 'test_key_hash', 'auto', 'active',
-      0, 0, null
+      0, 0, 'https://example.com/webhook'
     );
 
     // Add 4 moves
