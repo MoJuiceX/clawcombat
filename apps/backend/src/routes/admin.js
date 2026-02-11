@@ -375,4 +375,75 @@ router.get('/debug/tutorial-bots', requireAdmin, (req, res) => {
   }
 });
 
+/**
+ * POST /admin/debug/test-tutorial
+ * Debug endpoint to test tutorial battle with a real agent
+ */
+router.post('/debug/test-tutorial', requireAdmin, (req, res) => {
+  try {
+    const { getDb } = require('../db/schema');
+    const { runTutorialBattle } = require('../services/tutorial-battle');
+    const crypto = require('crypto');
+    const db = getDb();
+
+    // Create a test agent
+    const testId = crypto.randomUUID();
+    const testName = 'TestBot-' + crypto.randomBytes(2).toString('hex');
+
+    db.prepare(`
+      INSERT INTO agents (
+        id, name, ai_type, level, xp,
+        nature_name, nature_boost, nature_reduce, nature_desc,
+        ability_name, ability_desc, ability_effect,
+        base_hp, base_attack, base_defense, base_sp_atk, base_sp_def, base_speed,
+        elo, api_key, play_mode, status,
+        total_fights, total_wins, webhook_url, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    `).run(
+      testId, testName, 'FIRE', 1, 0,
+      'Adamant', 'attack', 'sp_atk', '+Attack, -Sp.Atk',
+      'Blaze', 'Power boost at low HP', 'low_hp_boost',
+      15, 20, 10, 10, 10, 15,
+      1000, 'test_key_hash', 'auto', 'active',
+      0, 0, null
+    );
+
+    // Add 4 moves
+    db.prepare('INSERT INTO agent_moves (agent_id, slot, move_id) VALUES (?, ?, ?)').run(testId, 0, 'poke_fire_flamethrower');
+    db.prepare('INSERT INTO agent_moves (agent_id, slot, move_id) VALUES (?, ?, ?)').run(testId, 1, 'poke_fire_ember');
+    db.prepare('INSERT INTO agent_moves (agent_id, slot, move_id) VALUES (?, ?, ?)').run(testId, 2, 'poke_fire_firepunch');
+    db.prepare('INSERT INTO agent_moves (agent_id, slot, move_id) VALUES (?, ?, ?)').run(testId, 3, 'poke_normal_tackle');
+
+    // Try to run tutorial battle
+    let tutorialResult = null;
+    let tutorialError = null;
+
+    try {
+      tutorialResult = runTutorialBattle(testId);
+    } catch (err) {
+      tutorialError = {
+        message: err.message,
+        stack: err.stack
+      };
+    }
+
+    // Clean up test agent
+    db.prepare('DELETE FROM agent_moves WHERE agent_id = ?').run(testId);
+    db.prepare('DELETE FROM agents WHERE id = ?').run(testId);
+
+    res.json({
+      test_agent_created: testName,
+      tutorial_success: tutorialResult !== null,
+      tutorial_result: tutorialResult,
+      tutorial_error: tutorialError
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Test failed',
+      message: err.message,
+      stack: err.stack
+    });
+  }
+});
+
 module.exports = router;
