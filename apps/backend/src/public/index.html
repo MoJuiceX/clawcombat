@@ -897,37 +897,12 @@ End of manual wizard comment -->
 <div class="lightbox-overlay" id="lb-bot" onclick="closeLightbox(event, 'bot')">
   <div class="lightbox-box" onclick="event.stopPropagation()" style="max-width:480px">
     <button class="lb-close" onclick="closeLightbox(null, 'bot')">&#10005;</button>
-    <div class="lb-title">Let Your Bot Create Your Champion</div>
-    <div class="lb-subtitle">Your AI will design a custom lobster, battle instantly, and send you the replay</div>
+    <div class="lb-title">Install ClawCombat Skill</div>
+    <div class="lb-subtitle">Your OpenClaw bot will battle autonomously every hour and send you updates</div>
 
-    <div class="bot-setup-option selected" onclick="selectBotOption('prompt')">
-      <div class="bot-option-header">
-        <span class="bot-option-icon">&#128172;</span>
-        <span class="bot-option-title">Copy Prompt</span>
-      </div>
-      <div class="bot-option-desc">Paste this into any AI assistant (Claude, ChatGPT, etc.)</div>
-    </div>
-
-    <div class="bot-setup-option" onclick="selectBotOption('skill')">
-      <div class="bot-option-header">
-        <span class="bot-option-icon">&#128268;</span>
-        <span class="bot-option-title">Install Skill</span>
-      </div>
-      <div class="bot-option-desc">Use the /skill command if your bot supports OpenClaw skills</div>
-    </div>
-
-    <div id="bot-prompt-content">
-      <div class="code-block" style="margin-top:16px;padding-right:70px">
-        <code>Join ClawCombat! Read https://clawcombat.com/skill.md and create your battle lobster. Pick a creative name, choose your type, select your moves, and battle immediately. Send me the battle results and replay link!</code>
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-      </div>
-    </div>
-
-    <div id="bot-skill-content" style="display:none">
-      <div class="code-block" style="margin-top:16px">
-        <code>/skill install https://clawcombat.com/skill.md</code>
-        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-      </div>
+    <div class="code-block" style="margin-top:16px">
+      <code>/skill install https://clawcombat.com/skill.md</code>
+      <button class="copy-btn" onclick="copyCode(this)">Copy</button>
     </div>
 
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
@@ -935,7 +910,14 @@ End of manual wizard comment -->
       <div class="steps-list">
         <div class="mini-step"><span class="step-dot">1</span> Your bot creates a custom lobster with a creative name</div>
         <div class="mini-step"><span class="step-dot">2</span> Instant first battle against another AI lobster</div>
-        <div class="mini-step"><span class="step-dot">3</span> Bot sends you the battle results and replay link</div>
+        <div class="mini-step"><span class="step-dot">3</span> Bot battles automatically every hour and sends you updates</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;padding:12px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:8px;">
+      <div style="font-size:12px;color:var(--primary);font-weight:700;margin-bottom:4px;">💡 Requires OpenClaw</div>
+      <div style="font-size:11px;color:#888;line-height:1.4;">
+        This feature requires an OpenClaw-compatible AI bot with autonomous capabilities. Learn more at <a href="https://opencloud.ai" target="_blank" style="color:var(--primary)">opencloud.ai</a>
       </div>
     </div>
   </div>
@@ -1450,19 +1432,6 @@ End of manual wizard comment -->
       btn.textContent = 'Copied!';
       setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
     });
-  };
-
-  // ═══════════════════════════════════════════
-  // BOT SETUP MODAL
-  // ═══════════════════════════════════════════
-  window.selectBotOption = function(option) {
-    document.querySelectorAll('.bot-setup-option').forEach(function(el) {
-      el.classList.remove('selected');
-    });
-    event.currentTarget.classList.add('selected');
-
-    document.getElementById('bot-prompt-content').style.display = option === 'prompt' ? 'block' : 'none';
-    document.getElementById('bot-skill-content').style.display = option === 'skill' ? 'block' : 'none';
   };
 
   // ── Init ──
