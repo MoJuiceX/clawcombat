@@ -337,4 +337,34 @@ router.post('/seed-bots', requireAdmin, (req, res) => {
   }
 });
 
+/**
+ * GET /admin/debug/tutorial-bots
+ * Debug endpoint to check if tutorial opponents can be found
+ */
+router.get('/debug/tutorial-bots', requireAdmin, (req, res) => {
+  try {
+    const { getDb } = require('../db/schema');
+    const db = getDb();
+
+    // Test the exact query used by tutorial battle
+    const level1Bots = db.prepare(`
+      SELECT name, level, status, ai_type FROM agents
+      WHERE name IN ('Larry', 'Ember', 'Bubbles', 'Sparky', 'Leaf', 'Frosty', 'Bruce', 'Toxic', 'Rocky', 'Breeze', 'Mystic', 'Buzz', 'Pebbles', 'Casper', 'Smaug', 'Shadow', 'Rusty', 'Luna')
+      AND status = 'active'
+      AND level = 1
+    `).all();
+
+    res.json({
+      found: level1Bots.length,
+      bots: level1Bots
+    });
+  } catch (err) {
+    res.status(500).json({
+      error: 'Debug failed',
+      message: err.message,
+      stack: err.stack
+    });
+  }
+});
+
 module.exports = router;
