@@ -346,6 +346,12 @@ router.get('/debug/tutorial-bots', requireAdmin, (req, res) => {
     const { getDb } = require('../db/schema');
     const db = getDb();
 
+    // Check if seed bots exist at all
+    const anyBots = db.prepare(`
+      SELECT name, level, status, ai_type FROM agents
+      WHERE name IN ('Larry', 'Ember', 'Bubbles', 'Sparky', 'Leaf', 'Frosty', 'Bruce', 'Toxic', 'Rocky', 'Breeze', 'Mystic', 'Buzz', 'Pebbles', 'Casper', 'Smaug', 'Shadow', 'Rusty', 'Luna')
+    `).all();
+
     // Test the exact query used by tutorial battle
     const level1Bots = db.prepare(`
       SELECT name, level, status, ai_type FROM agents
@@ -355,8 +361,10 @@ router.get('/debug/tutorial-bots', requireAdmin, (req, res) => {
     `).all();
 
     res.json({
-      found: level1Bots.length,
-      bots: level1Bots
+      total_seed_bots: anyBots.length,
+      all_seed_bots: anyBots,
+      level1_active: level1Bots.length,
+      level1_bots: level1Bots
     });
   } catch (err) {
     res.status(500).json({
