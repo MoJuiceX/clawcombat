@@ -746,6 +746,19 @@ async function startServer() {
   initializeSchema();
   log.info('Database initialized');
 
+  // Auto-seed level 1 bots if they don't exist (needed for tutorial battles)
+  try {
+    const { seedBots } = require('./scripts/seed-bots-v2');
+    const result = seedBots();
+    if (result.created > 0) {
+      log.info('Auto-seeded tutorial bots on startup', { created: result.created });
+    } else if (result.skipped > 0) {
+      log.info('Tutorial bots already exist', { count: result.skipped });
+    }
+  } catch (err) {
+    log.warn('Auto-seed failed (non-fatal)', { error: err.message });
+  }
+
   // Initialize Redis for persistent rate limiting
   try {
     const redis = await getRedisClient();
