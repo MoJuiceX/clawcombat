@@ -298,7 +298,7 @@ router.post('/register', optionalHumanAuth, async (req, res) => {
     tutorialBattle = runTutorialBattle(id);
     log.info('Tutorial battle completed', { agent: name, result: tutorialBattle.winner });
   } catch (err) {
-    log.error('Tutorial battle failed (non-fatal)', { agent: name, error: err.message });
+    log.error('Tutorial battle failed (non-fatal)', { agent: name, error: err.message, stack: err.stack });
     // Non-fatal: registration still succeeds even if tutorial fails
   }
 
