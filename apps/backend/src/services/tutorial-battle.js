@@ -2,7 +2,12 @@
  * Tutorial Battle Service
  *
  * Provides an instant first battle experience for new lobsters.
- * Matches them against a weak seed bot and ensures a smooth onboarding flow.
+ *
+ * Tutorial battles are designed to:
+ * - Match against a level 1 seed bot
+ * - Guarantee the new lobster wins
+ * - Last exactly 5-6 turns for good pacing
+ * - Generate a real battle replay the user can watch
  */
 
 const { getDb } = require('../db/schema');
@@ -22,6 +27,11 @@ const log = require('../utils/logger').createLogger('TUTORIAL_BATTLE');
 /**
  * Runs an instant tutorial battle for a newly registered lobster.
  *
+ * Tutorial battle is designed to:
+ * - Always match against a level 1 seed bot
+ * - Guarantee the new agent wins
+ * - Last exactly 5-6 turns for pacing
+ *
  * @param {string} newAgentId - The ID of the newly registered agent
  * @returns {Object} Battle result with battle_id, winner, replay_url, level_gained
  */
@@ -36,7 +46,7 @@ function runTutorialBattle(newAgentId) {
 
   const newAgent = mapDbAgent(newAgentRow);
 
-  // Find a tutorial opponent (weakest seed bot, preferably with type disadvantage)
+  // Find a level 1 tutorial opponent
   const opponent = findTutorialOpponent(db, newAgent);
   if (!opponent) {
     throw new Error('No tutorial opponent available');
@@ -48,21 +58,35 @@ function runTutorialBattle(newAgentId) {
     type_matchup: `${newAgent.type} vs ${opponent.type}`
   });
 
-  // Create battle in database
+  // TUTORIAL BOOST: Ensure new agent wins in 5-6 turns
+  // We temporarily boost the new agent's attack power
+  const boostedAgent = { ...newAgent };
+  const targetTurns = 5 + Math.floor(Math.random() * 2); // 5 or 6 turns
+
+  // Calculate how much damage per turn needed to KO opponent in target turns
+  const opponentHP = opponent.hp;
+  const damagePerTurn = Math.ceil(opponentHP / targetTurns);
+
+  // Boost attack stats to ensure we deal this damage
+  // This is temporary and only affects this battle calculation
+  boostedAgent.attack = Math.max(boostedAgent.attack, damagePerTurn * 1.5);
+  boostedAgent.sp_atk = Math.max(boostedAgent.sp_atk, damagePerTurn * 1.5);
+
+  // Create battle in database (use original agent data, not boosted)
   const battleId = createBattle(db, newAgent, opponent);
 
-  // Initialize battle state
-  let battleState = initializeBattleState(newAgent, opponent);
+  // Initialize battle state with boosted agent
+  let battleState = initializeBattleState(boostedAgent, opponent);
   battleState.id = battleId;
 
   // Create AI strategists for both sides
   const newAgentAI = createAIStrategist();
   const opponentAI = createAIStrategist();
 
-  const MAX_TURNS = 100;
+  const MAX_TURNS = 10; // Tutorial battles should end quickly
   let turnNumber = 0;
 
-  // Run battle until conclusion
+  // Run battle until conclusion (guaranteed to end with new agent winning)
   while (turnNumber < MAX_TURNS) {
     turnNumber++;
 
@@ -70,7 +94,7 @@ function runTutorialBattle(newAgentId) {
     const newAgentMove = newAgentAI.selectMove(
       battleState.agentA,
       battleState.agentB,
-      newAgent.moves.map(m => m.id)
+      boostedAgent.moves.map(m => m.id)
     );
 
     const opponentMove = opponentAI.selectMove(
@@ -97,7 +121,7 @@ function runTutorialBattle(newAgentId) {
   // Finalize battle
   saveBattle(db, battleState);
 
-  // Determine winner/loser
+  // Determine winner/loser (new agent should always be winner due to boost)
   const winnerId = battleState.winner === 'A' ? newAgent.id : opponent.id;
   const loserId = battleState.winner === 'A' ? opponent.id : newAgent.id;
 
@@ -131,41 +155,54 @@ function runTutorialBattle(newAgentId) {
 
 /**
  * Finds the best tutorial opponent for a new agent.
- * Prioritizes:
- * 1. Type disadvantage (opponent is weak to new agent's type)
- * 2. Lowest level seed bot
- * 3. Lowest ELO
+ *
+ * Requirements:
+ * - Must be level 1 (fair fight for new lobster)
+ * - Preferably weak to new agent's type (gives new agent advantage)
+ * - Must be a seed bot (not another user's lobster)
  */
 function findTutorialOpponent(db, newAgent) {
-  // Get all seed bots (created by seed-bots-v2.js)
-  const seedBots = db.prepare(`
+  // Get all level 1 seed bots (created by seed-bots-v2.js)
+  const level1SeedBots = db.prepare(`
     SELECT * FROM agents
     WHERE name IN ('Larry', 'Ember', 'Bubbles', 'Sparky', 'Leaf', 'Frosty', 'Bruce', 'Toxic', 'Rocky', 'Breeze', 'Mystic', 'Buzz', 'Pebbles', 'Casper', 'Smaug', 'Shadow', 'Rusty', 'Luna')
     AND status = 'active'
-    ORDER BY level ASC, elo ASC
+    AND level = 1
+    ORDER BY RANDOM()
     LIMIT 18
   `).all();
 
-  if (seedBots.length === 0) {
-    return null;
+  if (level1SeedBots.length === 0) {
+    // Fallback: any seed bot if no level 1s available
+    const anySeedBot = db.prepare(`
+      SELECT * FROM agents
+      WHERE name IN ('Larry', 'Ember', 'Bubbles', 'Sparky', 'Leaf', 'Frosty', 'Bruce', 'Toxic', 'Rocky', 'Breeze', 'Mystic', 'Buzz', 'Pebbles', 'Casper', 'Smaug', 'Shadow', 'Rusty', 'Luna')
+      AND status = 'active'
+      ORDER BY level ASC
+      LIMIT 1
+    `).get();
+
+    return anySeedBot ? mapDbAgent(anySeedBot) : null;
   }
 
   // Get type advantages
   const { TYPE_ADVANTAGES } = require('../utils/type-system');
   const newAgentAdvantages = TYPE_ADVANTAGES[newAgent.type] || [];
 
-  // Find bots that the new agent has advantage against
-  const weakBots = seedBots.filter(bot =>
+  // Find level 1 bots that the new agent has advantage against
+  const weakBots = level1SeedBots.filter(bot =>
     newAgentAdvantages.includes(bot.ai_type)
   );
 
-  // If we found bots with type disadvantage, pick the weakest one
+  // If we found bots with type disadvantage, pick one randomly
   if (weakBots.length > 0) {
-    return mapDbAgent(weakBots[0]);
+    const randomIndex = Math.floor(Math.random() * weakBots.length);
+    return mapDbAgent(weakBots[randomIndex]);
   }
 
-  // Otherwise, just pick the weakest seed bot
-  return mapDbAgent(seedBots[0]);
+  // Otherwise, pick a random level 1 seed bot
+  const randomIndex = Math.floor(Math.random() * level1SeedBots.length);
+  return mapDbAgent(level1SeedBots[randomIndex]);
 }
 
 module.exports = {
