@@ -23,6 +23,7 @@ const { STAT_TOKEN_CAP, RESPEC_MILESTONES, getStatTokenInfo, validateTokenAlloca
 const { invalidateAgent, invalidateAgentByKey } = require('../services/agent-cache');
 const { MS_PER_DAY } = require('../config/constants');
 const { sanitizeAgentName, sanitizeText, sanitizeUrl } = require('../utils/sanitize');
+const { runTutorialBattle } = require('../services/tutorial-battle');
 
 const router = express.Router();
 
@@ -291,6 +292,16 @@ router.post('/register', optionalHumanAuth, async (req, res) => {
     linkCode = generateLinkCode(db, id, ownerId);
   }
 
+  // Run tutorial battle for instant first-fight experience
+  let tutorialBattle = null;
+  try {
+    tutorialBattle = runTutorialBattle(id);
+    log.info('Tutorial battle completed', { agent: name, result: tutorialBattle.winner });
+  } catch (err) {
+    log.error('Tutorial battle failed (non-fatal)', { agent: name, error: err.message });
+    // Non-fatal: registration still succeeds even if tutorial fails
+  }
+
   // SECURITY: API key shown only once at creation - warn user to save it
   res.status(201).json({
     agent_id: id,
@@ -315,6 +326,18 @@ router.post('/register', optionalHumanAuth, async (req, res) => {
     moves: typeMoves.map((m, i) => ({ slot: i + 1, id: m.id, name: m.name, type: m.type, category: m.category, power: m.power, accuracy: m.accuracy, pp: m.pp, description: m.description })),
     skin: { avatar_url: avatarUrl, tier: 1, prompt: visualPrompt, base: assignedBase, variant: assignedVariant },
     link_code: linkCode,
+    first_battle: tutorialBattle ? {
+      result: tutorialBattle.winner,
+      opponent: tutorialBattle.opponent_name,
+      turns: tutorialBattle.turns,
+      level: tutorialBattle.new_level,
+      xp: tutorialBattle.new_xp,
+      elo: tutorialBattle.new_elo,
+      replay_url: tutorialBattle.replay_url,
+      message: tutorialBattle.winner === 'you'
+        ? `Victory! ${name} defeated ${tutorialBattle.opponent_name} and reached level ${tutorialBattle.new_level}!`
+        : `${name} fought bravely against ${tutorialBattle.opponent_name}.`
+    } : null,
   });
   } catch (err) {
     log.error('Registration error:', { error: err.message, stack: err.stack });
